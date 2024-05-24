@@ -17,7 +17,7 @@
     <div class="sidebar-content">
 
         <!-- User menu -->
-        <div class="sidebar-user">
+       <!-- <div class="sidebar-user">
             <div class="card-body">
                 <div class="media">
                     <div class="mr-3">
@@ -36,7 +36,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div>-->
         <!-- /user menu -->
 
         <!-- Main navigation -->
