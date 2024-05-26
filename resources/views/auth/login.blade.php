@@ -1,7 +1,7 @@
 @extends('layouts.login_master')
 
 @section('content')
-    <div class="page-content login-cover">
+    <div class="page-content login-cover mb-4">
 
         <!-- Main content -->
         <div class="content-wrapper">
@@ -16,7 +16,7 @@
                         <div class="card-body">
                             <div class="text-center mb-3">
                                 <i class="icon-people icon-2x text-warning-400 border-warning-400 border-3 rounded-round p-3 mb-3 mt-1"></i>
-                                <h5 class="mb-0">Login to your account</h5>
+                                <h3 class="mb-0">WELCOME TO MBUKU ERP</h3>
                                 <span class="d-block text-muted">Your credentials</span>
                             </div>
 
@@ -49,7 +49,7 @@
                             </div>
 
                             <div class="form-group">
-                                <button type="submit" class="btn btn-primary btn-block">Sign in <i class="icon-circle-right2 ml-2"></i></button>
+                                <button type="submit" class="btn blogin btn-block">LOGIN <i class="icon-circle-right2 ml-2"></i></button>
                             </div>
 
                            {{-- <div class="form-group">

@@ -1,7 +1,7 @@
 <div class="navbar navbar-expand-md navbar-dark">
     <div class="mt-2 mr-5">
         <a href="{{ route('dashboard') }}" >
-        <h4 class="text-bold text-white">MBUKU ERP VERSION 1.0</h4>
+        <h4 class="text-bold text-white">MBUKU ERP-1.0</h4>
         </a>
     </div>
   {{--  <div class="navbar-brand">
@@ -35,9 +35,9 @@
         <ul class="navbar-nav">
 
             <li class="nav-item dropdown dropdown-user">
-                <a href="#" class="navbar-nav-link dropdown-toggle" data-toggle="dropdown">
-                    <img style="width: 38px; height:38px;" src="{{ Auth::user()->photo }}" class="rounded-circle" alt="photo">
-                    <span>{{ Auth::user()->name }}</span>
+               <a href="#" class="navbar-nav-link dropdown-toggle" data-toggle="dropdown">
+                    <!--<img style="width: 38px; height:38px;" src="" class="rounded-circle" alt="photo">-->
+                    <span>Welcome - {{ Auth::user()->name }}</span>
                 </a>
 
                 <div class="dropdown-menu dropdown-menu-right">
