@@ -60,6 +60,7 @@
       color: white; /* White text color */
       border:1px solid #fff; /* Match border color to background */
       border-radius: 20px;
+      text-align: center;
     }
     form
     {
@@ -75,3 +76,38 @@
         background-color: #32012F;
         color: #fff;
     }
+    .custom-toggler
+    {
+      background-color: #fff;
+    }
+
+    .custom-toggler .navbar-toggler-icon {
+      width: 15px;
+      height: 1px;
+      background-color: #32012F;
+    }
+
+   
+    /*styling for the contact page*/
+    .mycontainer {
+      max-width: 800px;
+      margin-top: 50px;
+      padding: 20px;
+      background-color: #ffffff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+  }
+
+  h1 {
+      color: #343a40;
+  }
+
+  .form-control {
+      border-radius: 4px;
+      margin-bottom: 15px;
+  }
+
+  .btn-primary {
+      width: 100%;
+      border-radius: 4px;
+  }

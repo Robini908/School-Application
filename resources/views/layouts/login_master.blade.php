@@ -17,25 +17,26 @@
         </a>
         <a class="navbar-brand" href="#" ><h1 class=" text-white" id="logotxt">Mbuku ERP</h1></a>
         
-        <button class="navbar-toggler bg-white" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon bg-black"></span>
+        <button class="navbar-toggler custom-toggler text-white" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span><br>
+            <span class="navbar-toggler-icon" style="margin-top: -30px;"></span>           
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item active">
-                    <a class="nav-link  text-white" href="index.html">Home</a>
+                    <a class="nav-link  text-white" href="{{ route('landing') }}">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link  text-white" href="about.html">About Us</a>
+                    <a class="nav-link  text-white" href="{{ route('pricing') }}">Pricing</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="contact.html">Contact</a>
+                    <a class="nav-link text-white" href="{{ route('contact') }}">Contact</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link  text-white" href="login.html">Login</a>
+                    <a class="nav-link  text-white" href="{{ route('login') }}">Login</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link  text-white" href="signup.html">Sign Up</a>
+                    <a class="nav-link  text-white" href="{{ route('signup') }}">Get Demo</a>
                 </li>
             </ul>
         </div>
