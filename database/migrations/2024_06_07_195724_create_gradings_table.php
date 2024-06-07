@@ -12,14 +12,12 @@ class CreateGradingsTable extends Migration
      * @return void
      */
     public function up()
+
     {
-        Schema::create('gradings', function (Blueprint $table) {
+        Schema::create('grading_systems', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
-            $table->integer('range_from');
-            $table->integer('range_to');
-            $table->string('grade');
-
+            $table->string('name');
         });
     }
 
@@ -30,6 +28,6 @@ class CreateGradingsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('gradings');
+        Schema::dropIfExists('grading_systems');
     }
 }
