@@ -2,7 +2,7 @@
 <div class="navbar navbar-expand-md navbar-dark">
     <div class="mt-2 mr-5">
         <a href="{{ route('dashboard') }}" class="d-inline-block">
-            <h4 class="text-bold text-white">{{ Qs::getSystemName() }}</h4>
+            <h2 class="text-bold text-white">{{ Qs::getSystemName() }}</h2>
         </a>
     </div>
 
@@ -24,14 +24,14 @@
             <li class="nav-item dropdown">
                 <a href="{{ route('login') }}" class="navbar-nav-link">
                     <i class="icon-user-tie"></i>
-                    <span class="d-md-none ml-2">My Account</span>
+                    <span class="d-md-none ml-2">Login</span>
                 </a>
             </li>
 
             <li class="nav-item dropdown">
                 <a href="#" class="navbar-nav-link">
                     <i class="icon-cog3"></i>
-                    <span class="d-md-none ml-2">Options</span>
+                    <span class="d-md-none ml-2">SignUp</span>
                 </a>
             </li>
         </ul>
