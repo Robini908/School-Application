@@ -44,4 +44,24 @@ class HomeController extends Controller
 
         return view('pages.support_team.dashboard', $d);
     }
+
+    public function landingpage()
+    {
+         return view('outerpages.landing');
+    }
+
+    public function contactpage()
+    {
+         return view('outerpages.contact');
+    }
+
+    public function pricingpage()
+    {
+         return view('outerpages.pricing');
+    }
+
+    public function signuppage()
+    {
+         return view('auth.register');
+    }
 }
