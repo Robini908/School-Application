@@ -117,8 +117,16 @@
                             </li> 
                             {{--Grades list--}}
                             <li class="nav-item">
-                                <a href="{{ route('grades.index') }}" class="nav-link {{ in_array(Route::currentRouteName(), ['grades.index', 'grades.edit']) ? 'active' : '' }}">                                    <span class="fas fa-thumbs-down text-danger"></span>Grading</a>
-                            </li>                           
+                                <a href="{{ route('grades.index') }}" class="nav-link {{ in_array(Route::currentRouteName(), ['grades.index', 'grades.edit']) ? 'active' : '' }}"> <span class="fas fa-thumbs-down text-danger"></span>Grading</a>
+                            </li>  
+                            
+                            
+                            {{--Grades list--}}
+                            <li class="nav-item">
+                                <a href="{{ route('grading_system.index') }}" class="nav-link {{ in_array(Route::currentRouteName(), ['grading_system.index', 'grading_system.edit','grading_system.create']) ? 'active' : '' }}"> <span class="fas fa-thumbs-down text-danger"></span>Grading System</a>
+                            </li>  
+
+
                             {{--Exams--}}
                             @if(Qs::userIsTeamSAT())
                             <li class="nav-item nav-item-submenu {{ in_array(Route::currentRouteName(), ['exams.index', 'exams.edit', 'grades.index', 'grades.edit', 'marks.index', 'marks.manage', 'marks.bulk', 'marks.tabulation', 'marks.show', 'marks.batch_fix',]) ? 'nav-item-expanded nav-item-open' : '' }} ">

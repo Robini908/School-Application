@@ -6,6 +6,8 @@ Auth::routes();
 Route::get('/privacy-policy', 'HomeController@privacy_policy')->name('privacy_policy');
 Route::get('/terms-of-use', 'HomeController@terms_of_use')->name('terms_of_use');
 
+Route::resource('grading_system', 'GradingSystemController');
+
 //routes for the external site pages before logging in
 Route::get('/', 'HomeController@landingpage');
 Route::get('/landing', 'HomeController@landingpage')->name('landing');
@@ -149,7 +151,7 @@ Route::get('/', 'HomeController@dashboard')->name('home');
         Route::resource('exams', 'ExamController');
         Route::resource('dorms', 'DormController');
         Route::resource('payments', 'PaymentController');
-
+        
     });
 
     /************************ AJAX ****************************/
