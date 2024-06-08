@@ -4,6 +4,7 @@
 
     @if(Qs::userIsTeamSA())
        <div class="row">
+           <!-- Total Students Card -->
            <div class="col-sm-6 col-xl-3">
                <div class="card card-body bg-blue-400 has-bg-image">
                    <div class="media">
@@ -19,6 +20,7 @@
                </div>
            </div>
 
+           <!-- Total Teachers Card -->
            <div class="col-sm-6 col-xl-3">
                <div class="card card-body bg-danger-400 has-bg-image">
                    <div class="media">
@@ -34,6 +36,7 @@
                </div>
            </div>
 
+           <!-- Total Administrators Card -->
            <div class="col-sm-6 col-xl-3">
                <div class="card card-body bg-success-400 has-bg-image">
                    <div class="media">
@@ -49,6 +52,7 @@
                </div>
            </div>
 
+           <!-- Total Parents Card -->
            <div class="col-sm-6 col-xl-3">
                <div class="card card-body bg-indigo-400 has-bg-image">
                    <div class="media">
@@ -64,18 +68,110 @@
                </div>
            </div>
        </div>
-       @endif
+    @endif
 
     {{--Events Calendar Begins--}}
     <div class="card">
-        <div class="card-header header-elements-inline">
-            <h5 class="card-title">School Events Calendar</h5>
-         {!! Qs::getPanelOptions() !!}
-        </div>
+    <div class="card-body">
+        <div class="row">
+            <!-- Left side with calendar -->
+            <div class="col-lg-6">
+                <div class="card bg-light shadow-sm h-100"> <!-- Added 'h-100' class to make the card fill the height -->
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">School Events Calendar</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="fullcalendar-basic">
+                            <!-- Your calendar content goes here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <div class="card-body">
-            <div class="fullcalendar-basic"></div>
+            <!-- Right side with visualization -->
+            <div class="col-lg-6">
+                <div class="card bg-light shadow-sm h-100"> <!-- Added 'h-100' class to make the card fill the height -->
+                    <div class="card-header bg-success text-white">
+                        <h5 class="card-title mb-0">All users(Pie Chart)</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="userPieChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+</div>
+
     {{--Events Calendar Ends--}}
-    @endsection
+
+    {{-- Recent Students Panel Begins --}}
+    <div class="card">
+    <div class="card-body">
+        <h5 class="card-title mb-4">Recently Added Students</h5>
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered table-hover">
+                <thead class="thead-dark">
+                    <tr>
+                        <th class="text-center">Admission Number</th>
+                        <th class="text-center">Name</th>
+                        <th class="text-center">Dorm Room Number</th>
+                        <th class="text-center">Session</th>
+                        <th class="text-center">Year Admitted</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{-- @foreach($recentStudents as $student)
+                    <tr>
+                        <td class="text-center">{{ $student->adm_no }}</td>
+                        <td>{{ $student->name }}</td>
+                        <td class="text-center">{{ $student->dorm_room_no }}</td>
+                        <td class="text-center">{{ $student->session }}</td>
+                        <td class="text-center">{{ $student->year_admitted }}</td>
+                    </tr>
+                    @endforeach --}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+    {{-- Recent Students Panel Ends --}}
+    {{-- Recent Teachers Panel Starts --}}
+    <div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Recently Added Teachers</h5>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Employee ID</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Department</th>
+                        <th scope="col">Date Added</th>
+                    </tr>
+                </thead>
+                <tbody>
+                
+                  {{--  @foreach($recentTeachers as $teacher)
+                    <tr>
+                        <td>{{ $teacher->employee_id }}</td>
+                        <td>{{ $teacher->name }}</td>
+                        <td>{{ $teacher->email }}</td>
+                        <td>{{ $teacher->department }}</td>
+                        <td>{{ $teacher->created_at->format('Y-m-d') }}</td>
+                    </tr>
+                    @endforeach --}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+{{-- Recent Teachers Panel Ends --}}
+
+
+@endsection

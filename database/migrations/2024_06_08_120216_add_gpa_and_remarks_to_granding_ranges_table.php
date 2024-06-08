@@ -13,7 +13,7 @@ class AddGpaAndRemarksToGrandingRangesTable extends Migration
      */
     public function up()
     {
-        Schema::table('granding_ranges', function (Blueprint $table) {
+        Schema::table('grading_ranges', function (Blueprint $table) {
             //
             $table->string('remark')->nullable(); // Add remark column
             $table->string('gpa')->nullable(); // Add gpa column
@@ -27,7 +27,7 @@ class AddGpaAndRemarksToGrandingRangesTable extends Migration
      */
     public function down()
     {
-        Schema::table('granding_ranges', function (Blueprint $table) {
+        Schema::table('grading_ranges', function (Blueprint $table) {
             //
             $table->dropColumn(['remark', 'gpa']);
         });
