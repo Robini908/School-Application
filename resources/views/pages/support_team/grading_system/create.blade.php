@@ -1,14 +1,25 @@
+
+
 @extends('layouts.master')
-@section('page_title', 'Manage Grades')
+@section('page_title', 'Manage Grading System')
 @section('content')
 
-<div class="container">
-    <h2>Create Grading</h2>
-    <!-- add csrf -->
-    <form action="{{ route('grading_system.store') }}" method="POST" id="grading_form">
+    <div class="card">
+        <div class="card-header header-elements-inline">
+            <h6 class="card-title">Manage Grading</h6>
+            {!! Qs::getPanelOptions() !!}
+        </div>
+
+        <div class="card-body">
+            <ul class="nav nav-tabs nav-tabs-highlight">
+                <li class="nav-item"><a href="#all-gradings" class="nav-link active" data-toggle="tab">Manage Grading</a></li>
+                <li class="nav-item"><a href="#new-gradingsystem" class="nav-link" data-toggle="tab"><i class="icon-plus2"></i> Create New Grading</a></li>
+            </ul>
+
+            <form action="{{ route('grading_system.store') }}" method="POST" id="grading_form">
         @csrf
         <div class="form-group">
-            <label for="name">Grading Name:</label>
+            <label for="name"><b>Grading Name:</b> </label>
             <input type="text" class="form-control" id="name" name="name" required>
         </div>
         <div class="table-responsive">
@@ -247,5 +258,9 @@
         });
     </script>
 </div>
-@endsection
+        </div>
+    </div>
 
+    {{--Class List Ends--}}
+
+@endsection
