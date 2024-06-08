@@ -333,23 +333,24 @@
 </div>
 <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content border-0 shadow-lg" style="background: linear-gradient(135deg, #ff6b6b, #56ccf2);">
+        <div class="modal-content border-0 shadow-lg" style="background-color: #f8f9fa; border-radius: 10px;">
             <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="exampleModalLabel"><i class="bi bi-exclamation-triangle-fill"></i> Delete Confirmation</h5>
+                <h5 class="modal-title" id="exampleModalLabel"><i class="bi bi-trash-fill mr-2"></i> Confirm Deletion</h5>
                 <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body text-center">
-                <p><span class="display-1 text-warning">&#128559;</span></p>
-                <p class="lead">Are you sure you want to delete this grading system? This action cannot be undone.</p>
+                <p><span class="display-1 text-danger">&#128465;</span></p>
+                <p class="lead">Are you sure you want to delete this grading system?</p>
+                <p class="lead">This action cannot be undone.</p>
             </div>
             <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-outline-secondary btn-lg" data-dismiss="modal"><i class="bi bi-x-circle-fill"></i> Cancel</button>
+                <button type="button" class="btn btn-outline-danger btn-lg rounded-pill" data-dismiss="modal"><i class="bi bi-x-circle-fill mr-1"></i> Cancel</button>
                 <form action="{{ route('grading_system.destroy', $grade->id) }}" method="POST">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-danger btn-lg"><i class="bi bi-trash-fill"></i> Delete</button>
+                    <button type="submit" class="btn btn-danger btn-lg rounded-pill"><i class="bi bi-trash-fill mr-1"></i> Delete</button>
                 </form>
             </div>
         </div>
