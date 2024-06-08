@@ -14,16 +14,11 @@ class CreateSubjectsTable extends Migration
     public function up()
     {
         Schema::create('subjects', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('name', 100);
-            $table->string('slug', 100);
-            $table->unsignedInteger('my_class_id');
-            $table->unsignedInteger('teacher_id');
+            $table->increments('id')->unique();
+            $table->string('subject_name', 100);
+            $table->string('subject_code', 100);
+            $table->string('abbreviation', 100);
             $table->timestamps();
-        });
-
-        Schema::table('subjects', function (Blueprint $table) {
-            $table->unique(['my_class_id', 'name']);
         });
     }
 

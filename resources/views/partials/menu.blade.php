@@ -114,15 +114,37 @@
                             {{--Manage Subjects--}}
                             <li class="nav-item">
                                 <a href="{{ route('subjects.index') }}" class="nav-link {{ in_array(Route::currentRouteName(), ['subjects.index','subjects.edit',]) ? 'active' : '' }}"> <span>Subjects</span></a>
-                            </li> 
-                            {{--Grades list--}}
-                            <li class="nav-item">
-                                <a href="{{ route('grades.index') }}" class="nav-link {{ in_array(Route::currentRouteName(), ['grades.index', 'grades.edit']) ? 'active' : '' }}">                                    <span class="fas fa-thumbs-down text-danger"></span>Grading</a>
-                            </li>                           
+                            </li>                                
+                             {{--Grading2--}}
+                             @if(Qs::userIsTeamSAT())
+                             <li class="nav-item nav-item-submenu {{ in_array(Route::currentRouteName(), ['exams.index', 'exams.edit', 'grades.index', 'grades.edit', 'marks.index', 'marks.manage', 'marks.bulk', 'marks.tabulation', 'marks.show', 'marks.batch_fix',]) ? 'nav-item-expanded nav-item-open' : '' }} ">
+                                 <a href="#" class="nav-link"><span> Grading</span></a>
+ 
+                                 <ul class="nav nav-group-sub" data-submenu-title="Manage Grades">
+                                     @if(Qs::userIsTeamSA())
+                                         {{--Add Grading System Names list--}}
+                                         <li class="nav-item">
+                                             <a href="{{ route('exams.index') }}"
+                                             class="nav-link {{ (Route::is('exams.index')) ? 'active' : '' }}">Add Grading System</a>
+                                         </li>                                          
+                                        {{--Add Ranges for Grading System--}}
+                                        <li class="nav-item">
+                                            <a href="{{ route('marks.index') }}"
+                                            class="nav-link {{ in_array(Route::currentRouteName(), ['marks.index']) ? 'active' : '' }}">Add Grade Ranges</a>
+                                        </li>                                           
+                                        {{--Grades list--}}
+                                        <li class="nav-item">
+                                            <a href="{{ route('grades.index') }}" class="nav-link {{ in_array(Route::currentRouteName(), ['grades.index', 'grades.edit']) ? 'active' : '' }}">                                    <span class="fas fa-thumbs-down text-danger"></span>Grading</a>
+                                        </li> 
+                                     @endif
+                                 </ul>
+                             </li>
+                             @endif
+                             {{--End Exam--}}                       
                             {{--Exams--}}
                             @if(Qs::userIsTeamSAT())
                             <li class="nav-item nav-item-submenu {{ in_array(Route::currentRouteName(), ['exams.index', 'exams.edit', 'grades.index', 'grades.edit', 'marks.index', 'marks.manage', 'marks.bulk', 'marks.tabulation', 'marks.show', 'marks.batch_fix',]) ? 'nav-item-expanded nav-item-open' : '' }} ">
-                                <a href="#" class="nav-link"><i class="icon-books"></i> <span> Exams</span></a>
+                                <a href="#" class="nav-link"><span> Exams</span></a>
 
                                 <ul class="nav nav-group-sub" data-submenu-title="Manage Exams">
                                     @if(Qs::userIsTeamSA())
