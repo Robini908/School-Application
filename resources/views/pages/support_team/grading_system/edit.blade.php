@@ -109,10 +109,7 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="d-flex justify-content-between mt-3">
-
-                        <button type="button" id="add_more" class="btn btn-primary">Add More Ranges</button>
-                        <div>
+                   
                             <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">Delete
                             </button>
                             <button type="submit" class="btn btn-success">Submit</button>
@@ -334,30 +331,31 @@
     </div>
 </div>
 </div>
-
 <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Delete Confirmation</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <div class="modal-content border-0 shadow-lg" style="background: linear-gradient(135deg, #ff6b6b, #56ccf2);">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="exampleModalLabel"><i class="bi bi-exclamation-triangle-fill"></i> Delete Confirmation</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body">
-                <p>Are you sure you want to delete this grading system? this action cannot be undone.</p>
+            <div class="modal-body text-center">
+                <p><span class="display-1 text-warning">&#128559;</span></p>
+                <p class="lead">Are you sure you want to delete this grading system? This action cannot be undone.</p>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-outline-secondary btn-lg" data-dismiss="modal"><i class="bi bi-x-circle-fill"></i> Cancel</button>
                 <form action="{{ route('grading_system.destroy', $grade->id) }}" method="POST">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-danger">Delete</button>
+                    <button type="submit" class="btn btn-danger btn-lg"><i class="bi bi-trash-fill"></i> Delete</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
 
 {{--Class List Ends--}}
 
