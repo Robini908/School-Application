@@ -7,7 +7,6 @@
         <h6 class="card-title">Manage Grading</h6>
         {!! Qs::getPanelOptions() !!}
     </div>
-
     <div class="card-body">
         <ul class="nav nav-tabs nav-tabs-highlight">
             <li class="nav-item"><a href="#all-gradings" class="nav-link active" data-toggle="tab">Manage Grading</a></li>
