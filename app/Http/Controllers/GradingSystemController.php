@@ -26,8 +26,8 @@ class GradingSystemController extends Controller
      */
     public function create(Request $request)
     {
-
-        return view('pages.support_team.grading_system.create');
+        $gradingSystems = GradingSystem::all();
+        return view('pages.support_team.grading_system.create', compact('gradingSystems'));
     }
 
     /**
@@ -50,12 +50,16 @@ class GradingSystemController extends Controller
         foreach ($data['range_from'] as $index => $from) {
             $to = $data['range_to'][$index];
             $grade = $data['grade'][$index];
+            $remark = $data['remark'][$index] ?? 'N/A';
+            $gpa = $data['gpa'][$index] ?? 0;
 
             // Add the range and grade to the result array
             $ranges[] = [
                 'range_from' => $from,
                 'range_to' => $to,
-                'grade' => $grade
+                'grade' => $grade,
+                'remark' => $remark,
+                'gpa' => $gpa
             ];
         }
 
@@ -99,7 +103,9 @@ class GradingSystemController extends Controller
         $name = $gradingSystem['name'];
         $id = $gradingSystem['id'];
 
-        return view('pages.support_team.grading_system.edit', compact(['gradingSystem', 'ranges']));
+        $gradingSystems = GradingSystem::all();
+
+        return view('pages.support_team.grading_system.edit', compact(['gradingSystem', 'ranges', 'name', 'id', 'gradingSystems']));
     }
 
     /**
@@ -120,12 +126,16 @@ class GradingSystemController extends Controller
         foreach ($data['range_from'] as $index => $from) {
             $to = $data['range_to'][$index];
             $grade = $data['grade'][$index];
+            $remark = $data['remark'][$index] ?? 'N/A';
+            $gpa = $data['gpa'][$index] ?? 0;
 
             // Add the range and grade to the result array
             $ranges[] = [
                 'range_from' => $from,
                 'range_to' => $to,
-                'grade' => $grade
+                'grade' => $grade,
+                'remark' => $remark,
+                'gpa' => $gpa
             ];
         }
         $gradingSystem->gradingRanges()->delete();
@@ -144,7 +154,10 @@ class GradingSystemController extends Controller
     {
         //
         $grading = GradingSystem::find($id);
+        if (!$grading) {
+            return redirect()->route('grading_system.index');
+        }
         $grading->delete();
-        return redirect()->route('support_team.grading_system.index');
+        return redirect()->route('grading_system.index');
     }
 }
