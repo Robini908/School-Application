@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddGpaAndRemarkToGradingRangesTable extends Migration
+class AddGpaAndRemarksToGrandingRangesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,10 @@ class AddGpaAndRemarkToGradingRangesTable extends Migration
      */
     public function up()
     {
-        Schema::table('grading_ranges', function (Blueprint $table) {
+        Schema::table('granding_ranges', function (Blueprint $table) {
             //
-            $table->string('remark')->nullable();
-            $table->decimal('gpa')->nullable();
+            $table->string('remark')->nullable(); // Add remark column
+            $table->string('gpa')->nullable(); // Add gpa column
         });
     }
 
@@ -27,8 +27,9 @@ class AddGpaAndRemarkToGradingRangesTable extends Migration
      */
     public function down()
     {
-        Schema::table('grading_ranges', function (Blueprint $table) {
+        Schema::table('granding_ranges', function (Blueprint $table) {
             //
+            $table->dropColumn(['remark', 'gpa']);
         });
     }
 }

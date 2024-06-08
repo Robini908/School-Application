@@ -12,7 +12,6 @@ class GradingSystem extends Model
     use HasFactory;
     protected $fillable = ['name'];
 
-
     public function gradingRanges(): HasMany
     {
         return $this->hasMany(GradingRange::class);

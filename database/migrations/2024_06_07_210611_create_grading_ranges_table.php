@@ -19,8 +19,7 @@ class CreateGradingRangesTable extends Migration
             $table->integer('range_to');
             $table->string('grade');
             $table->unsignedBigInteger('grading_system_id');
-            $table->string('remark')->nullable(); // Add remark column
-            $table->string('gpa')->nullable(); // Add gpa column
+
             $table->timestamps();
         });
     }
