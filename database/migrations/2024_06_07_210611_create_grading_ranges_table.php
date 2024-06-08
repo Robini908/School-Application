@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\GradingSystem;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -19,7 +18,9 @@ class CreateGradingRangesTable extends Migration
             $table->integer('range_from');
             $table->integer('range_to');
             $table->string('grade');
-            $table->foreignIdFor(GradingSystem::class)->constrained()->cascadeOnDelete();
+            $table->unsignedBigInteger('grading_system_id');
+            $table->string('remark')->nullable(); // Add remark column
+            $table->string('gpa')->nullable(); // Add gpa column
             $table->timestamps();
         });
     }
