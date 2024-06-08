@@ -28,7 +28,7 @@
                     <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
 
                         @foreach($errors->all() as $er)
-                            <span><i class="icon-arrow-right5"></i> {{ $er }}</span> <br>
+                            <span><i class="icon-arrow-right5"></i> testttt</span> <br>
                         @endforeach
 
                 </div>

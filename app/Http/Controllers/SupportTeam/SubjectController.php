@@ -8,6 +8,8 @@ use App\Http\Requests\Subject\SubjectUpdate;
 use App\Repositories\MyClassRepo;
 use App\Repositories\UserRepo;
 use App\Http\Controllers\Controller;
+use App\Models\Subject;
+use Illuminate\Http\Request;
 
 class SubjectController extends Controller
 {
@@ -23,37 +25,44 @@ class SubjectController extends Controller
     }
 
     public function index()
-    {
-        $d['my_classes'] = $this->my_class->all();
-        $d['teachers'] = $this->user->getUserByType('teacher');
-        $d['subjects'] = $this->my_class->getAllSubjects();
-
-        return view('pages.support_team.subjects.index', $d);
+    {        
+        $subjects = Subject::all();   
+        return view('pages.support_team.subjects.index', compact('subjects'));       
     }
 
-    public function store(SubjectCreate $req)
-    {
-        $data = $req->all();
-        $this->my_class->createSubject($data);
-
-        return Qs::jsonStoreOk();
+    public function store(Request $request)
+    {        
+        // Create and save a new subject
+        $subject = Subject::create([
+            'subject_name' => $request->input('subname'),
+            'subject_code' => $request->input('subcode'),
+            'abbreviation' => $request->input('subabbrev'),
+        ]);
+        // Redirect or return a response
+        return view('pages.support_team.subjects.index')->with('success', 'Subject created successfully.');        
     }
 
     public function edit($id)
     {
-        $d['s'] = $sub = $this->my_class->findSubject($id);
-        $d['my_classes'] = $this->my_class->all();
-        $d['teachers'] = $this->user->getUserByType('teacher');
-
-        return is_null($sub) ? Qs::goWithDanger('subjects.index') : view('pages.support_team.subjects.edit', $d);
+         // Fetch the subject by ID
+        $subject = Subject::findOrFail($id);   
+        return is_null($subject) ? Qs::goWithDanger('subjects.index') : view('pages.support_team.subjects.edit', compact('subject'));
     }
 
-    public function update(SubjectUpdate $req, $id)
+    public function update(Request $req, $id)
     {
-        $data = $req->all();
-        $this->my_class->updateSubject($id, $data);
+        // Fetch the subject by ID
+        $subject = Subject::findOrFail($id);
 
-        return Qs::jsonUpdateOk();
+        // Update the subject attributes
+        $subject->subject_name = $request->input('subject_name');
+        $subject->subject_code = $request->input('subject_code');
+        $subject->abbreviation = $request->input('abbreviation');
+
+        // Save the updated subject to the database
+        $subject->save();        
+        $subjects = Subject::all();   
+        return view('pages.support_team.subjects.index', compact('subjects'));   
     }
 
     public function destroy($id)
