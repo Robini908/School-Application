@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\GradingSystem;
+use App\Models\Subject;
 use Illuminate\Http\Request;
 
 class GradingSystemController extends Controller
@@ -15,7 +16,10 @@ class GradingSystemController extends Controller
     public function index()
     {
         $gradingSystems = GradingSystem::all();
-        return view('pages.support_team.grading_system.index', compact('gradingSystems'));
+
+
+        $subjects = Subject::all();
+        return view('pages.support_team.grading_system.index', compact(['gradingSystems', 'subjects']));
     }
 
     /**
@@ -142,11 +146,11 @@ class GradingSystemController extends Controller
     public function destroy($id)
     {
         $grading = GradingSystem::find($id);
-        
+
         if (!$grading) {
             return redirect()->route('grading_system.index')->with('flash_warning', 'Grading system entry not found.');
         }
-        
+
         $grading->delete();
         return redirect()->route('grading_system.index')->with('flash_success', 'Grading system deleted successfully');
     }
