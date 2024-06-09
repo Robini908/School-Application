@@ -2,16 +2,16 @@
 
 @section('content')
     <div class="page-content login-cover mb-4">       
-        <div class="row"> 
+        <div class="row p-4"> 
             <div class="col-md-6">
-            <img src="{{ asset('assets/pics/erpuse.png') }}" class="img-fluid rounded" alt="Student Registration">
+                <img src="{{ asset('assets/pics/erpuse.png') }}" class="img-fluid rounded" alt="Student Registration">
             </div>
-            <div class="col-md-6">
-            <header class="p-2 text-center" id="theheader">
-                <p class=" tsh" >Mbuku ERP</p>
-                <p class=" tsh2">The Ultimate Solution for Schools</p>
-                <a href="signup.html" class="btn btn-lg" id="startbtn">Get Started</a>
-            </header>            
+            <div class="col-md-6 pb-4">
+                <header class="p-2 text-center" id="theheader">
+                    <p class=" tsh" >Mbuku ERP</p>
+                    <p class=" tsh2">The Ultimate Solution for Schools</p>
+                    <a href="signup.html" class="btn btn-lg" id="startbtn">Get Started</a>
+                </header>            
             </div>            
         </div>
         <div class="container-fluid p-4" style="background-color: #fff;">
