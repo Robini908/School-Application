@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Models\StudentRecord;
 
 class StudentRecordController extends Controller
 {
@@ -51,38 +52,48 @@ class StudentRecordController extends Controller
 
     public function store(StudentRecordCreate $req)
     {
-       $data =  $req->only(Qs::getUserRecord());
-       $sr =  $req->only(Qs::getStudentData());
-
+        $data = $req->only(Qs::getUserRecord());
+        $sr = $req->only(Qs::getStudentData());
+    
         $ct = $this->my_class->findTypeByClass($req->my_class_id)->code;
-       /* $ct = ($ct == 'J') ? 'JSS' : $ct;
-        $ct = ($ct == 'S') ? 'SS' : $ct;*/
-
+    
+        // Set user type, name, code, password, and default photo
         $data['user_type'] = 'student';
         $data['name'] = ucwords($req->name);
         $data['code'] = strtoupper(Str::random(10));
         $data['password'] = Hash::make('student');
         $data['photo'] = Qs::getDefaultUserImage();
+    
+        // Generate admission number
         $adm_no = $req->adm_no;
-        $data['username'] = strtoupper(Qs::getAppCode().'/'.$ct.'/'.$sr['year_admitted'].'/'.($adm_no ?: mt_rand(1000, 99999)));
-
-        if($req->hasFile('photo')) {
+        $admissionNumber = $req->has('adm_no') ? $adm_no : Qs::generateAdmissionNumber($ct, $sr['year_admitted']);
+    
+        // Set username and admission number
+        $data['username'] = strtoupper(Qs::getAppCode() . '/' . $ct . '/' . $sr['year_admitted'] . '/' . $admissionNumber);
+    
+        // Store photo if provided
+        if ($req->hasFile('photo')) {
             $photo = $req->file('photo');
             $f = Qs::getFileMetaData($photo);
             $f['name'] = 'photo.' . $f['ext'];
-            $f['path'] = $photo->storeAs(Qs::getUploadPath('student').$data['code'], $f['name']);
+            $f['path'] = $photo->storeAs(Qs::getUploadPath('student') . $data['code'], $f['name']);
             $data['photo'] = asset('storage/' . $f['path']);
         }
-
-        $user = $this->user->create($data); // Create User
-
-        $sr['adm_no'] = $data['username'];
+    
+        // Create User
+        $user = $this->user->create($data);
+    
+        // Assign admission number and user ID to student record
+        $sr['adm_no'] = $admissionNumber;
         $sr['user_id'] = $user->id;
         $sr['session'] = Qs::getSetting('current_session');
-
-        $this->student->createRecord($sr); // Create Student
+    
+        // Create Student
+        $this->student->createRecord($sr);
+    
         return Qs::jsonStoreOk();
     }
+    
 
     public function listByClass($class_id)
     {
@@ -181,5 +192,15 @@ class StudentRecordController extends Controller
 
         return back()->with('flash_success', __('msg.del_ok'));
     }
+
+
+    public function dashboard()
+{
+    // Fetch recent student registrations
+    $recentStudents = StudentRecord::orderBy('created_at', 'desc')->take(5)->get();
+
+    // Pass the $recentStudents variable to the view
+    return view('pages.support_team.dashboard', compact('recentStudents'));
+}
 
 }

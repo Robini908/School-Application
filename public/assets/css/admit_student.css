@@ -1,0 +1,115 @@
+
+
+/* Form header */
+.card-header {
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+/* Form group */
+.form-group {
+    margin-bottom: 20px;
+    position: relative; /* Relative positioning for error message positioning */
+}
+
+/* Form label */
+.form-group label {
+    font-size: 16px;
+    font-weight: bold;
+    color: #3d3838;
+}
+
+/* Form input */
+.form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+/* Error message */
+/* Error message */
+.invalid-feedback {
+    color: #dc3545; /* Red color for error messages */
+    font-size: 14px;
+    position: absolute; /* Absolute positioning for error message placement */
+    bottom: -20px; /* Adjust as needed for spacing */
+    left: 0;
+    display: none; /* Hide error message by default */
+}
+
+/* Character count */
+.form-text.text-muted {
+    font-size: 12px;
+    color: #f11313;
+    font-weight: bold; /* Black color bold for information */
+}
+
+/* Password strength */
+#password-strength {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Table display */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+.table th,
+.table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+.table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* Dropdowns */
+.select-search {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+    background-color: #f8f9fa; /* Light gray background */
+    color: #495057; /* Dark gray text color */
+}
+
+/* Submit button */
+.btn-primary {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #007bff;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}

@@ -63,7 +63,7 @@
                                                 @if(Qs::userIsSuperAdmin())
                                                     <a id="{{ Qs::hash($s->user->id) }}" onclick="confirmDelete(this.id)" href="#" class="dropdown-item"><i class="icon-trash"></i> Delete</a>
                                                     <form method="post" id="item-delete-{{ Qs::hash($s->user->id) }}" action="{{ route('students.destroy', Qs::hash($s->user->id)) }}" class="hidden">@csrf @method('delete')</form>
-                                                @endif
+                                                @endifnita
                                             </div>
                                         </div>
                                     </div>
@@ -75,7 +75,7 @@
                 </div>
 
                 @foreach($sections as $se)
-                    <div class="tab-pane fade" id="s{{$se->id}}">                         <table class="table datatable-button-html5-columns">
+                    <div class="tab-pane fade" id="s{{$se->id}}"><table class="table datatable-button-html5-columns">
                             <thead>
                             <tr>
                                 <th>S/N</th>

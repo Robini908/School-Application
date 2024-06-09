@@ -1,0 +1,47 @@
+/* Dashboard Cards Styling */
+.dashboard-card {
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.dashboard-card .media {
+    display: flex;
+    align-items: center;
+}
+
+.dashboard-card .media-body {
+    flex-grow: 1;
+}
+
+.dashboard-card h3 {
+    font-size: 24px;
+    margin-bottom: 5px;
+}
+
+.dashboard-card .text-uppercase {
+    text-transform: uppercase;
+    font-size: 14px;
+}
+
+.dashboard-card .icon {
+    font-size: 40px;
+    opacity: 0.75;
+}
+
+/* Colors for Different Card Backgrounds */
+.bg-blue-400 {
+    background-color: #4c8bf5 !important;
+}
+
+.bg-danger-400 {
+    background-color: #f25961 !important;
+}
+
+.bg-success-400 {
+    background-color: #51c74e !important;
+}
+
+.bg-indigo-400 {
+    background-color: #5e72e4 !important;
+}

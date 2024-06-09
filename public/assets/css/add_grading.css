@@ -1,0 +1,104 @@
+/* Custom CSS for Manage Grading form */
+
+/* Container styling */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Card styling */
+.card {
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+}
+
+/* Card header styling */
+.card-header {
+    background: linear-gradient(45deg, #007bff, #00bcd4);
+    color: #fff;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    padding: 15px;
+    font-size: 20px;
+}
+
+/* Card body styling */
+.card-body {
+    padding: 20px;
+}
+
+/* Tab styling */
+.nav-tabs .nav-link {
+    color: #007bff;
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.nav-tabs .nav-link.active {
+    border-color: #007bff;
+}
+
+.nav-tabs .nav-link:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Form group styling */
+.form-group {
+    margin-bottom: 20px;
+}
+
+/* Form label styling */
+.form-group label {
+    font-weight: bold;
+}
+
+/* Form control styling */
+.form-control {
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+}
+
+/* Invalid feedback styling */
+.invalid-feedback {
+    color: #dc3545;
+    font-size: 12px;
+}
+
+/* Button styling */
+.btn {
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    padding: 10px 20px;
+    font-size: 16px;
+}
+
+/* Styling for Add More Ranges button */
+#add_more {
+    width: 20%;
+    background: linear-gradient(45deg, #17a2b8, #218838);
+    border-color: #17a2b8;
+}
+
+#add_more:hover {
+    background: linear-gradient(45deg, #138496, #1a733e);
+}
+
+/* Styling for Submit button */
+.btn-success {
+    width: 10%;
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+}

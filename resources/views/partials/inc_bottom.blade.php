@@ -38,7 +38,7 @@
 <script src="{{ asset('global_assets/js/demo_pages/datatables_extension_buttons_html5.js') }}"></script>
 <script src="{{ asset('global_assets/js/demo_pages/uploader_bootstrap.js') }}"></script>
 <script src="{{ asset('global_assets/js/demo_pages/fullcalendar_basic.js') }}"></script>
-
+<script src="{{ asset('vendor/notify/notify.js') }}"></script>
 <!-- /theme JS files -->
 
 <script src=" {{ asset('assets/js/custom.js') }} "></script>

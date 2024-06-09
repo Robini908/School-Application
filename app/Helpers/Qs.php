@@ -363,4 +363,19 @@ class Qs
         return ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     }
 
+
+
+
+    public static function generateAdmissionNumber($classType, $admissionYear)
+    {
+        // Example logic for generating sequential admission number
+        $lastAdmissionNumber = Student::where('class_type', $classType)
+            ->whereYear('created_at', $admissionYear)
+            ->max('admission_number');
+
+        $sequentialNumber = str_pad($lastAdmissionNumber + 1, 5, '0', STR_PAD_LEFT);
+        return $sequentialNumber;
+    }
+
+
 }
