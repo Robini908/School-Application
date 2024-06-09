@@ -11,7 +11,7 @@
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg text-white" >
+    <nav class="navbar navbar-expand-lg text-white" style="border-bottom:1px solid white;">
         <a class="navbar-brand" href="#">
           <img src="{{ asset('assets/pics/mbukulogo.png') }}" alt="Logo" width="50" height="50" >          
         </a>
