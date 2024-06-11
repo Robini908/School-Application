@@ -2,7 +2,6 @@
 @section('page_title', 'Manage Subjects')
 @section('content')
 
-
 <div class="card">
     <div class="card-header header-elements-inline">
         <h6 class="card-title">Manage Subjects</h6>
@@ -26,6 +25,7 @@
                     <div class="col-md-6">
                         <form class="ajax-store" method="post" action="{{ route('subjects.store') }}">
                             @csrf
+
                             <div class="form-group row">
                                 <label for="category" class="col-lg-3 col-form-label font-weight-semibold">Select
                                     Subject <span class="text-danger">*</span></label>
@@ -78,6 +78,9 @@
                                             <option value="Music" data-abbrev="MUS" data-code="511">Music</option>
                                         </optgroup>
                                     </select>
+                                    @error('category')
+                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
 
@@ -86,6 +89,9 @@
                                     <span class="text-danger">*</span></label>
                                 <div class="col-lg-9">
                                     <input id="subname" name="subname" value="{{ old('subname') }}" required type="text" class="form-control" placeholder="Name of subject">
+                                    @error('subname')
+                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
 
@@ -93,7 +99,10 @@
                                 <label for="subcode" class="col-lg-3 col-form-label font-weight-semibold">Subject Code
                                     <span class="text-danger">*</span></label>
                                 <div class="col-lg-9">
-                                    <input id="subcode" required name="subcode" type="text" class="form-control" placeholder="Eg. 232">
+                                    <input id="subcode" required name="subcode" value="{{ old('subcode') }}" type="text" class="form-control" placeholder="Eg. 232">
+                                    @error('subcode')
+                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
 
@@ -101,7 +110,10 @@
                                 <label for="subabbrev" class="col-lg-3 col-form-label font-weight-semibold">Subject
                                     Abbreviation <span class="text-danger">*</span></label>
                                 <div class="col-lg-9">
-                                    <input id="subabbrev" required name="subabbrev" type="text" class="form-control" placeholder="PHY">
+                                    <input id="subabbrev" required name="subabbrev" value="{{ old('subabbrev') }}" type="text" class="form-control" placeholder="PHY">
+                                    @error('subabbrev')
+                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
 
@@ -162,7 +174,6 @@
     </div>
 </div>
 
-
 <script>
     $(document).ready(function() {
         // Initialize Select2
@@ -183,6 +194,7 @@
             $('#subcode').val(subcode);
             $('#subabbrev').val(subabbrev);
         });
+
     });
 </script>
 @endsection

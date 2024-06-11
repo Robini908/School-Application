@@ -12,16 +12,34 @@ class Qs
 {
     public static function displayError($errors)
     {
+        $errorMessages = '';
         foreach ($errors as $err) {
-            $data[] = $err;
+            $errorMessages .= '<li>' . $err . '</li>';
         }
+
         return '
-                <div class="alert alert-danger alert-styled-left alert-dismissible">
-									<button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-									<span class="font-weight-semibold">Oops!</span> '.
-        implode(' ', $data).'
-							    </div>
-                ';
+            <div id="error-alert" class="alert alert-danger alert-styled-left alert-dismissible fade show" role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <span class="font-weight-semibold">Oops!</span> 
+                <ul class="mb-0">' .
+            $errorMessages . '
+                </ul>
+            </div>
+        ';
+    }
+
+    public static function displaySuccess($msg)
+    {
+        return '
+            <div id="success-alert" class="alert alert-success alert-bordered alert-dismissible fade show">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>' .
+            $msg .
+            '</div>
+        ';
     }
 
     public static function getAppCode()
@@ -42,15 +60,6 @@ class Qs
                         <a class="list-icons-item" data-action="remove"></a>
                     </div>
                 </div>';
-    }
-
-    public static function displaySuccess($msg)
-    {
-        return '
- <div class="alert alert-success alert-bordered">
-                    <button type="button" class="close" data-dismiss="alert"><span>&times;</span><span class="sr-only">Close</span></button> '.
-        $msg.'  </div>
-                ';
     }
 
     public static function getTeamSA()
@@ -80,7 +89,7 @@ class Qs
 
     public static function hash($id)
     {
-        $date = date('dMY').'CJ';
+        $date = date('dMY') . 'CJ';
         $hash = new Hashids($date, 14);
         return $hash->encode($id);
     }
@@ -104,12 +113,11 @@ class Qs
         $data = ['my_class_id', 'section_id', 'my_parent_id', 'dorm_id', 'dorm_room_no', 'year_admitted', 'house', 'age'];
 
         return $remove ? array_values(array_diff($data, $remove)) : $data;
-
     }
 
     public static function decodeHash($str, $toString = true)
     {
-        $date = date('dMY').'CJ';
+        $date = date('dMY') . 'CJ';
         $hash = new Hashids($date, 14);
         $decoded = $hash->decode($str);
         return $toString ? implode(',', $decoded) : $decoded;
@@ -175,13 +183,13 @@ class Qs
         return in_array(Auth::user()->user_type, self::getStaff());
     }
 
-    public static function getStaff($remove=[])
+    public static function getStaff($remove = [])
     {
         $data =  ['super_admin', 'admin', 'teacher', 'accountant', 'librarian'];
         return $remove ? array_values(array_diff($data, $remove)) : $data;
     }
 
-    public static function getAllUserTypes($remove=[])
+    public static function getAllUserTypes($remove = [])
     {
         $data =  ['super_admin', 'admin', 'teacher', 'accountant', 'librarian', 'student', 'parent'];
         return $remove ? array_values(array_diff($data, $remove)) : $data;
@@ -200,7 +208,7 @@ class Qs
 
     public static function userIsMyChild($student_id, $parent_id)
     {
-        $data = ['user_id' => $student_id, 'my_parent_id' =>$parent_id];
+        $data = ['user_id' => $student_id, 'my_parent_id' => $parent_id];
         return StudentRecord::where($data)->exists();
     }
 
@@ -226,12 +234,12 @@ class Qs
 
     public static function getUserUploadPath()
     {
-        return 'uploads/'.date('Y').'/'.date('m').'/'.date('d').'/';
+        return 'uploads/' . date('Y') . '/' . date('m') . '/' . date('d') . '/';
     }
 
     public static function getUploadPath($user_type)
     {
-        return 'uploads/'.$user_type.'/';
+        return 'uploads/' . $user_type . '/';
     }
 
     public static function getFileMetaData($file)
@@ -253,7 +261,7 @@ class Qs
         $base = log($size, 1024);
         $suffixes = array('B', 'KB', 'MB', 'GB', 'TB');
 
-        return round(pow(1024, $base - floor($base)), $precision) .' '. $suffixes[floor($base)];
+        return round(pow(1024, $base - floor($base)), $precision) . ' ' . $suffixes[floor($base)];
     }
 
     public static function getSetting($type)
@@ -270,7 +278,7 @@ class Qs
     {
         $oy = self::getCurrentSession();
         $old_yr = explode('-', $oy);
-        return ++$old_yr[0].'-'.++$old_yr[1];
+        return ++$old_yr[0] . '-' . ++$old_yr[1];
     }
 
     public static function getSystemName()
@@ -295,14 +303,20 @@ class Qs
 
     public static function getMarkType($class_type)
     {
-       switch($class_type){
-           case 'J' : return 'junior';
-           case 'S' : return 'senior';
-           case 'N' : return 'nursery';
-           case 'P' : return 'primary';
-           case 'PN' : return 'pre_nursery';
-           case 'C' : return 'creche';
-       }
+        switch ($class_type) {
+            case 'J':
+                return 'junior';
+            case 'S':
+                return 'senior';
+            case 'N':
+                return 'nursery';
+            case 'P':
+                return 'primary';
+            case 'PN':
+                return 'pre_nursery';
+            case 'C':
+                return 'creche';
+        }
         return $class_type;
     }
 
@@ -340,7 +354,7 @@ class Qs
     {
         $data = [];
         $to = (is_array($goto) ? $goto[0] : $goto) ?: 'dashboard';
-        if(is_array($goto)){
+        if (is_array($goto)) {
             array_shift($goto);
             $data = $goto;
         }
@@ -366,7 +380,8 @@ class Qs
 
 
 
-    public static function generateAdmissionNumber($classType, $admissionYear)
+
+    /* public static function generateAdmissionNumber($classType, $admissionYear)
     {
         // Example logic for generating sequential admission number
         $lastAdmissionNumber = Student::where('class_type', $classType)
@@ -376,6 +391,5 @@ class Qs
         $sequentialNumber = str_pad($lastAdmissionNumber + 1, 5, '0', STR_PAD_LEFT);
         return $sequentialNumber;
     }
-
-
+*/
 }

@@ -227,3 +227,63 @@
     /* Add styles for the icon font here, such as font-family, font-size, etc. */
     font-size: 18px; /* Example font size */
 }
+/* Custom CSS for Manage Subjects section */
+
+/* Style the card header */
+.card-header {
+    background-color: #f8f9fa; /* Light gray background */
+    border-bottom: 1px solid #dee2e6; /* Light border */
+}
+
+/* Style the card title */
+.card-title {
+    color: #343a40; /* Dark gray text */
+    font-size: 1.25rem; /* Larger font size */
+    margin-bottom: 0;
+}
+
+/* Style the tabs */
+.nav-tabs {
+    border-bottom: none; /* Remove default bottom border */
+}
+
+.nav-tabs .nav-link {
+    color: #6c757d; /* Dark gray text */
+    font-weight: bold;
+    border: none; /* Remove default border */
+}
+
+.nav-tabs .nav-link.active {
+    background-color: transparent; /* Transparent background */
+    color: #343a40; /* Dark gray text */
+    border-bottom: 2px solid #007bff; /* Blue bottom border */
+}
+
+/* Style the table */
+.table {
+    font-size: 0.875rem; /* Smaller font size */
+}
+
+.table th,
+.table td {
+    vertical-align: middle; /* Align content vertically */
+}
+
+/* Style the action buttons */
+.btn-group {
+    margin-bottom: 0; /* Remove default margin */
+}
+
+/* Style the dropdown menu */
+.dropdown-menu {
+    border: 1px solid #dee2e6; /* Light border */
+}
+
+.dropdown-item {
+    color: #343a40; /* Dark gray text */
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa; /* Light gray background on hover */
+    color: #007bff; /* Blue text on hover */
+}

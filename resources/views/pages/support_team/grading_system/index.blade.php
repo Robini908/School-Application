@@ -2,6 +2,12 @@
 @section('page_title', 'Manage Grading System')
 @section('content')
 
+<style>
+    .card-body {
+        border-bottom: none !important;
+    }
+</style>
+
 <div class="card">
     <div class="card-header header-elements-inline">
         <h6 class="card-title">Manage Grading</h6>
@@ -116,11 +122,11 @@
                         </div>
                     </div>
                     @endforeach
+                    <div><button type="submit" class="btn btn-success">Submit</button>
+                        <button type="button" class="btn btn-primary add-more-ranges">Add More Ranges</button>
+                    </div>
                 </form>
             </div>
-        </div>
-        <div><button type="submit" class="btn btn-success">Submit</button>
-            <button type="button" class="btn btn-primary add-more-ranges">Add More Ranges</button>
         </div>
     </div>
 </div>
@@ -149,6 +155,7 @@
 
 
 
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Add event listener to the "Add More Ranges" button
@@ -157,10 +164,6 @@
                 document.querySelectorAll('.grading-ranges').forEach(tbody => {
                     const newRow = document.createElement('tr');
                     newRow.innerHTML = `
-                    <td>
-                        <input type="text" class="form-control subject" name="subject[]" required>
-                        <div class="invalid-feedback"></div>
-                    </td>
                     <td>
                         <input type="number" class="form-control range-from" name="range_from[]" required min="0" max="100">
                         <div class="invalid-feedback"></div>
@@ -188,6 +191,8 @@
                 });
             });
         });
+
+
 
         // Add event listener to delete the card with modal confirmation
         document.querySelectorAll('.delete-card').forEach(button => {
@@ -356,8 +361,6 @@
                 gpa
             };
         }
-
-
         document.addEventListener('input', function(event) {
             if (event.target && event.target.classList.contains('grade')) {
                 const gradeInput = event.target;
@@ -384,15 +387,14 @@
         });
 
 
-        // Add event listener to the "Delete Card" button
-
 
     });
+
+    // Add event listener to the "Delete Card" butto
 </script>
 </div>
 </div>
 </div>
-
 {{--Class List Ends--}}
 
 @endsection

@@ -10,11 +10,11 @@
 <link href=" {{ asset('assets/css/components.min.css') }}" rel="stylesheet" type="text/css">
 <link href=" {{ asset('assets/css/colors.min.css') }}" rel="stylesheet" type="text/css">
 <link rel="stylesheet" href="{{ asset('vendor/notify/notify.css') }}" rel="stylesheet" type="text/css">
-
-<!-- /global stylesheets -->
+{{--<!-- /global stylesheets -->--}}
 
 {{--DatePickers--}}
 <link rel="stylesheet" href="{{ asset('assets/css/bootstrap-datepicker.min.css') }}" type="text/css">
+
 
 {{-- Custom App CSS--}}
 <link href=" {{ asset('assets/css/qs.css') }}" rel="stylesheet" type="text/css">
@@ -25,14 +25,13 @@
 <link href=" {{ asset('assets/css/index_grading.css') }}" rel="stylesheet" type="text/css">
 <link href=" {{ asset('assets/css/index_subject.css') }}" rel="stylesheet" type="text/css">
 
-{{-- Core JS files --}}
 
+
+
+{{-- Core JS files --}}
 <script src="{{ asset('global_assets/js/main/jquery.min.js') }} "></script>
 <script src="{{ asset('global_assets/js/main/bootstrap.bundle.min.js') }} "></script>
 <script src="{{ asset('global_assets/js/plugins/loaders/blockui.min.js') }} "></script>
 <script src="{{ asset('global_assets/js/main/bootstrap.min.js') }} "></script>
 <script src="{{ asset('global_assets/js/main/select2.min.js') }} "></script>
-<script src="{{ asset('global_assets/js/main/jquery-3.5.1.min.js') }} "></script>
 <script src="{{ asset('global_assets/js/main/popper.min.js') }} "></script>
-
-<script src="{{ asset('global_assets/js/main/jquery-3.6.0.min.jss') }} "></script>
