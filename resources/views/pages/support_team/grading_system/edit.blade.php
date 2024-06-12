@@ -12,7 +12,8 @@
     <div class="card-body">
         <ul class="nav nav-tabs nav-tabs-highlight">
             <li class="nav-item"><a href="#all-gradings" class="nav-link " data-toggle="tab">Manage Grading</a></li>
-            <li class="nav-item"><a href="#editting_grading_system" class="nav-link active" data-toggle="tab"><i class="icon-plus2"></i> Edit Grading</a></li>
+            <li class="nav-item"><a href="#editting_grading_system" class="nav-link active" data-toggle="tab"><i
+                        class="icon-plus2"></i> Edit Grading</a></li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane fade " id="all-gradings">
@@ -70,7 +71,8 @@
                     @method('put')
                     <div class="form-group">
                         <label for="name"><b>Grading Name:</b> </label>
-                        <input type="text" class="form-control" id="name" name="name" required value="{{ $gradingSystem->name }}">
+                        <input type="text" class="form-control" id="name" name="name" required
+                            value="{{ $gradingSystem->name }}">
                     </div>
                     <div class="table-responsive">
                         <table class="table" id="grading_table">
@@ -87,11 +89,13 @@
                                 @foreach($gradingSystem->gradingRanges as $range)
                                 <tr>
                                     <td>
-                                        <input type="number" class="form-control range-from" name="range_from[]" required min="0" max="100" value="{{ $range->range_from }}">
+                                        <input type="number" class="form-control range-from" name="range_from[]"
+                                            required min="0" max="100" value="{{ $range->range_from }}">
                                         <div class="invalid-feedback"></div>
                                     </td>
                                     <td>
-                                        <input type="number" class="form-control range-to" name="range_to[]" required min="0" max="100" value="{{ $range->range_to }}">
+                                        <input type="number" class="form-control range-to" name="range_to[]" required
+                                            min="0" max="100" value="{{ $range->range_to }}">
                                         <div class="invalid-feedback"></div>
                                     </td>
                                     <td>
@@ -100,10 +104,12 @@
                                         <div class="invalid-feedback"></div>
                                     </td>
                                     <td>
-                                        <input type="text" class="form-control remark" name="remark[]" value="{{ $range->remark }}">
+                                        <input type="text" class="form-control remark" name="remark[]"
+                                            value="{{ $range->remark }}">
                                     </td>
                                     <td>
-                                        <input type="text" class="form-control gpa" name="gpa[]" value="{{ $range->gpa }}">
+                                        <input type="text" class="form-control gpa" name="gpa[]"
+                                            value="{{ $range->gpa }}">
                                     </td>
                                 </tr>
                                 @endforeach
@@ -114,229 +120,23 @@
                     <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">Delete
                     </button>
                     <button type="submit" class="btn btn-success">Submit</button>
+                    <button type="button" class="btn btn-primary add-more-ranges">Add More Ranges</button>
             </div>
         </div>
         </form>
     </div>
 </div>
-<script>
-    document.getElementById('add_more').addEventListener('click', function() {
-        const tbody = document.getElementById('grading_ranges');
-        const newRow = document.createElement('tr');
-        newRow.innerHTML = `
-                <td>
-                    <input type="number" class="form-control range-from" name="range_from[]" required min="0" max="100">
-                    <div class="invalid-feedback"></div>
-                </td>
-                <td>
-                    <input type="number" class="form-control range-to" name="range_to[]" required min="0" max="100">
-                    <div class="invalid-feedback"></div>
-                </td>
-                <td>
-                    <input type="text" class="form-control grade" name="grade[]" required>
-                    <div class="invalid-feedback"></div>
-                </td>
-                <td>
-                    <input type="text" class="form-control remark" name="remark[]" >
-                </td>
-                <td>
-                    <input type="text" class="form-control gpa" name="gpa[]" >
-                </td>
-            `;
-        tbody.appendChild(newRow);
-
-        // Attach event listeners for new inputs
-        attachEventListeners(newRow);
-    });
-
-    // Function to attach event listeners for input fields
-    function attachEventListeners(row) {
-        const rangeFromInput = row.querySelector('.range-from');
-        const rangeToInput = row.querySelector('.range-to');
-        const gradeInput = row.querySelector('.grade');
-        const invalidFeedbacks = row.querySelectorAll('.invalid-feedback');
-
-        rangeFromInput.addEventListener('input', function() {
-            const invalidFeedback = invalidFeedbacks[0];
-            const fromValue = parseInt(this.value);
-            if (isNaN(fromValue) || fromValue < 0 || fromValue > 100) {
-                this.classList.add('is-invalid');
-                invalidFeedback.textContent = 'Please enter a valid number between 0 and 100.';
-            } else {
-                this.classList.remove('is-invalid');
-                invalidFeedback.textContent = '';
-            }
-            validateRange(this, rangeToInput);
-        });
-
-        rangeToInput.addEventListener('input', function() {
-            const invalidFeedback = invalidFeedbacks[1];
-            const toValue = parseInt(this.value);
-            if (isNaN(toValue) || toValue < 0 || toValue > 100) {
-                this.classList.add('is-invalid');
-                invalidFeedback.textContent = 'Please enter a valid number between 0 and 100.';
-            } else {
-                this.classList.remove('is-invalid');
-                invalidFeedback.textContent = '';
-            }
-            validateRange(rangeFromInput, this);
-        });
-
-        gradeInput.addEventListener('input', function() {
-            const invalidFeedback = invalidFeedbacks[2];
-            const grade = this.value.toUpperCase(); // Convert to uppercase
-            this.value = grade; // Update the input value
-            if (!/^[A-F][+-]?$/.test(grade)) {
-                this.classList.add('is-invalid');
-                invalidFeedback.textContent = 'Please enter a valid grade (A-F, A+, A-, B+, B-, etc.).';
-            } else {
-                this.classList.remove('is-invalid');
-                invalidFeedback.textContent = '';
-                const remarkInput = row.querySelector('.remark');
-                const gpaInput = row.querySelector('.gpa');
-                const {
-                    remark,
-                    gpa
-                } = generateRemarkAndGPA(grade);
-                remarkInput.value = remark;
-                gpaInput.value = gpa;
-            }
-        });
-
-    }
-
-    // Attach event listeners for existing inputs
-    const existingRows = document.querySelectorAll('#grading_ranges tr');
-    existingRows.forEach(row => {
-        attachEventListeners(row);
-    });
-
-    // Validate range inputs
-    function validateRange(fromInput, toInput) {
-        const fromValue = parseInt(fromInput.value);
-        const toValue = parseInt(toInput.value);
-        const fromFeedback = fromInput.parentNode.querySelector('.invalid-feedback');
-        const toFeedback = toInput.parentNode.querySelector('.invalid-feedback');
-
-        if (isNaN(fromValue) || isNaN(toValue) || fromValue < 0 || fromValue > 100 || toValue < 0 || toValue > 100) {
-            return;
-        }
-
-        if (fromValue > toValue) {
-            fromInput.classList.add('is-invalid');
-            toInput.classList.add('is-invalid');
-            fromFeedback.textContent = 'From value must be less than or equal to To value.';
-            toFeedback.textContent = 'To value must be greater than or equal to From value.';
-        } else {
-            fromInput.classList.remove('is-invalid');
-            toInput.classList.remove('is-invalid');
-            fromFeedback.textContent = '';
-            toFeedback.textContent = '';
-        }
-    }
-
-    // Auto-generate remark and GPA based on grade
-    function generateRemarkAndGPA(grade) {
-        let remark, gpa;
-        switch (grade) {
-            case 'A':
-                remark = 'Outstanding Performance';
-                gpa = '12.00';
-                break;
-            case 'A-':
-                remark = 'Excellent Achievement';
-                gpa = '11.00';
-                break;
-            case 'B+':
-                remark = 'Very Good Effort';
-                gpa = '10.00';
-                break;
-            case 'B':
-                remark = 'Good Job';
-                gpa = '9.00';
-                break;
-            case 'B-':
-                remark = 'Above Average Performance';
-                gpa = '8.00';
-                break;
-            case 'C+':
-                remark = 'Fairly Good';
-                gpa = '7.00';
-                break;
-            case 'C':
-                remark = 'Satisfactory';
-                gpa = '6.00';
-                break;
-            case 'C-':
-                remark = 'Just Average';
-                gpa = '5.00';
-                break;
-            case 'D+':
-                remark = 'Below Average Work';
-                gpa = '4.00';
-                break;
-            case 'D':
-                remark = 'Needs Improvement';
-                gpa = '3.00';
-                break;
-            case 'D-':
-                remark = 'Subpar Effort';
-                gpa = '2.00';
-                break;
-            case 'E':
-                remark = 'Insufficient';
-                gpa = '1.00';
-                break;
-            case 'F':
-                remark = 'Failure';
-                gpa = '0.00';
-                break;
-            default:
-                remark = 'Invalid Grade';
-                gpa = '';
-                break;
-        }
-        return {
-            remark,
-            gpa
-        };
-    }
-
-
-    // Event listener to generate remark and GPA when grade is changed
-    document.addEventListener('input', function(event) {
-        if (event.target && event.target.classList.contains('grade')) {
-            const gradeInput = event.target;
-            const grade = gradeInput.value.toUpperCase();
-            const row = gradeInput.closest('tr');
-            const remarkInput = row.querySelector('.remark');
-            const gpaInput = row.querySelector('.gpa');
-            const {
-                remark,
-                gpa
-            } = generateRemarkAndGPA(grade);
-            remarkInput.value = remark;
-            gpaInput.value = gpa;
-        }
-    });
-
-    // Form submission handler
-    document.getElementById('grading_form').addEventListener('submit', function(event) {
-        const invalidInputs = document.querySelectorAll('.is-invalid');
-        if (invalidInputs.length > 0) {
-            event.preventDefault();
-            invalidInputs[0].focus();
-        }
-    });
-</script>
+<script src="{{ asset('assets/js/grading_system/edit.js') }} "></script>
 </div>
 </div>
 </div>
-<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel"
+    aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content border-0 shadow-lg" style="background-color: #f8f9fa; border-radius: 10px;">
             <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="exampleModalLabel"><i class="bi bi-trash-fill mr-2"></i> Confirm Deletion</h5>
+                <h5 class="modal-title" id="exampleModalLabel"><i class="bi bi-trash-fill mr-2"></i> Confirm Deletion
+                </h5>
                 <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -347,11 +147,13 @@
                 <p class="lead">This action cannot be undone.</p>
             </div>
             <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-outline-danger btn-lg rounded-pill" data-dismiss="modal"><i class="bi bi-x-circle-fill mr-1"></i> Cancel</button>
+                <button type="button" class="btn btn-outline-danger btn-lg rounded-pill" data-dismiss="modal"><i
+                        class="bi bi-x-circle-fill mr-1"></i> Cancel</button>
                 <form action="{{ route('grading_system.destroy', $grade->id) }}" method="POST">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-danger btn-lg rounded-pill"><i class="bi bi-trash-fill mr-1"></i> Delete</button>
+                    <button type="submit" class="btn btn-danger btn-lg rounded-pill"><i
+                            class="bi bi-trash-fill mr-1"></i> Delete</button>
                 </form>
             </div>
         </div>
