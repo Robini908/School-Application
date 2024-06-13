@@ -7,27 +7,33 @@ use App\Http\Requests\Exam\ExamCreate;
 use App\Http\Requests\Exam\ExamUpdate;
 use App\Repositories\ExamRepo;
 use App\Http\Controllers\Controller;
+use App\Models\GradingSystem;
+use App\Models\MyClass;
 
 class ExamController extends Controller
 {
     protected $exam;
     public function __construct(ExamRepo $exam)
     {
-        $this->middleware('teamSA', ['except' => ['destroy',] ]);
-        $this->middleware('super_admin', ['only' => ['destroy',] ]);
+        $this->middleware('teamSA', ['except' => ['destroy',]]);
+        $this->middleware('super_admin', ['only' => ['destroy',]]);
 
         $this->exam = $exam;
     }
 
     public function index()
     {
-        $d['exams'] = $this->exam->all();
-        return view('pages.support_team.exams.index', $d);
+        $exams = $this->exam->all();
+        $gradingSystems = GradingSystem::all();
+        $classes_ = MyClass::all();
+        return view('pages.support_team.exams.index', compact('exams', 'gradingSystems', 'classes_'));
     }
 
     public function store(ExamCreate $req)
     {
-        $data = $req->only(['name', 'term']);
+        // dd($req->all());
+        $data = $req->only(['name', 'term', 'grading_system_id']);
+
         $data['year'] = Qs::getSetting('current_session');
 
         $this->exam->create($data);

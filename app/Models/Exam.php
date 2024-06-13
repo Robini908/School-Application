@@ -9,9 +9,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Exam extends Eloquent
 {
-    protected $fillable = ['name', 'term', 'year'];
+    protected $fillable = ['name', 'term', 'year', 'grading_system_id'];
 
-    public function GradingSytems(): BelongsTo
+    public function GradingSytem(): BelongsTo
     {
         return $this->belongsTo(GradingSystem::class);
     }
