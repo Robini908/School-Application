@@ -16,4 +16,9 @@ class GradingSystem extends Model
     {
         return $this->hasMany(GradingRange::class);
     }
+
+    public function exams(): HasMany
+    {
+        return $this->hasMany(Exam::class);
+    }
 }
