@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class GradingRange extends Model
 {
-    protected $fillable = ['range_from', 'range_to', 'grade','remark','gpa'];
+    protected $fillable = ['range_from', 'range_to', 'grade','remark','gpa','subject_id'];
     protected $table = 'grading_ranges';
 
     use HasFactory;

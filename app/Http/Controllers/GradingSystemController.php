@@ -43,26 +43,27 @@ class GradingSystemController extends Controller
     {
         $data = $request->all();
 
-        $ranges = [];
-        foreach ($data['range_from'] as $index => $from) {
-            $to = $data['range_to'][$index];
-            $grade = $data['grade'][$index];
-            $remark = $data['remark'][$index] ?? 'N/A';
-            $gpa = $data['gpa'][$index] ?? 0;
 
-            $ranges[] = [
-                'range_from' => $from,
-                'range_to' => $to,
-                'grade' => $grade,
-                'remark' => $remark,
-                'gpa' => $gpa
-            ];
-        }
+        // $ranges = [];
+        // foreach ($data['range_from'] as $index => $from) {
+        //     $to = $data['range_to'][$index];
+        //     $grade = $data['grade'][$index];
+        //     $remark = $data['remark'][$index] ?? 'N/A';
+        //     $gpa = $data['gpa'][$index] ?? 0;
+
+        //     $ranges[] = [
+        //         'range_from' => $from,
+        //         'range_to' => $to,
+        //         'grade' => $grade,
+        //         'remark' => $remark,
+        //         'gpa' => $gpa
+        //     ];
+        // }
 
         $new_grading_system = GradingSystem::create([
             "name" => $data['name'],
         ]);
-        $new_grading_system->gradingRanges()->createMany($ranges);
+        // $new_grading_system->gradingRanges()->createMany($ranges);
 
         return redirect()->route('grading_system.index')->with('flash_success', 'Grading system created successfully');
     }
