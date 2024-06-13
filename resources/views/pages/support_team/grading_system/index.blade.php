@@ -32,20 +32,30 @@
                                 <table class="table table-sm">
                                     <thead>
                                         <tr>
+                                            <th>Subjects</th>
+                                            <!-- <th>Grade</th> -->
                                             <th>Ranges</th>
-                                            <th>Grade</th>
-                                            <th>Remark</th>
-                                            <th>GPA</th>
+                                            <th>View</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @if($grade->gradingRanges->count() > 0)
-                                        @foreach($grade->gradingRanges as $range)
+                                        @if($subjects->count() > 0)
+                                        @foreach($subjects as $subject)
                                         <tr>
-                                            <td>{{$range->range_from}} - {{$range->range_to}}</td>
-                                            <td>{{ $range->grade }}</td>
-                                            <td>{{ $range->remark }}</td>
-                                            <td>{{ $range->gpa }}</td>
+                                            <td>{{$subject->subject_name}}</td>
+
+
+                                            <td>4</td>
+
+                                            <td>
+                                                <div>
+
+                                                    <a class="btn btn-primary" href="{{ route('subject-ranges.show', [$grade->id, $subject->id]) }}">
+                                                        View &rarr;
+                                                    </a>
+                                                </div>
+
+                                            </td>
                                         </tr>
                                         @endforeach
                                         @else
@@ -70,7 +80,7 @@
                         <label for="name"><b>Grading Name:</b> </label>
                         <input type="text" class="form-control" id="name" name="name" required>
                     </div>
-                    @foreach($subjects as $sub)
+                    <!-- @foreach($subjects as $sub)
                     <div class="card p-3 add-more-card">
                         <h5 class="card-title d-inline-block mr-auto"><b>{{ $sub->subject_name }}</b></h5>
                         <button type="button" class="btn btn-danger btn-sm delete-card">Delete Card</button>
@@ -115,7 +125,7 @@
                             </table>
                         </div>
                     </div>
-                    @endforeach
+                    @endforeach -->
                     <div><button type="submit" class="btn btn-success">Submit</button>
                         <button type="button" class="btn btn-primary add-more-ranges">Add More Ranges</button>
                     </div>
@@ -144,6 +154,11 @@
                 <button type="button" class="btn btn-danger" id="confirmDeleteCard">Delete</button>
             </div>
         </div>
+    </div>
+</div>
+<div x-data="dataComponent()" x-init="console.log(gradingSystems)">
+    <div x-text="gradingSystems">
+
     </div>
 </div>
 <script src="{{ asset('assets/js/grading_system/index.js') }} "></script>

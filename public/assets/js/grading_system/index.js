@@ -231,3 +231,10 @@
 
 
     });
+
+
+    function dataComponent() {
+        return {
+            gradingSystems:@JSON($grading_systems),
+        };
+    }

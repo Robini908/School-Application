@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\SubjectRanges;
+
 Auth::routes();
 
 //Route::get('/test', 'TestController@index')->name('test');
@@ -7,6 +9,11 @@ Route::get('/privacy-policy', 'HomeController@privacy_policy')->name('privacy_po
 Route::get('/terms-of-use', 'HomeController@terms_of_use')->name('terms_of_use');
 
 Route::resource('grading_system', 'GradingSystemController')->name('grading_system', ['except' => ['show']]);
+Route::group(['prefix' => 'grading_system/{grading_system}'], function () {
+    Route::resource('subject-ranges', 'SubjectRangesController')->except(['show'])->names('subject-ranges');
+    Route::get('subject-ranges/{subject_range}', 'SubjectRangesController@show')->name('subject-ranges.show');
+});
+
 
 //routes for the external site pages before logging in
 Route::get('/', 'HomeController@landingpage');
