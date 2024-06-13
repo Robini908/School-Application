@@ -9,12 +9,12 @@
     </div>
     <div class="card-body">
         <ul class="nav nav-tabs nav-tabs-highlight">
-            <li class="nav-item"><a href="#all-gradings" class="nav-link active" data-toggle="tab">Manage Grading</a>
+            <li class="nav-item"><a href="#all-gradings" class="nav-link " data-toggle="tab">Manage Grading</a>
             </li>
-            <li class="nav-item"><a href="#new-gradingsystem" class="nav-link" data-toggle="tab"><i class="icon-plus2"></i> Create New Grading</a></li>
+            <li class="nav-item"><a href="#new-gradingsystem" class="nav-link active" data-toggle="tab"><i class="icon-plus2"></i> {{ $gradingSystem->name }}</a></li>
         </ul>
         <div class="tab-content">
-            <div class="tab-pane fade show active" id="all-gradings">
+            <div class="tab-pane fade " id="all-gradings">
                 <div class="row">
                     @foreach ($gradingSystems as $grade)
                     <div class="col-md-6 mb-3">
@@ -33,8 +33,6 @@
                                     <thead>
                                         <tr>
                                             <th>Subjects</th>
-                                            <!-- <th>Grade</th> -->
-                                            <th>Ranges</th>
                                             <th>View</th>
                                         </tr>
                                     </thead>
@@ -42,16 +40,16 @@
                                         @if($subjects->count() > 0)
                                         @foreach($subjects as $subject)
                                         <tr>
-                                            <td>{{$subject->subject_name}}</td>
-
-
-                                            <td>4</td>
-
-                                            <td>
-                                                <div>
+                                            <!-- align text to left -->
+                                            <td class=" text-left ">{{$subject->subject_name}}</td>
+                                            <!-- align div to right -->
+                                            <td class="
+                                            d-flex justify-content-end
+                                            ">
+                                                <div style="width: fit-content;">
 
                                                     <a class="btn btn-primary" href="{{ route('subject-ranges.show', [$grade->id, $subject->id]) }}">
-                                                        View &rarr;
+                                                        View ranges &rarr;
                                                     </a>
                                                 </div>
 
@@ -72,60 +70,16 @@
                 </div>
             </div>
 
-            <div class="tab-pane fade" id="new-gradingsystem">
+            <div class="tab-pane fade show active" id="new-gradingsystem">
 
-                <form action="{{ route('grading_system.store') }}" method="POST" id="grading_form">
+                <form action="{{ route('grading_system.update', $gradingSystem->id) }}" method="POST" id="grading_form">
                     @csrf
+                    @method('PUT')
                     <div class="form-group">
                         <label for="name"><b>Grading Name:</b> </label>
-                        <input type="text" class="form-control" id="name" name="name" required>
+                        <input type="text" class="form-control" id="name" name="name" required value="{{ $gradingSystem->name }}">
                     </div>
-                    <!-- @foreach($subjects as $sub)
-                    <div class="card p-3 add-more-card">
-                        <h5 class="card-title d-inline-block mr-auto"><b>{{ $sub->subject_name }}</b></h5>
-                        <button type="button" class="btn btn-danger btn-sm delete-card">Delete Card</button>
-                        <div class="table-responsive">
-                            <table class="table" id="grading_table">
-                                <thead>
-                                    <tr>
-                                        <th>From</th>
-                                        <th>To</th>
-                                        <th>Grade</th>
-                                        <th>Remark</th>
-                                        <th>GPA</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="grading-ranges">
-                                    <tr>
 
-                                        <td>
-                                            <input type="number" class="form-control range-from" name="range_from[]" required min="0" max="100">
-                                            <div class="invalid-feedback"></div>
-                                        </td>
-                                        <td>
-                                            <input type="number" class="form-control range-to" name="range_to[]" required min="0" max="100">
-                                            <div class="invalid-feedback"></div>
-                                        </td>
-                                        <td>
-                                            <input type="text" class="form-control grade" name="grade[]" required>
-                                            <div class="invalid-feedback"></div>
-                                        </td>
-                                        <td>
-                                            <input type="text" class="form-control remark" name="remark[]">
-                                        </td>
-                                        <td>
-                                            <input type="text" class="form-control gpa" name="gpa[]">
-                                        </td>
-                                        <td>
-                                            <button type="button" class="btn btn-danger btn-sm delete-range">Remove</button>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    @endforeach -->
                     <div><button type="submit" class="btn btn-success">Submit</button>
                     </div>
                 </form>
