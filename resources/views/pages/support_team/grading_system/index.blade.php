@@ -25,7 +25,7 @@
                                     <a href="{{ route('grading_system.edit', $grade->id) }}" class="btn btn-primary">
                                         <i class="fas fa-edit"></i> Edit
                                     </a>
-                                    <!-- Add other actions here as needed -->
+
                                 </div>
                             </div>
                             <div class="card-body">
@@ -33,8 +33,6 @@
                                     <thead>
                                         <tr>
                                             <th>Subjects</th>
-                                            <!-- <th>Grade</th> -->
-                                            <th>Ranges</th>
                                             <th>View</th>
                                         </tr>
                                     </thead>
@@ -42,16 +40,16 @@
                                         @if($subjects->count() > 0)
                                         @foreach($subjects as $subject)
                                         <tr>
-                                            <td>{{$subject->subject_name}}</td>
-
-
-                                            <td>4</td>
-
-                                            <td>
-                                                <div>
+                                            <!-- align text to left -->
+                                            <td class=" text-left ">{{$subject->subject_name}}</td>
+                                            <!-- align div to right -->
+                                            <td class="
+                                            d-flex justify-content-end
+                                            ">
+                                                <div style="width: fit-content;">
 
                                                     <a class="btn btn-primary" href="{{ route('subject-ranges.show', [$grade->id, $subject->id]) }}">
-                                                        View &rarr;
+                                                        View ranges &rarr;
                                                     </a>
                                                 </div>
 
