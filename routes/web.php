@@ -12,6 +12,7 @@ Route::resource('grading_system', 'GradingSystemController')->name('grading_syst
 Route::group(['prefix' => 'grading_system/{grading_system}'], function () {
     Route::resource('subject-ranges', 'SubjectRangesController')->except(['show'])->names('subject-ranges');
     Route::get('subject-ranges/{subject_range}', 'SubjectRangesController@show')->name('subject-ranges.show');
+    Route::put('subject-ranges/{subject_range}', 'SubjectRangesController@edit')->name('subject-ranges.edit');
 });
 
 

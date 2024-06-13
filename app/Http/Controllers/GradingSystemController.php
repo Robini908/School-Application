@@ -16,8 +16,6 @@ class GradingSystemController extends Controller
     public function index()
     {
         $gradingSystems = GradingSystem::all();
-
-
         $subjects = Subject::all();
         return view('pages.support_team.grading_system.index', compact(['gradingSystems', 'subjects']));
     }
@@ -42,28 +40,10 @@ class GradingSystemController extends Controller
     public function store(Request $request)
     {
         $data = $request->all();
-
-
-        // $ranges = [];
-        // foreach ($data['range_from'] as $index => $from) {
-        //     $to = $data['range_to'][$index];
-        //     $grade = $data['grade'][$index];
-        //     $remark = $data['remark'][$index] ?? 'N/A';
-        //     $gpa = $data['gpa'][$index] ?? 0;
-
-        //     $ranges[] = [
-        //         'range_from' => $from,
-        //         'range_to' => $to,
-        //         'grade' => $grade,
-        //         'remark' => $remark,
-        //         'gpa' => $gpa
-        //     ];
-        // }
-
         $new_grading_system = GradingSystem::create([
             "name" => $data['name'],
         ]);
-        // $new_grading_system->gradingRanges()->createMany($ranges);
+
 
         return redirect()->route('grading_system.index')->with('flash_success', 'Grading system created successfully');
     }
@@ -96,10 +76,9 @@ class GradingSystemController extends Controller
         $ranges = $gradingSystem['gradingRanges'];
         $name = $gradingSystem['name'];
         $id = $gradingSystem['id'];
-
+        $subjects = Subject::all();
         $gradingSystems = GradingSystem::all();
-
-        return view('pages.support_team.grading_system.edit', compact(['gradingSystem', 'ranges', 'name', 'id', 'gradingSystems']));
+        return view('pages.support_team.grading_system.edit', compact(['gradingSystem', 'ranges', 'name', 'id', 'gradingSystems', 'subjects']));
     }
 
     /**
@@ -114,27 +93,7 @@ class GradingSystemController extends Controller
         $data = $request->all();
         $gradingSystem = GradingSystem::find($id);
         $gradingSystem->name = $data['name'];
-
-        $ranges = [];
-        foreach ($data['range_from'] as $index => $from) {
-            $to = $data['range_to'][$index];
-            $grade = $data['grade'][$index];
-            $remark = $data['remark'][$index] ?? 'N/A';
-            $gpa = $data['gpa'][$index] ?? 0;
-
-            $ranges[] = [
-                'range_from' => $from,
-                'range_to' => $to,
-                'grade' => $grade,
-                'remark' => $remark,
-                'gpa' => $gpa
-            ];
-        }
-
-        $gradingSystem->gradingRanges()->delete();
-        $gradingSystem->gradingRanges()->createMany($ranges);
         $gradingSystem->save();
-
         return redirect()->route('grading_system.index')->with('flash_success', 'Grading system updated successfully');
     }
 

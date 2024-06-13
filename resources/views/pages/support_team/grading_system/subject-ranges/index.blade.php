@@ -54,10 +54,9 @@
 
             <div class="tab-pane fade show active" id="editting_grading_system">
 
-                <form action="{{ route('grading_system.update', $gradingSystem->id) }}" method="POST" id="grading_form">
+                <form action="{{ route('subject-ranges.edit', [$gradingSystem->id, $subject->id]) }}" method="POST" id="grading_form">
                     @csrf
                     @method('put')
-
                     <div class="table-responsive">
                         <table class="table" id="grading_table">
                             <thead>
@@ -70,6 +69,31 @@
                                 </tr>
                             </thead>
                             <tbody id="grading_ranges">
+                                @if ($ranges->count() == 0)
+                                <tr>
+                                    <td>
+                                        <input type="number" class="form-control range-from" name="range_from[]" required min="0" max="100">
+                                        <div class="invalid-feedback"></div>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control range-to" name="range_to[]" required min="0" max="100">
+                                        <div class="invalid-feedback"></div>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control grade" name="grade[]" required>
+                                        <div class="invalid-feedback"></div>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control remark" name="remark[]">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control gpa" name="gpa[]">
+                                    </td>
+                                </tr>
+
+                                @else
+
+
                                 @foreach($ranges as $range)
                                 <tr>
                                     <td>
@@ -93,14 +117,13 @@
                                     </td>
                                 </tr>
                                 @endforeach
+
+                                @endif
                             </tbody>
                         </table>
                     </div>
-
-                    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">Delete
-                    </button>
+                    <button id="add_more" type="button" class="btn btn-primary add-more-ranges">Add More Ranges</button>
                     <button type="submit" class="btn btn-success">Submit</button>
-                    <button type="button" class="btn btn-primary add-more-ranges">Add More Ranges</button>
             </div>
         </div>
         </form>
