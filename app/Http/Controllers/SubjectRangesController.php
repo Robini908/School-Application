@@ -71,9 +71,34 @@ class SubjectRangesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Request $request, $grading_system_id, $subject_range_id)
     {
-        //
+        $data = $request->all();
+        $gradingSystem = GradingSystem::find($grading_system_id);
+
+
+        $ranges = [];
+        foreach ($data['range_from'] as $index => $from) {
+            $to = $data['range_to'][$index];
+            $grade = $data['grade'][$index];
+            $remark = $data['remark'][$index] ?? 'N/A';
+            $gpa = $data['gpa'][$index] ?? 0;
+
+            $ranges[] = [
+                'range_from' => $from,
+                'range_to' => $to,
+                'grade' => $grade,
+                'remark' => $remark,
+                'gpa' => $gpa,
+                'subject_id' => $subject_range_id
+            ];
+        }
+
+        $gradingSystem->gradingRanges()->delete();
+        $gradingSystem->gradingRanges()->createMany($ranges);
+        $gradingSystem->save();
+
+        return redirect()->route('grading_system.index')->with('flash_success', 'Grading system updated successfully');
     }
 
     /**

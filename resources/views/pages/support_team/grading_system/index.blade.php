@@ -127,7 +127,6 @@
                     </div>
                     @endforeach -->
                     <div><button type="submit" class="btn btn-success">Submit</button>
-                        <button type="button" class="btn btn-primary add-more-ranges">Add More Ranges</button>
                     </div>
                 </form>
             </div>
