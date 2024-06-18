@@ -65,3 +65,4 @@ class User extends Authenticatable
         return $this->hasMany(StaffRecord::class);
     }
 }
+// get rid
