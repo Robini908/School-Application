@@ -11,52 +11,51 @@
         <ul class="nav nav-tabs nav-tabs-highlight">
             <li class="nav-item"><a href="#all-gradings" class="nav-link active" data-toggle="tab">Manage Grading</a>
             </li>
-            <li class="nav-item"><a href="#new-gradingsystem" class="nav-link" data-toggle="tab"><i
-                        class="icon-plus2"></i> Create New Grading</a></li>
+            <li class="nav-item"><a href="#new-gradingsystem" class="nav-link" data-toggle="tab"><i class="icon-plus2"></i> Create New Grading</a></li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane fade show active" id="all-gradings">
-                <div id="card-slider" class="tns-carousel">
-                    <div class="tns-slider">
-                        @foreach ($gradingSystems->chunk(2) as $chunk)
-                        <div class="tns-item">
-                            <div class="card-deck">
+                <div class="swiper-container">
+                    <div class="swiper-wrapper">
+                        @foreach ($gradingSystems->chunk(4) as $chunk)
+                        <div class="swiper-slide">
+                            <div class="row">
                                 @foreach ($chunk as $grade)
-                                <div class="card mb-3">
-                                    <div class="card-body">
-                                        <h5 class="card-title">{{ $grade->name }}</h5>
-                                        <div class="btn-group">
-                                            <a href="{{ route('grading_system.edit', $grade->id) }}"
-                                                class="btn btn-primary">
-                                                <i class="fas fa-edit"></i> Edit
-                                            </a>
-                                        </div>
-                                        <div class="card-scrollable-content">
-                                            <table class="table table-sm mb-0">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Subjects</th>
-                                                        <th>View</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @forelse ($subjects as $subject)
-                                                    <tr>
-                                                        <td class="text-left">{{ $subject->subject_name }}</td>
-                                                        <td class="text-right">
-                                                            <a class="btn btn-primary"
-                                                                href="{{ route('subject-ranges.show', [$grade->id, $subject->id]) }}">
-                                                                View ranges &rarr;
-                                                            </a>
-                                                        </td>
-                                                    </tr>
-                                                    @empty
-                                                    <tr>
-                                                        <td colspan="2">No subjects available</td>
-                                                    </tr>
-                                                    @endforelse
-                                                </tbody>
-                                            </table>
+                                <div class="col-md-6 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ $grade->name }}</h5>
+                                            <div class="btn-group">
+                                                <a href="{{ route('grading_system.edit', $grade->id) }}" class="btn btn-primary">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </a>
+                                            </div>
+                                            <div class="card-scrollable-content">
+                                                <table class="table table-sm mb-0">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Subjects</th>
+                                                            <th>View</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @forelse ($subjects as $subject)
+                                                        <tr>
+                                                            <td class="text-left">{{ $subject->subject_name }}</td>
+                                                            <td class="text-right">
+                                                                <a class="btn btn-primary" href="{{ route('subject-ranges.show', [$grade->id, $subject->id]) }}">
+                                                                    View ranges &rarr;
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                        @empty
+                                                        <tr>
+                                                            <td colspan="2">No subjects available</td>
+                                                        </tr>
+                                                        @endforelse
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -66,12 +65,12 @@
                         @endforeach
                     </div>
 
-                    <div class="tns-controls" aria-label="Carousel Pagination" tabindex="0">
-                        @foreach ($gradingSystems->chunk(2) as $index => $chunk)
-                        <button type="button" class="tns-indicator" aria-label="Go to slide {{ $index + 1 }}"
-                            tabindex="-1" data-controls="indicators" data-index="{{ $index }}"></button>
-                        @endforeach
-                    </div>
+                    <!-- Add Pagination -->
+                    <div class="swiper-pagination"></div>
+
+                    <!-- Add Navigation -->
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
                 </div>
             </div>
 
@@ -91,104 +90,116 @@
     </div>
 </div>
 
-<!-- Initialize tiny-slider -->
+<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    var slider = tns({
-        container: '#card-slider .tns-carousel',
-        items: 1,
-        slideBy: 'page',
-        autoplay: false,
-        controls: false,
-        navContainer: '#card-slider .tns-nav',
-        navAsThumbnails: true,
-        autoplayButtonOutput: false,
-        responsive: {
-            768: {
-                items: 2,
+    document.addEventListener('DOMContentLoaded', function() {
+        var swiper = new Swiper('.swiper-container', {
+            slidesPerView: 1,
+            spaceBetween: 10,
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
             },
-            992: {
-                items: 2,
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
             },
-            1200: {
-                items: 2,
+            allowTouchMove: false, // Disable swipe gestures
+            breakpoints: {
+                768: {
+                    slidesPerView: 1,
+                    spaceBetween: 20,
+                },
+                992: {
+                    slidesPerView: 1,
+                    spaceBetween: 30,
+                },
+                1200: {
+                    slidesPerView: 1,
+                    spaceBetween: 40,
+                }
             }
-        }
-    });
-
-    // Manual navigation buttons
-    document.querySelector('#card-slider .tns-prev').addEventListener('click', function() {
-        slider.goTo('prev');
-    });
-
-    document.querySelector('#card-slider .tns-next').addEventListener('click', function() {
-        slider.goTo('next');
-    });
-
-    // Manual pagination indicators
-    document.querySelectorAll('#card-slider .tns-controls .tns-indicator').forEach(function(indicator) {
-        indicator.addEventListener('click', function() {
-            var index = parseInt(this.getAttribute('data-index'));
-            slider.goTo(index);
         });
     });
-});
 </script>
 
 <style>
-.card-deck {
-    display: flex;
-    flex-wrap: wrap;
-    margin-right: -15px;
-    margin-left: -15px;
-}
+    .card-scrollable-content {
+        max-height: 200px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #888 #f1f1f1;
+    }
 
-.card {
-    flex: 0 0 calc(50% - 30px);
-    margin: 15px;
-}
+    .card-scrollable-content::-webkit-scrollbar {
+        width: 8px;
+    }
 
-.card-scrollable-content {
-    max-height: 200px;
-    overflow-y: auto;
-}
+    .card-scrollable-content::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
 
-.tns-carousel {
-    position: relative;
-}
+    .card-scrollable-content::-webkit-scrollbar-thumb {
+        background-color: #888;
+        border-radius: 10px;
+        border: 3px solid #f1f1f1;
+    }
 
-.tns-nav {
-    position: absolute;
-    top: 0;
-    right: 0;
-    left: 0;
-    text-align: center;
-}
+    .card-scrollable-content::-webkit-scrollbar-thumb:hover {
+        background-color: #555;
+    }
 
-.tns-nav button {
-    margin: 0 5px;
-}
+    .swiper-container {
+        width: 100%;
+        padding-top: 20px;
+        padding-bottom: 20px;
+    }
 
-.tns-controls {
-    display: flex;
-    justify-content: center;
-    margin-top: 10px;
-}
+    .swiper-slide {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
 
-.tns-controls .tns-indicator {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background-color: #bbb;
-    margin: 0 5px;
-    cursor: pointer;
-    outline: none;
-    border: none;
-}
+    .swiper-pagination-bullet {
+        background-color: #bbb;
+        opacity: 1;
+    }
 
-.tns-controls .tns-indicator.active {
-    background-color: #333;
-}
+    .swiper-pagination-bullet-active {
+        background-color: #333;
+    }
+
+    .swiper-button-next,
+    .swiper-button-prev {
+        color: #fff;
+        width: 50px;
+        height: 50px;
+        background-color: #007bff;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: background-color 0.3s;
+    }
+
+    .swiper-button-next:hover,
+    .swiper-button-prev:hover {
+        background-color: #0056b3;
+    }
+
+    .swiper-button-next::after,
+    .swiper-button-prev::after {
+        font-size: 20px;
+    }
+
+    .col-md-6 {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
 </style>
 
 @endsection
