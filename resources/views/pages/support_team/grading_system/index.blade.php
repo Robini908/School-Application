@@ -11,7 +11,8 @@
         <ul class="nav nav-tabs nav-tabs-highlight">
             <li class="nav-item"><a href="#all-gradings" class="nav-link active" data-toggle="tab">Manage Grading</a>
             </li>
-            <li class="nav-item"><a href="#new-gradingsystem" class="nav-link" data-toggle="tab"><i class="icon-plus2"></i> Create New Grading</a></li>
+            <li class="nav-item"><a href="#new-gradingsystem" class="nav-link" data-toggle="tab"><i
+                        class="icon-plus2"></i> Create New Grading</a></li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane fade show active" id="all-gradings">
@@ -26,7 +27,8 @@
                                         <div class="card-body">
                                             <h5 class="card-title">{{ $grade->name }}</h5>
                                             <div class="btn-group">
-                                                <a href="{{ route('grading_system.edit', $grade->id) }}" class="btn btn-primary">
+                                                <a href="{{ route('grading_system.edit', $grade->id) }}"
+                                                    class="btn btn-primary">
                                                     <i class="fas fa-edit"></i> Edit
                                                 </a>
                                             </div>
@@ -43,7 +45,8 @@
                                                         <tr>
                                                             <td class="text-left">{{ $subject->subject_name }}</td>
                                                             <td class="text-right">
-                                                                <a class="btn btn-primary" href="{{ route('subject-ranges.show', [$grade->id, $subject->id]) }}">
+                                                                <a class="btn btn-primary"
+                                                                    href="{{ route('subject-ranges.show', [$grade->id, $subject->id]) }}">
                                                                     View ranges &rarr;
                                                                 </a>
                                                             </td>
@@ -92,114 +95,36 @@
 
 <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var swiper = new Swiper('.swiper-container', {
-            slidesPerView: 1,
-            spaceBetween: 10,
-            navigation: {
-                nextEl: '.swiper-button-next',
-                prevEl: '.swiper-button-prev',
+document.addEventListener('DOMContentLoaded', function() {
+    var swiper = new Swiper('.swiper-container', {
+        slidesPerView: 1,
+        spaceBetween: 10,
+        navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+        },
+        pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+        },
+        allowTouchMove: false, // Disable swipe gestures
+        breakpoints: {
+            768: {
+                slidesPerView: 1,
+                spaceBetween: 20,
             },
-            pagination: {
-                el: '.swiper-pagination',
-                clickable: true,
+            992: {
+                slidesPerView: 1,
+                spaceBetween: 30,
             },
-            allowTouchMove: false, // Disable swipe gestures
-            breakpoints: {
-                768: {
-                    slidesPerView: 1,
-                    spaceBetween: 20,
-                },
-                992: {
-                    slidesPerView: 1,
-                    spaceBetween: 30,
-                },
-                1200: {
-                    slidesPerView: 1,
-                    spaceBetween: 40,
-                }
+            1200: {
+                slidesPerView: 1,
+                spaceBetween: 40,
             }
-        });
+        }
     });
+});
 </script>
 
-<style>
-    .card-scrollable-content {
-        max-height: 200px;
-        overflow-y: auto;
-        scrollbar-width: thin;
-        scrollbar-color: #888 #f1f1f1;
-    }
-
-    .card-scrollable-content::-webkit-scrollbar {
-        width: 8px;
-    }
-
-    .card-scrollable-content::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 10px;
-    }
-
-    .card-scrollable-content::-webkit-scrollbar-thumb {
-        background-color: #888;
-        border-radius: 10px;
-        border: 3px solid #f1f1f1;
-    }
-
-    .card-scrollable-content::-webkit-scrollbar-thumb:hover {
-        background-color: #555;
-    }
-
-    .swiper-container {
-        width: 100%;
-        padding-top: 20px;
-        padding-bottom: 20px;
-    }
-
-    .swiper-slide {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-    }
-
-    .swiper-pagination-bullet {
-        background-color: #bbb;
-        opacity: 1;
-    }
-
-    .swiper-pagination-bullet-active {
-        background-color: #333;
-    }
-
-    .swiper-button-next,
-    .swiper-button-prev {
-        color: #fff;
-        width: 50px;
-        height: 50px;
-        background-color: #007bff;
-        border-radius: 50%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        transition: background-color 0.3s;
-    }
-
-    .swiper-button-next:hover,
-    .swiper-button-prev:hover {
-        background-color: #0056b3;
-    }
-
-    .swiper-button-next::after,
-    .swiper-button-prev::after {
-        font-size: 20px;
-    }
-
-    .col-md-6 {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-</style>
 
 @endsection
