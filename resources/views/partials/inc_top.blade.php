@@ -10,6 +10,10 @@
 <link href=" {{ asset('assets/css/components.min.css') }}" rel="stylesheet" type="text/css">
 <link href=" {{ asset('assets/css/colors.min.css') }}" rel="stylesheet" type="text/css">
 <link rel="stylesheet" href="{{ asset('vendor/notify/notify.css') }}" rel="stylesheet" type="text/css">
+<link href=" {{ asset('assets/css/swiper.css') }}" rel="stylesheet" type="text/css">
+<link href=" {{ asset('assets/css/tiny-slider.css') }}" rel="stylesheet" type="text/css">
+
+
 {{--<!-- /global stylesheets -->--}}
 
 {{--DatePickers--}}
@@ -35,3 +39,6 @@
 <script src="{{ asset('global_assets/js/main/bootstrap.min.js') }} "></script>
 <script src="{{ asset('global_assets/js/main/select2.min.js') }} "></script>
 <script src="{{ asset('global_assets/js/main/popper.min.js') }} "></script>
+<script src="{{ asset('global_assets/js/main/zxcvbn.js') }} "></script>
+<script src="{{ asset('global_assets/js/main/swiper-bundle.min.js') }} "></script>
+<script src="{{ asset('global_assets/js/main/fuse.min.js') }} "></script>

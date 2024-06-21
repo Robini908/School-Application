@@ -15,7 +15,7 @@
 
 /* Card header styling */
 .card-header {
-    background: linear-gradient(45deg, #007bff, #00bcd4);
+    background: linear-gradient(45deg, hsl(211, 48%, 80%), #cfe4e6);
     color: #fff;
     border-top-left-radius: 15px;
     border-top-right-radius: 15px;
@@ -30,7 +30,7 @@
 
 /* Tab styling */
 .nav-tabs .nav-link {
-    color: #007bff;
+    color: hwb(355 0% 95%);
     border: none;
     border-bottom: 2px solid transparent;
     border-radius: 0;

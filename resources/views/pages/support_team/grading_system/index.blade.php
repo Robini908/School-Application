@@ -5,126 +5,85 @@
 <div class="card">
     <div class="card-header header-elements-inline">
         <h6 class="card-title">Manage Grading</h6>
-        {!! Qs::getPanelOptions() !!}
+        <!-- {!! Qs::getPanelOptions() !!} Include your panel options as needed -->
     </div>
     <div class="card-body">
         <ul class="nav nav-tabs nav-tabs-highlight">
             <li class="nav-item"><a href="#all-gradings" class="nav-link active" data-toggle="tab">Manage Grading</a>
             </li>
-            <li class="nav-item"><a href="#new-gradingsystem" class="nav-link" data-toggle="tab"><i class="icon-plus2"></i> Create New Grading</a></li>
+            <li class="nav-item"><a href="#new-gradingsystem" class="nav-link" data-toggle="tab"><i
+                        class="icon-plus2"></i> Create New Grading</a></li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane fade show active" id="all-gradings">
-                <div class="row">
-                    @foreach ($gradingSystems as $grade)
-                    <div class="col-md-6 mb-3">
-                        <div class="card h-100">
-                            <div class="card-body">
-                                <h5 class="card-title d-inline-block mr-auto">{{ $grade->name }}</h5>
-                                <div class="btn-group float-right">
-                                    <a href="{{ route('grading_system.edit', $grade->id) }}" class="btn btn-primary">
-                                        <i class="fas fa-edit"></i> Edit
-                                    </a>
-
+                <div id="card-slider" class="tns-carousel">
+                    <div class="tns-slider">
+                        @foreach ($gradingSystems->chunk(2) as $chunk)
+                        <div class="tns-item">
+                            <div class="card-deck">
+                                @foreach ($chunk as $grade)
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ $grade->name }}</h5>
+                                        <div class="btn-group">
+                                            <a href="{{ route('grading_system.edit', $grade->id) }}"
+                                                class="btn btn-primary">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </a>
+                                        </div>
+                                        <div class="card-scrollable-content">
+                                            <table class="table table-sm mb-0">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Subjects</th>
+                                                        <th>View</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @forelse ($subjects as $subject)
+                                                    <tr>
+                                                        <td class="text-left">{{ $subject->subject_name }}</td>
+                                                        <td class="text-right">
+                                                            <a class="btn btn-primary"
+                                                                href="{{ route('subject-ranges.show', [$grade->id, $subject->id]) }}">
+                                                                View ranges &rarr;
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                    @empty
+                                                    <tr>
+                                                        <td colspan="2">No subjects available</td>
+                                                    </tr>
+                                                    @endforelse
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="card-body">
-                                <table class="table table-sm">
-                                    <thead>
-                                        <tr>
-                                            <th>Subjects</th>
-                                            <th>View</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @if($subjects->count() > 0)
-                                        @foreach($subjects as $subject)
-                                        <tr>
-                                            <!-- align text to left -->
-                                            <td class=" text-left ">{{$subject->subject_name}}</td>
-                                            <!-- align div to right -->
-                                            <td class="
-                                            d-flex justify-content-end
-                                            ">
-                                                <div style="width: fit-content;">
-
-                                                    <a class="btn btn-primary" href="{{ route('subject-ranges.show', [$grade->id, $subject->id]) }}">
-                                                        View ranges &rarr;
-                                                    </a>
-                                                </div>
-
-                                            </td>
-                                        </tr>
-                                        @endforeach
-                                        @else
-                                        <tr>
-                                            <td colspan="4">No ranges defined</td>
-                                        </tr>
-                                        @endif
-                                    </tbody>
-                                </table>
+                                @endforeach
                             </div>
                         </div>
+                        @endforeach
                     </div>
-                    @endforeach
+
+                    <div class="tns-controls" aria-label="Carousel Pagination" tabindex="0">
+                        @foreach ($gradingSystems->chunk(2) as $index => $chunk)
+                        <button type="button" class="tns-indicator" aria-label="Go to slide {{ $index + 1 }}"
+                            tabindex="-1" data-controls="indicators" data-index="{{ $index }}"></button>
+                        @endforeach
+                    </div>
                 </div>
             </div>
 
             <div class="tab-pane fade" id="new-gradingsystem">
-
                 <form action="{{ route('grading_system.store') }}" method="POST" id="grading_form">
                     @csrf
                     <div class="form-group">
                         <label for="name"><b>Grading Name:</b> </label>
                         <input type="text" class="form-control" id="name" name="name" required>
                     </div>
-                    <!-- @foreach($subjects as $sub)
-                    <div class="card p-3 add-more-card">
-                        <h5 class="card-title d-inline-block mr-auto"><b>{{ $sub->subject_name }}</b></h5>
-                        <button type="button" class="btn btn-danger btn-sm delete-card">Delete Card</button>
-                        <div class="table-responsive">
-                            <table class="table" id="grading_table">
-                                <thead>
-                                    <tr>
-                                        <th>From</th>
-                                        <th>To</th>
-                                        <th>Grade</th>
-                                        <th>Remark</th>
-                                        <th>GPA</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="grading-ranges">
-                                    <tr>
-
-                                        <td>
-                                            <input type="number" class="form-control range-from" name="range_from[]" required min="0" max="100">
-                                            <div class="invalid-feedback"></div>
-                                        </td>
-                                        <td>
-                                            <input type="number" class="form-control range-to" name="range_to[]" required min="0" max="100">
-                                            <div class="invalid-feedback"></div>
-                                        </td>
-                                        <td>
-                                            <input type="text" class="form-control grade" name="grade[]" required>
-                                            <div class="invalid-feedback"></div>
-                                        </td>
-                                        <td>
-                                            <input type="text" class="form-control remark" name="remark[]">
-                                        </td>
-                                        <td>
-                                            <input type="text" class="form-control gpa" name="gpa[]">
-                                        </td>
-                                        <td>
-                                            <button type="button" class="btn btn-danger btn-sm delete-range">Remove</button>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    @endforeach -->
-                    <div><button type="submit" class="btn btn-success">Submit</button>
+                    <div>
+                        <button type="submit" class="btn btn-success">Submit</button>
                     </div>
                 </form>
             </div>
@@ -132,36 +91,104 @@
     </div>
 </div>
 
+<!-- Initialize tiny-slider -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var slider = tns({
+        container: '#card-slider .tns-carousel',
+        items: 1,
+        slideBy: 'page',
+        autoplay: false,
+        controls: false,
+        navContainer: '#card-slider .tns-nav',
+        navAsThumbnails: true,
+        autoplayButtonOutput: false,
+        responsive: {
+            768: {
+                items: 2,
+            },
+            992: {
+                items: 2,
+            },
+            1200: {
+                items: 2,
+            }
+        }
+    });
 
-<!-- Modal HTML -->
-<div class="modal fade" id="deleteCardModal" tabindex="-1" role="dialog" aria-labelledby="deleteCardModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteCardModalLabel">Confirmation</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                Are you sure you want to delete this card?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteCard">Delete</button>
-            </div>
-        </div>
-    </div>
-</div>
-<div x-data="dataComponent()" x-init="console.log(gradingSystems)">
-    <div x-text="gradingSystems">
+    // Manual navigation buttons
+    document.querySelector('#card-slider .tns-prev').addEventListener('click', function() {
+        slider.goTo('prev');
+    });
 
-    </div>
-</div>
-<script src="{{ asset('assets/js/grading_system/index.js') }} "></script>
-</div>
-</div>
-</div>
-{{--Class List Ends--}}
+    document.querySelector('#card-slider .tns-next').addEventListener('click', function() {
+        slider.goTo('next');
+    });
+
+    // Manual pagination indicators
+    document.querySelectorAll('#card-slider .tns-controls .tns-indicator').forEach(function(indicator) {
+        indicator.addEventListener('click', function() {
+            var index = parseInt(this.getAttribute('data-index'));
+            slider.goTo(index);
+        });
+    });
+});
+</script>
+
+<style>
+.card-deck {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px;
+}
+
+.card {
+    flex: 0 0 calc(50% - 30px);
+    margin: 15px;
+}
+
+.card-scrollable-content {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.tns-carousel {
+    position: relative;
+}
+
+.tns-nav {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    text-align: center;
+}
+
+.tns-nav button {
+    margin: 0 5px;
+}
+
+.tns-controls {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.tns-controls .tns-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #bbb;
+    margin: 0 5px;
+    cursor: pointer;
+    outline: none;
+    border: none;
+}
+
+.tns-controls .tns-indicator.active {
+    background-color: #333;
+}
+</style>
 
 @endsection
