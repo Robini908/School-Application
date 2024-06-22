@@ -142,10 +142,12 @@
 
 
         <!-- Step 2: Student Data -->
-        <h6>Student Data</h6>
+        <h6 class="card-title">Student Data</h6>
+        @csrf
         <fieldset>
             <div class="row">
-                <div class="col-md-6">
+                <!-- First Row: Class, Section, Session -->
+                <div class="col-md-4">
                     <div class="form-group">
                         <label for="my_class_id">Class: <span class="text-danger">*</span></label>
                         <select onchange="getClassSections(this.value)" data-placeholder="Choose..." required
@@ -159,9 +161,9 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="form-group">
-                        <label for="section_id">Stream: <span class="text-danger">*</span></label>
+                        <label for="section_id">Section: <span class="text-danger">*</span></label>
                         <select data-placeholder="Select Class First" required name="section_id" id="section_id"
                             class="custom-select">
                             <option {{ (old('section_id')) ? 'selected' : '' }} value="{{ old('section_id') }}">
@@ -170,9 +172,17 @@
                         </select>
                     </div>
                 </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="session">Session:</label>
+                        <input type="text" name="session" placeholder="Session" class="form-control" readonly
+                            id="session">
+                    </div>
+                </div>
             </div>
 
             <div class="row">
+                <!-- Second Row: Year Admitted, Dormitory, Dormitory Room No -->
                 <div class="col-md-4">
                     <div class="form-group">
                         <label for="year_admitted">Year Admitted: <span class="text-danger">*</span></label>
@@ -180,7 +190,8 @@
                             class="custom-select">
                             <option value=""></option>
                             @for($y = date('Y', strtotime('- 10 years')); $y <= date('Y'); $y++) <option
-                                {{ (old('year_admitted') == $y) ? 'selected' : '' }} value="{{ $y }}">{{ $y }}</option>
+                                {{ (old('year_admitted') == $y) ? 'selected' : '' }} value="{{ $y }}">{{ $y }}
+                                </option>
                                 @endfor
                         </select>
                     </div>
@@ -208,6 +219,7 @@
             </div>
 
             <div class="row">
+                <!-- Third Row: Sport House, Enter Number, Admission Number -->
                 <div class="col-md-4">
                     <div class="form-group">
                         <label for="house">Sport House:</label>
@@ -215,15 +227,53 @@
                             value="{{ old('house') }}">
                     </div>
                 </div>
+
                 <div class="col-md-4">
                     <div class="form-group">
+                        <label for="inputNumber">Enter Number:</label>
+                        <input type="number" name="inputNumber" placeholder="Enter Number" class="form-control"
+                            id="inputNumber">
+                        <small class="form-text text-muted">This number will be part of the admission
+                            number.</small>
+                    </div>
+                    <div class="form-group">
                         <label for="adm_no">Admission Number:</label>
-                        <input type="text" name="adm_no" placeholder="Admission Number" class="form-control" required
-                            value="{{ old('adm_no') }}" id="adm_no">
+                        <input type="text" name="adm_no" placeholder="Admission Number" class="form-control" readonly
+                            id="adm_no">
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="message-container">
+                        <div class="alert alert-warning alert-dismissible fade show" role="alert" id="suggestionAlert"
+                            style="display: none;">
+                            <strong>Warning!</strong> <span id="suggestionText"></span>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert" id="errorAlert"
+                            style="display: none;">
+                            <strong>Error!</strong> <span id="errorText"></span>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="alert alert-success alert-dismissible fade show" role="alert" id="successAlert"
+                            style="display: none;">
+                            <strong>Success!</strong> <span id="successText"></span>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </fieldset>
+
+
+
+
 
         <!-- Step 3: Parent Details -->
         <h6>Parent Details</h6>
@@ -275,13 +325,27 @@
             </div>
         </fieldset>
 
+
+
+
         <h6>Password</h6>
         <fieldset>
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
                         <label>Password: <span class="text-danger">*</span></label>
-                        <input type="password" name="password" id="password" class="form-control" required>
+                        <div class="input-group">
+                            <input type="password" name="password" id="password" class="form-control" required
+                                data-toggle="tooltip" data-placement="right"
+                                title="Use your admission number as the password. You can later change this in your profile.">
+                            <div class="input-group-append">
+                                <span class="input-group-text" id="password-tooltip" style="cursor: pointer;"
+                                    data-toggle="tooltip" data-placement="left"
+                                    title="Use your admission number as the password. You can later change this in your profile.">
+                                    <i class="fas fa-info-circle"></i>
+                                </span>
+                            </div>
+                        </div>
                         <small class="form-text text-muted">Password strength: <span
                                 id="password-strength"></span></small>
                     </div>
@@ -304,10 +368,6 @@
                 </div>
             </div>
         </fieldset>
-
-        <!-- Step 4: Password -->
-
-        <!-- Submit Button -->
     </form>
 </div>
 @endsection
@@ -316,6 +376,9 @@
 
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const passwordInput = document.getElementById('password');
@@ -478,6 +541,136 @@ $(document).ready(function() {
         var classId = $(this).val();
         // Perform actions based on selected classId, such as fetching related data for section_id dropdown
         // Example AJAX call or other logic here
+    });
+});
+
+
+// Function to show and hide the tooltip message
+$(function() {
+    $('[data-toggle="tooltip"]').tooltip();
+});
+
+$(document).ready(function() {
+    $('#inputNumber').on('input', function() {
+        var inputNumber = $(this).val();
+        var schoolCode = "SCH"; // Replace with your actual school code
+        var currentYear = new Date().getFullYear();
+
+        // Validate input number
+        if (!inputNumber || inputNumber <= 0 || isNaN(inputNumber)) {
+            displayErrorMessage('Please enter a valid positive number.');
+            return;
+        }
+
+        // Hide all alerts initially
+        $('#suggestionAlert').hide();
+        $('#errorAlert').hide();
+        $('#successAlert').hide();
+
+        // Format and make AJAX request
+        var paddedNumber = inputNumber.toString().padStart(5, '0');
+        var admissionNumber = `${schoolCode}/${paddedNumber}/${currentYear}`;
+
+        // Simulated response for testing
+        var response = {
+            exists: false,
+            suggestion: null // Set suggestion to null for no suggestion case
+        };
+
+
+        $.ajax({
+            url: '/check-admission-number/' + inputNumber,
+            type: 'GET',
+            success: function(response) {
+                if (response.exists) {
+                    $('#suggestionAlert').text(
+                            'This number has already been used. Please use ' + response
+                            .suggestion + ' instead.')
+                        .show();
+                    $('#adm_no').val('');
+                } else if (response.suggestion) {
+                    $('#suggestionAlert').text('Number ' + response.suggestion +
+                            ' was skipped. Please use it.')
+                        .show();
+                    $('#adm_no').val('');
+                } else {
+                    var paddedNumber = inputNumber.padStart(5, '0');
+                    var admissionNumber = `${schoolCode}/${paddedNumber}/${currentYear}`;
+                    $('#adm_no').val(admissionNumber);
+                    $('#successAlert').text('Admission number generated successfully: ' +
+                            admissionNumber)
+                        .show();
+                }
+            },
+
+            error: function(xhr, status, error) {
+                var errorMessage = 'An error occurred while checking the admission number.';
+
+                // Check if the server responded with a specific error message
+                if (xhr.responseText) {
+                    errorMessage = xhr.responseText;
+                } else if (status === 'timeout') {
+                    errorMessage = 'The request timed out. Please try again later.';
+                } else if (status === 'error') {
+                    errorMessage =
+                        'An error occurred during the request. Please try again.';
+                } else if (status === 'abort') {
+                    errorMessage = 'The request was aborted. Please try again.';
+                } else if (error) {
+                    errorMessage = 'An unexpected error occurred: ' + error;
+                }
+
+                displayErrorMessage(errorMessage);
+                $('#adm_no').val('');
+            }
+        });
+
+    });
+
+    // Function to display alert messages dynamically
+    function displayAlertMessage(type, message) {
+        var alertBox = $('#' + type + 'Alert');
+        alertBox.html('<strong>' + capitalizeFirstLetter(type) + '!</strong> ' + message)
+            .show()
+            .delay(5000) // Show message for 5 seconds
+            .fadeOut(); // Fade out message
+    }
+
+    // Function to display error messages
+    function displayErrorMessage(message) {
+        displayAlertMessage('error', message)
+            .show()
+            .delay(5000) // Show message for 5 seconds
+            .fadeOut(); // Fade out message
+    }
+
+    function displayErrorMessage(message) {
+        displayAlertMessage('warning', message);
+    }
+
+    // Function to capitalize first letter of a string
+    function capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+});
+$(document).ready(function() {
+    // Function to handle AJAX errors
+    function handleAjaxError(xhr, status, error) {
+        console.error('AJAX Error:', status, error);
+        // Optionally handle errors in UI
+    }
+
+    // AJAX request to fetch session from server
+    $.ajax({
+        url: '/get-session',
+        type: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            $('#session').val(response.session);
+        },
+        error: function(xhr, status, error) {
+            handleAjaxError(xhr, status, error);
+        }
     });
 });
 </script>

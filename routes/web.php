@@ -8,6 +8,13 @@ Auth::routes();
 Route::get('/privacy-policy', 'HomeController@privacy_policy')->name('privacy_policy');
 Route::get('/terms-of-use', 'HomeController@terms_of_use')->name('terms_of_use');
 
+
+//route for the admission number
+Route::get('/check-admission-number/{number}', 'AdmissionController@checkNumber');
+Route::get('/get-session', 'SessionController@getSession')->name('get-session');
+
+
+
 Route::resource('grading_system', 'GradingSystemController')->name('grading_system', ['except' => ['show']]);
 Route::group(['prefix' => 'grading_system/{grading_system}'], function () {
     Route::resource('subject-ranges', 'SubjectRangesController')->except(['show'])->names('subject-ranges');

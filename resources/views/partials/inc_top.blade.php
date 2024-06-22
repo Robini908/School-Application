@@ -1,4 +1,9 @@
 <link rel="icon" href="{{ asset('global_assets/images/favicon.png') }}">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.0.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.0.1/js/buttons.print.min.js"></script>
 
 {{--<!-- Global stylesheets -->--}}
 <link href="https://fonts.googleapis.com/css?family=Roboto:400,300,100,500,700,900" rel="stylesheet" type="text/css">
@@ -12,6 +17,8 @@
 <link rel="stylesheet" href="{{ asset('vendor/notify/notify.css') }}" rel="stylesheet" type="text/css">
 <link href=" {{ asset('assets/css/swiper.css') }}" rel="stylesheet" type="text/css">
 <link href=" {{ asset('assets/css/tiny-slider.css') }}" rel="stylesheet" type="text/css">
+<link href=" {{ asset('assets/css/datatable.css') }}" rel="stylesheet" type="text/css">
+
 
 
 {{--<!-- /global stylesheets -->--}}
@@ -42,3 +49,4 @@
 <script src="{{ asset('global_assets/js/main/zxcvbn.js') }} "></script>
 <script src="{{ asset('global_assets/js/main/swiper-bundle.min.js') }} "></script>
 <script src="{{ asset('global_assets/js/main/fuse.min.js') }} "></script>
+<script src="{{ asset('global_assets/js/main/datatable.js') }} "></script>

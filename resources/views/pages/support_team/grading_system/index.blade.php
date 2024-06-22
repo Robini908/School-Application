@@ -92,8 +92,6 @@
         </div>
     </div>
 </div>
-
-<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var swiper = new Swiper('.swiper-container', {

@@ -15,7 +15,7 @@ body {
 }
 
 .card-header {
-    background-color: #007bff;
+    background-color: #5a5d5f;
     color: white;
     border-radius: 8px 8px 0 0;
 }
@@ -29,7 +29,7 @@ body {
 }
 
 .nav-tabs .nav-link.active {
-    background-color: #007bff;
+    background-color: #1075e2;
     color: white;
     border: none;
 }

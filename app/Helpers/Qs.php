@@ -96,10 +96,13 @@ class Qs
 
     public static function getUserRecord($remove = [])
     {
-        $data = ['name', 'email', 'phone', 'phone2', 'dob', 'gender', 'address', 'bg_id', 'nal_id', 'state_id', 'lga_id'];
+        $data = ['first_name', 'middle_name', 'last_name', 'email', 'phone', 'dob', 'gender', 'address', 'bg_id', 'nal_id', 'state_id', 'lga_id'];
 
+        // Remove any fields specified in $remove
         return $remove ? array_values(array_diff($data, $remove)) : $data;
     }
+
+
 
     public static function getStaffRecord($remove = [])
     {
@@ -110,10 +113,12 @@ class Qs
 
     public static function getStudentData($remove = [])
     {
-        $data = ['my_class_id', 'section_id', 'my_parent_id', 'dorm_id', 'dorm_room_no', 'year_admitted', 'house', 'age'];
+        $data = ['my_class_id', 'section_id', 'my_parent_id', 'dorm_id', 'dorm_room_no', 'adm_no', 'year_admitted', 'wd', 'wd_date', 'grad', 'grad_date', 'house', 'age'];
 
+        // Remove any fields specified in $remove
         return $remove ? array_values(array_diff($data, $remove)) : $data;
     }
+
 
     public static function decodeHash($str, $toString = true)
     {

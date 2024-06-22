@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
@@ -12,44 +11,63 @@
     <title> @yield('page_title') | {{ config('app.name') }} </title>
 
     @include('partials.inc_top')
-    
+
 </head>
 
-<body class="{{ in_array(Route::currentRouteName(), ['payments.invoice', 'marks.tabulation', 'marks.show', 'ttr.manage', 'ttr.show']) ? 'sidebar-xs' : '' }}">
+<body
+    class="{{ in_array(Route::currentRouteName(), ['payments.invoice', 'marks.tabulation', 'marks.show', 'ttr.manage', 'ttr.show']) ? 'sidebar-xs' : '' }}">
     @include('partials.top_menu')
     <div class="page-content">
         @include('partials.menu')
         <div class="content-wrapper">
-        
+
             @include('partials.header')
-            
+
             {{-- Include Notify Component --}}
             @include('notify::components.notify')
-            
+
             <div class="content">
-            
+                @if(session('flash_success'))
+                <div class="alert alert-success">
+                    {{ session('flash_success') }}
+                </div>
+                @endif
+
+                @if(session('flash_danger'))
+                <div class="alert alert-danger">
+                    {{ session('flash_danger') }}
+                </div>
+                @endif
+
+                @if(session('pop_error'))
+                <div class="alert alert-warning">
+                    {{ session('pop_error') }}
+                </div>
+                @endif
+
                 {{--Error Alert Area--}}
                 @if($errors->any())
-                    <div class="alert alert-danger border-0 alert-dismissible">
-                        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+                <div class="alert alert-danger border-0 alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
 
-                            @foreach($errors->all() as $er)
-                                <span><i class="icon-arrow-right5"></i> {{ $er }}</span> <br>
-                            @endforeach
+                    @foreach($errors->all() as $er)
+                    <span><i class="icon-arrow-right5"></i> {{ $er }}</span> <br>
+                    @endforeach
 
-                    </div>
+                </div>
                 @endif
                 <div id="ajax-alert" style="display: none"></div>
 
                 @yield('content')
-                
+
             </div>
 
 
         </div>
     </div>
-<x-notify::notify />
+    <x-notify::notify />
     @include('partials.inc_bottom')
     @yield('scripts')
 </body>
+
 </html>
