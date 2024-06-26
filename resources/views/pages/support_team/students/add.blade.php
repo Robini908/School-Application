@@ -190,7 +190,8 @@
                             class="custom-select">
                             <option value=""></option>
                             @for($y = date('Y', strtotime('- 10 years')); $y <= date('Y'); $y++) <option
-                                {{ (old('year_admitted') == $y) ? 'selected' : '' }} value="{{ $y }}">{{ $y }}
+                                {{ (old('year_admitted') == $y) ? 'selected' : '' }} value="{{ $y }}">
+                                {{ $y }}
                                 </option>
                                 @endfor
                         </select>
@@ -233,13 +234,25 @@
                         <label for="inputNumber">Enter Number:</label>
                         <input type="number" name="inputNumber" placeholder="Enter Number" class="form-control"
                             id="inputNumber">
-                        <small class="form-text text-muted">This number will be part of the admission
-                            number.</small>
+                        <small class="form-text text-muted">This number will be part of the admission number.</small>
                     </div>
                     <div class="form-group">
                         <label for="adm_no">Admission Number:</label>
                         <input type="text" name="adm_no" placeholder="Admission Number" class="form-control" readonly
                             id="adm_no">
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="kcpe_marks">KCPE Marks:</label>
+                        <input type="number" name="kcpe_marks" placeholder="KCPE Marks" class="form-control"
+                            id="kcpe_marks" value="{{ old('kcpe_marks') }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="upi_number">UPI Number:</label>
+                        <input type="text" name="upi_number" placeholder="UPI Number" class="form-control"
+                            id="upi_number" value="{{ old('upi_number') }}">
                     </div>
                 </div>
 
@@ -270,6 +283,7 @@
                 </div>
             </div>
         </fieldset>
+
 
 
 

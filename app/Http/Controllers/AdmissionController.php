@@ -68,4 +68,36 @@ class AdmissionController extends Controller
 
         return response()->json(['success' => 'Student record created successfully.']);
     }
+
+    public function getStatistics()
+    {
+        $totalSubmissions = StudentRecord::count();
+        $approvedSubmissions = StudentRecord::where('status', 'approved')->count();
+        $pendingSubmissions = StudentRecord::where('status', 'pending')->count();
+
+        return response()->json([
+            'totalSubmissions' => $totalSubmissions,
+            'approvedSubmissions' => $approvedSubmissions,
+            'pendingSubmissions' => $pendingSubmissions,
+        ]);
+    }
+
+    public function getStudents(Request $request)
+    {
+        $searchQuery = $request->query('search', '');
+        $filterStatus = $request->query('status', '');
+
+        $students = StudentRecord::query()
+            ->where(function ($query) use ($searchQuery) {
+                $query->where('first_name', 'like', '%' . $searchQuery . '%')
+                    ->orWhere('middle_name', 'like', '%' . $searchQuery . '%')
+                    ->orWhere('last_name', 'like', '%' . $searchQuery . '%');
+            })
+            ->when($filterStatus, function ($query, $status) {
+                return $query->where('status', $status);
+            })
+            ->get();
+
+        return response()->json($students);
+    }
 }
