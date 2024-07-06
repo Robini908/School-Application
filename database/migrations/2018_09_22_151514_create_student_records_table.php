@@ -51,15 +51,15 @@ class CreateStudentRecordsTable extends Migration
             $table->timestamps();
 
             // Foreign key constraints
-            $table->foreign('user_id', 'fks_user_id_foreign')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('my_class_id', 'fks_class_id_foreign')->references('id')->on('classes')->onDelete('cascade');
-            $table->foreign('section_id', 'fks_section_id_foreign')->references('id')->on('sections')->onDelete('cascade');
-            $table->foreign('my_parent_id', 'fks_parent_id_foreign')->references('id')->on('parents')->onDelete('set null');
-            $table->foreign('dorm_id', 'fks_dorm_id_foreign')->references('id')->on('dormitories')->onDelete('set null');
-            $table->foreign('nal_id', 'fks_nationality_id_foreign')->references('id')->on('nationals')->onDelete('set null');
-            $table->foreign('state_id', 'fks_state_id_foreign')->references('id')->on('states')->onDelete('set null');
-            $table->foreign('lga_id', 'fks_lga_id_foreign')->references('id')->on('lgas')->onDelete('set null');
-            $table->foreign('bg_id', 'fks_blood_group_id_foreign')->references('id')->on('blood_groups')->onDelete('set null');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('my_class_id')->references('id')->on('classes')->onDelete('cascade');
+            $table->foreign('section_id')->references('id')->on('sections')->onDelete('cascade');
+            $table->foreign('my_parent_id')->references('id')->on('parents')->onDelete('set null');
+            $table->foreign('dorm_id')->references('id')->on('dormitories')->onDelete('set null');
+            $table->foreign('nal_id')->references('id')->on('nationals')->onDelete('set null');
+            $table->foreign('state_id')->references('id')->on('states')->onDelete('set null');
+            $table->foreign('lga_id')->references('id')->on('lgas')->onDelete('set null');
+            $table->foreign('bg_id')->references('id')->on('blood_groups')->onDelete('set null');
         });
     }
 

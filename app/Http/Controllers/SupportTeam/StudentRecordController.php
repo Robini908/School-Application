@@ -50,24 +50,17 @@ class StudentRecordController extends Controller
     public function create()
     {
         try {
-            // Fetch necessary data for the view
             $data['my_classes'] = $this->my_class->all();
             $data['parents'] = $this->user->getUserByType('parent');
             $data['dorms'] = $this->student->getAllDorms();
             $data['states'] = $this->loc->getStates();
             $data['nationals'] = $this->loc->getAllNationals();
-
-            // Fetch all student records
-            $data['students'] = StudentRecord::all();
-
             return view('pages.support_team.students.add', $data);
         } catch (Exception $e) {
             Log::error("Failed to load student creation page: " . $e->getMessage());
             return back()->with('flash_danger', __('An error occurred while loading the creation page: ') . $e->getMessage());
         }
     }
-
-
 
     public function store(StudentRecordCreate $req)
     {
