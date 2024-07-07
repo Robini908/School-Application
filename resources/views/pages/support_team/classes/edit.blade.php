@@ -34,12 +34,12 @@
                         </div>
                       --}}
 
-                        <div class="form-group row">
+                        {{-- <div class="form-group row">
                             <label for="class_type_id" class="col-lg-3 col-form-label font-weight-semibold">Class Type</label>
                             <div class="col-lg-9">
                                 <input class="form-control" disabled="disabled" value="{{ $c->class_type->name }}" title="Class Type" type="text">
                             </div>
-                        </div>
+                        </div> --}}
 
                         <div class="text-right">
                             <button type="submit" class="btn btn-primary">Submit form <i class="icon-paperplane ml-2"></i></button>

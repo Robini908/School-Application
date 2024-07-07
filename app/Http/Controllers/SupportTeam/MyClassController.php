@@ -25,7 +25,7 @@ class MyClassController extends Controller
     public function index()
     {
         $d['my_classes'] = $this->my_class->all();
-        $d['class_types'] = $this->my_class->getTypes();
+        /* $d['class_types'] = $this->my_class->getTypes(); */
 
         return view('pages.support_team.classes.index', $d);
     }
