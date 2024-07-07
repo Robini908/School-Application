@@ -30,6 +30,10 @@ Route::get('/students/{id}/disapprove', [AdmissionController::class, 'disapprove
 Route::get('/student/view/{id}', [AdmissionController::class, 'view'])->name('student.view');
 
 
+//Route to view class details
+Route::resource('view-class', 'ViewClassController');
+Route::get('view-class', 'ViewClassController@index')->name('view-class.index');
+
 
 
 

@@ -22,6 +22,8 @@
                                 <th>S/N</th>
                                 <th>Name</th>
                                 {{-- <th>Class Type</th> --}}
+                                <th>Entry</th>
+                                <th>Class Master</th>
                                 <th>Action</th>
                             </tr>
                             </thead>
@@ -30,8 +32,11 @@
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $c->name }}</td>
+                                    <td>-</td>
+                                    <td>-</td>
                                    {{--  <td>{{ $c->class_type->name }}</td> --}}
                                     <td class="text-center">
+                                        <div><a href="{{ route('view-class.index') }}">View class</a></div>
                                         <div class="list-icons">
                                             <div class="dropdown">
                                                 <a href="#" class="list-icons-item" data-toggle="dropdown">
