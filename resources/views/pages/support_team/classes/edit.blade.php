@@ -20,6 +20,13 @@
                             </div>
                         </div>
 
+                        <div class="form-group row">
+                            <label class="col-lg-3 col-form-label font-weight-semibold">Class Master <span class="text-danger">*</span></label>
+                            <div class="col-lg-9">
+                                <input name="name" value="" required type="text" class="form-control" placeholder="Class Master">
+                            </div>
+                        </div>
+
                       {{--
                       <div class="form-group row">
                             <label for="teacher_id" class="col-lg-3 col-form-label font-weight-semibold">Teacher</label>

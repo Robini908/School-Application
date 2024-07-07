@@ -21,11 +21,25 @@
                         </div>
 
                         <div class="form-group row">
+                            <label class="col-lg-3 col-form-label font-weight-semibold">Capacity <span class="text-danger">*</span></label>
+                            <div class="col-lg-9">
+                                <input name="capcity" value="" required type="text" class="form-control" placeholder="Capacity">
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-lg-3 col-form-label font-weight-semibold">Dorm Master <span class="text-danger">*</span></label>
+                            <div class="col-lg-9">
+                                <input name="dorm-master" value=" " required type="text" class="form-control" placeholder="Dorm Master">
+                            </div>
+                        </div>
+{{-- 
+                        <div class="form-group row">
                             <label class="col-lg-3 col-form-label font-weight-semibold">Description</label>
                             <div class="col-lg-9">
                                 <input name="description" value="{{ $dorm->description }}"  type="text" class="form-control" placeholder="Description of Dormitory">
                             </div>
-                        </div>
+                        </div> --}}
 
                         <div class="text-right">
                             <button type="submit" class="btn btn-primary">Submit form <i class="icon-paperplane ml-2"></i></button>

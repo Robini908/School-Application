@@ -21,7 +21,10 @@
                             <tr>
                                 <th>S/N</th>
                                 <th>Name</th>
-                                <th>Description</th>
+                                <th>Capacity</th>
+                                <th>Occupancy</th>
+                                <th>Dorm master</th>
+                                {{-- <th>Description</th> --}}
                                 <th>Action</th>
                             </tr>
                             </thead>
@@ -30,7 +33,10 @@
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $d->name }}</td>
-                                    <td>{{ $d->description}}</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    {{-- <td>{{ $d->description}}</td> --}}
                                     <td class="text-center">
                                         <div class="list-icons">
                                             <div class="dropdown">
@@ -72,12 +78,12 @@
                                     </div>
                                 </div>
 
-                                <div class="form-group row">
+                                {{-- <div class="form-group row">
                                     <label class="col-lg-3 col-form-label font-weight-semibold">Description</label>
                                     <div class="col-lg-9">
                                         <input name="description" value="{{ old('description') }}"  type="text" class="form-control" placeholder="Description of Dormitory">
                                     </div>
-                                </div>
+                                </div> --}}
 
                                 <div class="text-right">
                                     <button id="ajax-btn" type="submit" class="btn btn-primary">Submit form <i class="icon-paperplane ml-2"></i></button>

@@ -1,18 +1,18 @@
 @extends('layouts.master')
-@section('page_title', 'Manage Class Sections')
+@section('page_title', 'Manage Class Straems')
 @section('content')
 
     <div class="card">
         <div class="card-header header-elements-inline">
-            <h6 class="card-title">Manage Class Sections</h6>
+            <h6 class="card-title">Manage Class Streams</h6>
             {!! Qs::getPanelOptions() !!}
         </div>
 
         <div class="card-body">
             <ul class="nav nav-tabs nav-tabs-highlight">
-                <li class="nav-item"><a href="#new-section" class="nav-link active" data-toggle="tab">Create New Section</a></li>
+                <li class="nav-item"><a href="#new-section" class="nav-link active" data-toggle="tab">Create New Stream</a></li>
                 <li class="nav-item dropdown">
-                    <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Manage Sections</a>
+                    <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Manage Stream</a>
                     <div class="dropdown-menu dropdown-menu-right">
                         @foreach($my_classes as $c)
                             <a href="#c{{ $c->id }}" class="dropdown-item" data-toggle="tab">{{ $c->name }}</a>
