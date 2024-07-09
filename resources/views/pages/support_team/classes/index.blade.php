@@ -28,13 +28,12 @@
                             </tr>
                             </thead>
                             <tbody>
-                            @foreach($my_classes as $c)
+                            @foreach($my_classes as $c )
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $c->name }}</td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                   {{--  <td>{{ $c->class_type->name }}</td> --}}
+                                    <td>{{ $users->where('user_type', 'student')->where('class_id', $c->id)->count(); }}</td>
+                                    <td>{{ $c->teacher ? $c->teacher->name : 'No Teacher Assigned' }}</td>
                                     <td class="text-center">
                                         <div><a href="{{ route('view-class.index') }}">View class</a></div>
                                         <div class="list-icons">

@@ -3,9 +3,22 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Repositories\UserRepo;
+use App\Repositories\MyClassRepo;
 
 class ViewClassController extends Controller
 {
+
+    protected $my_class, $user;
+
+    public function __construct(MyClassRepo $my_class, UserRepo $user)
+    {
+        $this->middleware('teamSA', ['except' => ['destroy',] ]);
+        $this->middleware('super_admin', ['only' => ['destroy',] ]);
+
+        $this->my_class = $my_class;
+        $this->user = $user;
+    }
     /**
      * Display a listing of the resource.
      *
@@ -13,6 +26,8 @@ class ViewClassController extends Controller
      */
     public function index()
     {
+
+        
         return view('pages.support_team.classes.view-class.index');
     }
 

@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Models\ClassType;
 use App\Models\MyClass;
 use App\Models\Section;
+use App\Models\StudentRecord;
 use App\Models\Subject;
 
 class MyClassRepo
@@ -53,6 +54,7 @@ class MyClassRepo
     public function findTypeByClass($class_id)
     {
         return ClassType::find($this->find($class_id)->class_type_id);
+        
     }
 
     /************* Section *******************/
@@ -138,5 +140,11 @@ class MyClassRepo
     {
         return Subject::orderBy('name', 'asc')->with(['my_class', 'teacher'])->get();
     }
+
+    
+    //count the number of students in a class
+    public function countStudents($class_id){
+        return StudentRecord::where('my_class_id', $class_id)->count();
+    } 
 
 }

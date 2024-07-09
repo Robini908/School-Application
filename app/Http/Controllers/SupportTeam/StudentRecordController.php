@@ -56,7 +56,7 @@ class StudentRecordController extends Controller
             $data['dorms'] = $this->student->getAllDorms();
             $data['states'] = $this->loc->getStates();
             $data['nationals'] = $this->loc->getAllNationals();
-
+ 
             // Fetch all student records
             $data['students'] = StudentRecord::all();
 

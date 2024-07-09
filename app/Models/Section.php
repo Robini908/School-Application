@@ -24,3 +24,4 @@ class Section extends Eloquent
         return $this->hasMany(StudentRecord::class);
     }
 }
+

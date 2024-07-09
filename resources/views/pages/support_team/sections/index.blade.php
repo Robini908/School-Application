@@ -1,5 +1,5 @@
 @extends('layouts.master')
-@section('page_title', 'Manage Class Straems')
+@section('page_title', 'Manage Class Streams')
 @section('content')
 
     <div class="card">
@@ -70,9 +70,10 @@
                             <thead>
                             <tr>
                                 <th>S/N</th>
-                                <th>Name</th>
+                                <th>Stream name</th>
                                 <th>Class</th>
-                                <th>Teacher</th>
+                                <th>Class teacher</th>
+                                <th>Entry</th>
                                 <th>Action</th>
                             </tr>
                             </thead>
@@ -88,6 +89,8 @@
                                         @else
                                         <td> - </td>
                                     @endif
+
+                                    <td>-</td>
 
                                     <td class="text-center">
                                         <div class="list-icons">

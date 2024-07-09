@@ -22,12 +22,17 @@ class MyClassController extends Controller
         $this->user = $user;
     }
 
-    public function index()
+    public function index($class_id=NULL) 
     {
         $d['my_classes'] = $this->my_class->all();
+        /* $d['teachers'] = $this->user->getUserByType('teacher'); */
         /* $d['class_types'] = $this->my_class->getTypes(); */
+        $d['students'] = $this->my_class->countStudents($class_id);
+        $d['teachers'] = $this->user->getUserByType('teacher');
+        $d['users'] = $this->user->getAll();
+        
 
-        return view('pages.support_team.classes.index', $d);
+        return view('pages.support_team.classes.index', $d); 
     }
 
     public function store(ClassCreate $req)
@@ -49,6 +54,9 @@ class MyClassController extends Controller
 
     public function edit($id)
     {
+        /* $d['s'] = $s = $this->my_class->findSection($id);
+        $d['teachers'] = $this->user->getUserByType('teacher'); */
+        $d['teachers'] = $this->user->getUserByType('teacher');
         $d['c'] = $c = $this->my_class->find($id);
 
         return is_null($c) ? Qs::goWithDanger('classes.index') : view('pages.support_team.classes.edit', $d) ;
@@ -56,7 +64,7 @@ class MyClassController extends Controller
 
     public function update(ClassUpdate $req, $id)
     {
-        $data = $req->only(['name']);
+        $data = $req->only(['name','teacher_id']);
         $this->my_class->update($id, $data);
 
         return Qs::jsonUpdateOk();
