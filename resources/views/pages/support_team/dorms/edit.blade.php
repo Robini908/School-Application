@@ -28,9 +28,14 @@
                         </div>
 
                         <div class="form-group row">
-                            <label class="col-lg-3 col-form-label font-weight-semibold">Dorm Master <span class="text-danger">*</span></label>
+                            <label class="col-lg-3 col-form-label font-weight-semibold">Class Master <span class="text-danger">*</span></label>
                             <div class="col-lg-9">
-                                <input name="dorm-master" value=" " required type="text" class="form-control" placeholder="Dorm Master">
+                                <select data-placeholder="Select Teacher" class="form-control select-search" name="teacher_id" id="teacher_id">
+                                    <option value=""></option>
+                                    @foreach($teachers as $t)
+                                        <option {{ $dorm->teacher_id == $t->id ? 'selected' : '' }} value="{{ Qs::hash($t->id) }}">{{ $t->name }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                         </div>
 {{-- 
