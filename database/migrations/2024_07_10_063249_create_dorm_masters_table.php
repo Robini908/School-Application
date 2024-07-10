@@ -14,8 +14,9 @@ class CreateDormMastersTable extends Migration
     public function up()
     {
         Schema::create('dorm_masters', function (Blueprint $table) {
-            $table->unsignedInteger('id');
-            $table->foreignId('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->id('id');
+            $table->unsignedInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });
     }
