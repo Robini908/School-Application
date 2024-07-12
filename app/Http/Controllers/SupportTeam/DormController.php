@@ -52,8 +52,15 @@ class DormController extends Controller
 
     public function update(DormUpdate $req, $id)
     {
-        $data = $req->only(['name', 'capacity','dorm_master']);
-        $this->dorm->update($id, $data);
+
+        $data = Dorm::findorFail($id);
+
+        $data->teacher_id = Qs::unhash($req-> input('teacher_id'));
+        $data->name = $req-> input('name');
+        $data->capacity = $req-> input('capacity');
+        $data->save();
+        /* $data = $req->only(['name', 'capacity','dorm_master']);
+        $this->dorm->update($id, $data); */
 
         return Qs::jsonUpdateOk();
     }

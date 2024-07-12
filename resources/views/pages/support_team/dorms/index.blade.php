@@ -35,7 +35,7 @@
                                     <td>{{ $d->name }}</td>
                                     <td>{{ $d->capacity }}</td>
                                     <td>{{ $users->where('user_type', 'student')->where('dorm_id', $d->id)->count() }}</td>
-                                    <td>{{  }}</td>
+                                    <td>{{ $d->teacher ? $d->teacher->name : 'No dorm master assigned' }}</td>
                                     {{-- <td>{{ $d->description}}</td> --}}
                                     <td class="text-center">
                                         <div class="list-icons">
