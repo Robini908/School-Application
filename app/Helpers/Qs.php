@@ -94,6 +94,14 @@ class Qs
         return $hash->encode($id);
     }
 
+    public static function unhash($hashedId)
+    {
+        $date = date('dMY') . 'CJ';
+        $hash = new Hashids($date, 14);
+        $decoded = $hash->decode($hashedId);
+        return $decoded ? $decoded[0] : null;
+    }
+
     public static function getUserRecord($remove = [])
     {
         $data = ['first_name', 'middle_name', 'last_name', 'email', 'phone', 'dob', 'gender', 'address', 'bg_id', 'nal_id', 'state_id', 'lga_id'];

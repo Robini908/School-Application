@@ -23,13 +23,13 @@
                     </tr>
                     </thead>
                     <tbody>
-                    @foreach($sections as $s)
+                    {{-- @foreach() --}}
                         <tr>
-                            <td>{{ $loop->iteration }}</td>
-                            <td>{{ $s->section->name }}</td>
-                            <td>{{ $s->section->teacher->name }}</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>- </td>
                         </tr>
-                    @endforeach 
+                    {{-- @endforeach  --}}
                     </tbody>
                 </table>
             </div>

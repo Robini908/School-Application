@@ -2,15 +2,17 @@
 
 namespace App;
 
-use App\Models\BloodGroup;
 use App\Models\Lga;
+use App\Models\Dorm;
+use App\Models\State;
+use App\Models\BloodGroup;
+use App\Models\DormMaster;
 use App\Models\Nationality;
 use App\Models\StaffRecord;
-use App\Models\State;
 use App\Models\StudentRecord;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
@@ -64,5 +66,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(StaffRecord::class);
     }
+
+    
 }
 // get rid

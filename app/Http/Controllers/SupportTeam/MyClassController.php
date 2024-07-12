@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\SupportTeam;
 
 use App\Helpers\Qs;
+use App\Models\MyClass;
+use Illuminate\Http\Request;
+use App\Repositories\UserRepo;
+use App\Repositories\MyClassRepo;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\MyClass\ClassCreate;
 use App\Http\Requests\MyClass\ClassUpdate;
-use App\Repositories\MyClassRepo;
-use App\Repositories\UserRepo;
-use App\Http\Controllers\Controller;
 
 class MyClassController extends Controller
 {
@@ -62,10 +64,16 @@ class MyClassController extends Controller
         return is_null($c) ? Qs::goWithDanger('classes.index') : view('pages.support_team.classes.edit', $d) ;
     }
 
-    public function update(ClassUpdate $req, $id)
+    public function update(Request $req, $id)
     {
-        $data = $req->only(['name','teacher_id']);
-        $this->my_class->update($id, $data);
+
+        $class = MyClass::findorFail($id);
+        
+        $class->teacher_id = Qs::unhash($req-> input('teacher_id'));
+        $class->name = $req-> input('name');
+        $class->save();
+        /* $data = $req->only(['name','teacher_id']);
+        $this->my_class->update($id, $data); */
 
         return Qs::jsonUpdateOk();
     }

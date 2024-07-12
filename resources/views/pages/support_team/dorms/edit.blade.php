@@ -23,7 +23,7 @@
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label font-weight-semibold">Capacity <span class="text-danger">*</span></label>
                             <div class="col-lg-9">
-                                <input name="capcity" value="" required type="text" class="form-control" placeholder="Capacity">
+                                <input name="capacity" value="{{ $dorm->capacity }}" required type="text" class="form-control" placeholder="Capacity">
                             </div>
                         </div>
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\SupportTeam;
 
 use App\Helpers\Qs;
+use App\Models\Dorm;
 use App\Repositories\DormRepo;
 use App\Repositories\UserRepo;
 use App\Http\Controllers\Controller;
@@ -27,6 +28,7 @@ class DormController extends Controller
     {
         /* $d['teachers'] = $this->user->getUserByType('teacher'); */
         $d['dorms'] = $this->dorm->getAll();
+        $d['users'] = $this->user->getAll();
         return view('pages.support_team.dorms.index', $d);
     }
 
@@ -34,8 +36,9 @@ class DormController extends Controller
     {
         $data = $req->only(['name', 'capacity','dorm_master']);
         $this->dorm->create($data);
+        
 
-        return Qs::jsonStoreOk();
+        return Qs::jsonStoreOk(); 
     }
 
     public function edit($id)
@@ -60,4 +63,12 @@ class DormController extends Controller
         $this->dorm->find($id)->delete();
         return back()->with('flash_success', __('msg.delete_ok'));
     }
+
+    /* public function show($id){
+        $dormms = Dorm::find($id);
+
+        var_dump($dormms->users);
+
+        return view('pages.support_team.dorms.show', $dormms);
+    } */
 }
