@@ -77,6 +77,12 @@
                                         <input name="name" value="{{ old('name') }}" required type="text" class="form-control" placeholder="Name of Dormitory">
                                     </div>
                                 </div>
+                                <div class="form-group row">
+                                    <label class="col-lg-3 col-form-label font-weight-semibold">Capacity <span class="text-danger">*</span></label>
+                                    <div class="col-lg-9">
+                                        <input name="capacity" value="{{ old('capacity') }}" required type="text" class="form-control" placeholder="Capacity">
+                                    </div>
+                                </div>
 
                                 {{-- <div class="form-group row">
                                     <label class="col-lg-3 col-form-label font-weight-semibold">Description</label>

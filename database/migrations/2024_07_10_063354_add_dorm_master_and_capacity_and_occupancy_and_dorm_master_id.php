@@ -18,7 +18,7 @@ class AddDormMasterAndCapacityAndOccupancyAndDormMasterId extends Migration
             $table->string('dorm_master');
             $table->unsignedInteger('capacity');
             $table->unsignedInteger('occupancy');
-            $table->foreign('dorm_master_id')->references('id')->on('dorm_masters')->onDelete('cascade');
+           
         });
     }
 
@@ -30,7 +30,7 @@ class AddDormMasterAndCapacityAndOccupancyAndDormMasterId extends Migration
     public function down()
     {
         Schema::table('dorms', function (Blueprint $table) {
-            $table->dropColumn(['dorm_master_id', 'dorm_master', 'capacity', 'occupancy']);
+            $table->dropColumn([ 'dorm_master', 'capacity', 'occupancy']);
         });
     }
 }

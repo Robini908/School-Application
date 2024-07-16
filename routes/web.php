@@ -33,8 +33,7 @@ Route::get('/student/view/{id}', [AdmissionController::class, 'view'])->name('st
 //Route to view class details
 Route::resource('view-class', 'ViewClassController');
 Route::get('view-class', 'ViewClassController@index')->name('view-class.index');
-
-
+Route::get('view-class/{id}', 'ViewClassController@show')->name('view-class.show');
 
 
 Route::resource('grading_system', 'GradingSystemController')->name('grading_system', ['except' => ['show']]);

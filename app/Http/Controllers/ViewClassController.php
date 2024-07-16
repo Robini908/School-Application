@@ -60,7 +60,10 @@ class ViewClassController extends Controller
      */
     public function show($id)
     {
-        //
+        $class = $this->my_class->find($id);
+        $sections = $this->my_class->getClassSections($class->id);
+        
+        return view('pages.support_team.classes.view-class.show', compact('class', 'sections'));
     }
 
     /**
