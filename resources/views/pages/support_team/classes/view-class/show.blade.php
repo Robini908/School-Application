@@ -1,5 +1,5 @@
 @extends('layouts.master')
-@section('page_title', 'View class of '.$sections->name)
+@section('page_title', 'View class')
 @section('content')
 
 <link href=" {{ asset('assets/css/view_class.css') }}" rel="stylesheet" type="text/css">
