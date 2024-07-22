@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-use App\User;
-use Eloquent;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
-class StudentRecord extends Eloquent
+class StudentRecord extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'session',
         'user_id',
@@ -44,17 +44,19 @@ class StudentRecord extends Eloquent
         'parent_phone',
         'parent_email',
         'password',
+        'status',
+        'disapproval_reason',
+        'disapproval_description',
     ];
-
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(UserType::class);
     }
 
     public function my_parent()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(UserType::class, 'my_parent_id');
     }
 
     public function my_class()

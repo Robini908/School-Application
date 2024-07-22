@@ -181,6 +181,15 @@ class StudentRecordController extends Controller
             Log::error("Failed to show student record for record ID $sr_id: " . $e->getMessage());
             return back()->with('flash_danger', __('An error occurred while fetching the student record: ') . $e->getMessage());
         }
+
+
+    }
+
+
+    public function details($id)
+    {
+        $student = StudentRecord::findOrFail($id);
+        return view('students.show', compact('student'));
     }
 
     public function edit($sr_id)
