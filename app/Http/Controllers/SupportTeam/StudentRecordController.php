@@ -18,6 +18,7 @@ use Illuminate\Support\Str;
 use App\Models\StudentRecord;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use Request;
 
 class StudentRecordController extends Controller
 {
@@ -66,7 +67,6 @@ class StudentRecordController extends Controller
             return back()->with('flash_danger', __('An error occurred while loading the creation page: ') . $e->getMessage());
         }
     }
-
 
 
     public function store(StudentRecordCreate $req)
@@ -119,6 +119,8 @@ class StudentRecordController extends Controller
         }
     }
 
+
+     
     public function listByClass($class_id)
     {
         try {

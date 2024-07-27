@@ -1,6 +1,9 @@
 <div class="tab-pane fade" id="admit-student">
     <div class="card">
-        <form id="ajax-reg" method="post" enctype="multipart/form-data" class="wizard-form steps-validation"
+        {{--<form id="ajax-reg" method="post" enctype="multipart/form-data" class="wizard-form steps-validation"
+            action="{{ route('students.store') }}" data-fouc> --}}
+
+            <form  method="post" enctype="multipart/form-data" class="wizard-form steps-validation"
             action="{{ route('students.store') }}" data-fouc>
             @csrf
 

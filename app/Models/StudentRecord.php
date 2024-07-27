@@ -49,15 +49,15 @@ class StudentRecord extends Model
         'disapproval_description',
     ];
 
-    public function user()
+   /* public function user()
     {
         return $this->belongsTo(UserType::class);
-    }
+    } */
 
-    public function my_parent()
+   /* public function my_parent()
     {
         return $this->belongsTo(UserType::class, 'my_parent_id');
-    }
+    } */
 
     public function my_class()
     {

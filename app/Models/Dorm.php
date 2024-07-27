@@ -19,4 +19,9 @@ class Dorm extends Eloquent
     {
         return $this->belongsTo(User::class, 'teacher_id');
     }
+
+    public function student_record()
+    {
+        return $this->hasMany(StudentRecord::class);
+    }
 }

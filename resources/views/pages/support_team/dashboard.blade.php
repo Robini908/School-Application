@@ -110,7 +110,7 @@
     <div class="card-body">
         <h5 class="card-title mb-4">Recently Added Students</h5>
         <div class="table-responsive">
-            <table class="table table-striped table-bordered table-hover">
+            <table class="table datatable-button-html5-columns">
                 <thead class="thead-dark">
                     <tr>
                         <th class="text-center">Admission Number</th>
@@ -121,7 +121,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {{-- @foreach($recentStudents as $student)
+                    @foreach($users->where('user_type', 'student') as $student)
                     <tr>
                         <td class="text-center">{{ $student->adm_no }}</td>
                         <td>{{ $student->name }}</td>
@@ -129,7 +129,7 @@
                         <td class="text-center">{{ $student->session }}</td>
                         <td class="text-center">{{ $student->year_admitted }}</td>
                     </tr>
-                    @endforeach --}}
+                    @endforeach 
                 </tbody>
             </table>
         </div>
@@ -143,7 +143,7 @@
     <div class="card-body">
         <h5 class="card-title">Recently Added Teachers</h5>
         <div class="table-responsive">
-            <table class="table table-striped table-hover">
+            <table class="table datatable-button-html5-columns">
                 <thead class="thead-dark">
                     <tr>
                         <th scope="col">Employee ID</th>
@@ -155,15 +155,15 @@
                 </thead>
                 <tbody>
                 
-                  {{--  @foreach($recentTeachers as $teacher)
+                   @foreach($users->where('user_type', 'teacher') as $teacher)
                     <tr>
                         <td>{{ $teacher->employee_id }}</td>
                         <td>{{ $teacher->name }}</td>
                         <td>{{ $teacher->email }}</td>
                         <td>{{ $teacher->department }}</td>
-                        <td>{{ $teacher->created_at->format('Y-m-d') }}</td>
+                        <td>{{ $teacher->created_at ? $teacher->created_at->format('Y-m-d') : '' }}</td>
                     </tr>
-                    @endforeach --}}
+                    @endforeach 
                 </tbody>
             </table>
         </div>
