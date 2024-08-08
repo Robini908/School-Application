@@ -30,11 +30,14 @@ class CreateFks extends Migration
         });     
 
         Schema::table('student_records', function (Blueprint $table) {
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('my_class_id')->references('id')->on('my_classes')->onDelete('cascade');
-            $table->foreign('section_id')->references('id')->on('sections')->onDelete('cascade');
-            $table->foreign('my_parent_id')->references('id')->on('users')->onDelete('set null');
-            $table->foreign('dorm_id')->references('id')->on('dorms')->onDelete('set null');
+           // $table->foreign('parent_id', 'fks_user_id_foreign')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('my_class_id', 'fks_class_id_foreign')->references('id')->on('my_classes')->onDelete('cascade');
+            $table->foreign('section_id', 'fks_section_id_foreign')->references('id')->on('sections')->onDelete('cascade');
+            $table->foreign('dorm_id', 'fks_dorm_id_foreign')->references('id')->on('dorms')->onDelete('set null');
+            $table->foreign('nal_id', 'fks_nationality_id_foreign')->references('id')->on('nationalities')->onDelete('set null');
+            $table->foreign('state_id', 'fks_state_id_foreign')->references('id')->on('states')->onDelete('set null');
+            $table->foreign('lga_id', 'fks_lga_id_foreign')->references('id')->on('lgas')->onDelete('set null');
+            $table->foreign('bg_id', 'fks_blood_group_id_foreign')->references('id')->on('blood_groups')->onDelete('set null');
         });
 
         Schema::table('marks', function (Blueprint $table) {

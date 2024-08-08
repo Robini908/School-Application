@@ -1,15 +1,14 @@
-<div class="tab-pane fade show active" id="manage-students">
+<div class="tab-pane fade show active container" id="manage-students" >
     <div class="card">
         <div class="card-body">
             <!-- Dashboard Overview -->
             <div class="container mt-4">
-                <div class="row mb-4">
-                    <!-- Dashboard Cards -->
+               <!-- <div class="row mb-4">                     
                     <div class="col-lg-3 col-md-6">
                         <div class="card bg-info text-white dashboard-card">
                             <div class="card-body">
                                 <h5 class="card-title">Total Submissions</h5>
-                                <p class="card-text">{{ $totalSubmissions }}</p>
+                                <p class="card-text">{{-- $totalSubmissions--}}</p>
                             </div>
                         </div>
                     </div>
@@ -17,7 +16,7 @@
                         <div class="card bg-success text-white dashboard-card">
                             <div class="card-body">
                                 <h5 class="card-title">Approved Submissions</h5>
-                                <p class="card-text">{{ $approvedSubmissions }}</p>
+                                <p class="card-text">{{-- $approvedSubmissions --}}</p>
                             </div>
                         </div>
                     </div>
@@ -25,7 +24,7 @@
                         <div class="card bg-warning text-white dashboard-card">
                             <div class="card-body">
                                 <h5 class="card-title">Pending Submissions</h5>
-                                <p class="card-text">{{ $pendingSubmissions }}</p>
+                                <p class="card-text">{{-- $pendingSubmissions --}}</p>
                             </div>
                         </div>
                     </div>
@@ -33,41 +32,83 @@
                         <div class="card bg-danger text-white dashboard-card">
                             <div class="card-body">
                                 <h5 class="card-title">Disapproved Submissions</h5>
-                                <p class="card-text">{{ $disapprovedSubmissions }}</p>
+                                <p class="card-text">{{-- $disapprovedSubmissions --}}</p>
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>-->
+                @if (session()->has('message'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ session('message') }}                        
+                    </div>
+                @endif
+            
+                @if (session()->has('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
 
-                <table class="table datatable-button-html5-columns">
+                <table class="table table-responsive datatable-button-html5-columns">
                     <thead>
                         <tr>
-                            <th>Name</th>
-                            <th>Email</th>
+                            <th>Admission</th>
+                            <th>Student Photo</th>
+                            <th>Name</th>                            
                             <th>Gender</th>
                             <th>Class</th>
                             <th>Section</th>
                             <th>Status</th>
+                            <th>Parent Name</th>
+                            <th>Parent Contact</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($students as $student)
+                        @foreach($mystudents as $student)
                         <tr>
-                            <td>{{ $student->user ? $student->user->name : 'N/A' }}</td>
-                            <td>{{ $student->user ? $student->user->email : 'N/A' }}</td>
-                            <td>{{ $student->user ? $student->user->gender : 'N/A' }}</td>
-                            <td>{{ $student->my_class ? $student->my_class->name : 'N/A' }}</td>
-                            <td>{{ $student->section ? $student->section->name : 'N/A' }}</td>
-                            <td>{{ $student->status }}</td>
+                            <td>{{ $student->adm_no }}</td>
                             <td>
-                                <button wire:click="viewStudent({{ $student->id }})" class="btn btn-sm btn-info" data-toggle="modal" data-target="#detailsModal">Details</button>
+                                @if ($student->photo)
+                                    <img src="{{ asset($student->photo) }}" alt="Room Image" style="width: 50px; height: 50px;">
+                                @else
+                                    No Image
+                                @endif
+                            </td>
+                            <td>{{ $student->first_name  }} -{{ $student->last_name  }}</td>
+                            <td>{{ $student->gender }}</td>
+                            <td>{{ $student->classname }}</td>
+                            <td>{{ $student->sectionname }}</td>
+                            <td>{{ $student->status }}</td>
+                            <td>{{ $student->parent_first_name }}-{{ $student->parent_last_name }}</td>
+                            <td>{{ $student->parent_phone_number }}</td>
+                            <td>
+                                 <div class="list-icons">
+                                    <div class="dropdown">
+                                        <a href="#" class="list-icons-item" data-toggle="dropdown">
+                                            <i class="icon-menu9"></i>
+                                        </a>
+
+                                        <div class="dropdown-menu dropdown-menu-left">
+                                            {{--Edit--}}
+                                            <a href="#" class="dropdown-item"><i class="icon-pencil"></i> Edit</a> 
+                                            {{--Delete--}}
+                                            <button  class="dropdown-item" wire:click="deleteRecord({{ $student->id }})"><i class="icon-trash"></i> Delete</button>
+                                            {{--<form method="post" id="item-delete-{{ $c->id }}" action="{{ route('classes.destroy', $c->id) }}" class="hidden">@csrf @method('delete')</form>--}}
+                                               
+
+                                        </div>
+                                    </div>
+                                </div>
+                              {{--  <button wire:click="viewStudent({{ $student->id }})" class="btn btn-sm btn-info" data-toggle="modal" data-target="#detailsModal">Details</button>
                                 @if($student->status === 'pending')
                                 <button wire:click="approveSubmission({{ $student->id }})" class="btn btn-sm btn-success">Approve</button>
                                 <button wire:click="disapproveSubmission({{ $student->id }})" class="btn btn-sm btn-danger">Disapprove</button>
                                 @endif
                                 <button wire:click="editStudent({{ $student->id }})" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#editModal">Edit</button>
                                 <button wire:click="deleteStudent({{ $student->id }})" class="btn btn-sm btn-danger">Delete</button>
+                              --}}
                             </td>
                         </tr>
                         @endforeach
@@ -167,7 +208,7 @@
 
     @push('scripts')
     <script>
-        Livewire.on('openModal', () => {
+       /* Livewire.on('openModal', () => {
             $('#detailsModal').modal('show');
         });
 
@@ -190,7 +231,7 @@
     Livewire.on('studentDeleted', () => {
         $('#deleteConfirmationModal').modal('hide');
         alert('Student deleted successfully.');
-    });
+    });*/
     </script>
     @endpush
 </div>

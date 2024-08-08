@@ -10,21 +10,13 @@ class StudentRecord extends Model
     use HasFactory;
 
     protected $fillable = [
-        'session',
-        'user_id',
+        'parent_id',
         'my_class_id',
-        'section_id',
-        'my_parent_id',
+        'section_id',       
         'dorm_id',
-        'dorm_room_no',
         'adm_no',
-        'year_admitted',
-        'wd',
-        'wd_date',
-        'grad',
-        'grad_date',
-        'house',
-        'age',
+        'year_admitted', 
+        'kcpe',
         'first_name',
         'middle_name',
         'last_name',
@@ -34,25 +26,17 @@ class StudentRecord extends Model
         'dob',
         'nal_id',
         'state_id',
-        'lga_id',
+        'town',
         'bg_id',
-        'photo',
-        'parent_first_name',
-        'parent_middle_name',
-        'parent_last_name',
-        'nin',
-        'parent_phone',
-        'parent_email',
-        'password',
+        'photo',        
         'status',
-        'disapproval_reason',
-        'disapproval_description',
+        'student_password'
     ];
 
-   /* public function user()
+    public function parent_detail()
     {
-        return $this->belongsTo(UserType::class);
-    } */
+        return $this->belongsTo(ParentDetail::class);
+    } 
 
    /* public function my_parent()
     {

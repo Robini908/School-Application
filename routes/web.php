@@ -3,7 +3,7 @@
 use App\Http\Controllers\SubjectRanges;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AdmissionController;
+//use App\Http\Controllers\AdmissionController;
 use App\Http\Controllers\StudentRecordController;
 
 
@@ -18,7 +18,7 @@ Route::get('/terms-of-use', 'HomeController@terms_of_use')->name('terms_of_use')
 
 
 //route for the admission number
-Route::get('/check-admission-number/{number}', 'AdmissionController@checkNumber');
+//Route::get('/check-admission-number/{number}', 'AdmissionController@checkNumber');
 Route::get('/get-session', 'SessionController@getSession')->name('get-session');
 
 

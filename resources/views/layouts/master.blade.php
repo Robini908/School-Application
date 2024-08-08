@@ -11,6 +11,7 @@
     <title> @yield('page_title') | {{ config('app.name') }} </title>
 
     @include('partials.inc_top')
+    @livewireStyles
 
 </head>
 
@@ -67,6 +68,7 @@
     </div>
     <x-notify::notify />
     @include('partials.inc_bottom')
+    @livewireScripts
     @yield('scripts')
 </body>
 

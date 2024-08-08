@@ -37,10 +37,7 @@ class User extends Authenticatable
         'password', 'remember_token',
     ];
 
-    public function student_record()
-    {
-        return $this->hasOne(StudentRecord::class);
-    }
+    
 
     public function lga()
     {

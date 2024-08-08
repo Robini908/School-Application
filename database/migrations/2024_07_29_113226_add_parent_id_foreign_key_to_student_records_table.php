@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddStatusToStudentRecordsTable extends Migration
+class AddParentIdForeignKeyToStudentRecordsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,15 +14,22 @@ class AddStatusToStudentRecordsTable extends Migration
     public function up()
     {
         Schema::table('student_records', function (Blueprint $table) {
-            $table->string('status')->nullable();
+            $table->foreign('parent_id', 'fks_parent_id_foreign')
+                  ->references('parent_id_no')
+                  ->on('parent_details')
+                  ->onDelete('set null');
         });
     }
-    
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
     public function down()
     {
         Schema::table('student_records', function (Blueprint $table) {
-            $table->dropColumn('status');
+            $table->dropForeign('fks_parent_id_foreign');
         });
     }
-    
 }

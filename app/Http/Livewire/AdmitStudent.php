@@ -46,7 +46,7 @@ class AdmitStudent extends Component
 
     public function submit()
     {
-        $this->validate([
+       /* $this->validate([
             'first_name' => 'required|string|max:255',
             'middle_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
@@ -115,7 +115,7 @@ class AdmitStudent extends Component
         ]);
 
         session()->flash('message', 'Student admitted successfully.');
-        return redirect()->route('students.index');
+        return redirect()->route('students.index');*/
     }
 
     public function render()

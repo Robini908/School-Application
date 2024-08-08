@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\StudentsImport;
 use App\Models\MyClass;
+use Illuminate\Support\Facades\DB;
 
 
 class ManageStudents extends Component
@@ -30,6 +31,7 @@ class ManageStudents extends Component
     public $approvedSubmissions = 0;
     public $pendingSubmissions = 0;
     public $disapprovedSubmissions = 0;
+    public $mystudents;
 
     protected $rules = [
         'selectedStudent.user.name' => 'required|string|max:255',
@@ -41,22 +43,35 @@ class ManageStudents extends Component
 
     public function mount()
     {
-        $this->fetchStatistics();
+        $this->mystudents=DB::select("select student_records.*,my_classes.name as classname,sections.name as sectionname,
+        parent_details.parent_first_name,parent_details.parent_last_name,parent_details.parent_phone_number
+        from student_records join my_classes on student_records.my_class_id=my_classes.id join sections
+        on student_records.section_id=sections.id join parent_details on student_records.parent_id=parent_details.parent_id_no order by student_records.id desc");
+    
+    }
+
+    public function deleteRecord($recordId)
+    {
+        //dd('hello people');
+        $deleted = DB::delete('DELETE FROM student_records WHERE id = ?', [$recordId]);
+
+        if ($deleted)
+        {
+            $this->mystudents=DB::select("select student_records.*,my_classes.name as classname,sections.name as sectionname,
+            parent_details.parent_first_name,parent_details.parent_last_name,parent_details.parent_phone_number
+            from student_records join my_classes on student_records.my_class_id=my_classes.id join sections
+            on student_records.section_id=sections.id join parent_details on student_records.parent_id=parent_details.parent_id_no order by student_records.id desc");
+            session()->flash('message', 'Record deleted successfully.');
+        } 
+        else 
+        {
+            session()->flash('error', 'Record not found.');
+        }
     }
 
     public function render()
-    {
-        $students = StudentRecord::query()
-            ->where('first_name', 'like', "%{$this->searchTerm}%")
-            ->when($this->filterClass, function ($query) {
-                $query->where('my_class_id', $this->filterClass);
-            })
-            ->paginate(10);
-
-        $classes = MyClass::all();
-        $sections = Section::all();
-
-        return view('livewire.manage-students', compact('students', 'classes', 'sections'));
+    {            
+        return view('livewire.manage-students');
     }
 
     public function applyBulkAction()

@@ -18,10 +18,10 @@ class StudentRecordsTableSeeder extends Seeder
     public function run()
     {
         // Create a single student record
-        $this->createStudentRecord();
+       // $this->createStudentRecord();
 
         // Create multiple student records
-        $this->createManyStudentRecords(9); // Adjust count as needed
+      //  $this->createManyStudentRecords(9); // Adjust count as needed
     }
 
     protected function createManyStudentRecords(int $count)

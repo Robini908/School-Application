@@ -1,9 +1,8 @@
-<div class="tab-pane fade" id="admit-student">
-    <div class="card">
+<div class="tab-pane fade " id="admit-student">
+    <div class="card container">
         {{--<form id="ajax-reg" method="post" enctype="multipart/form-data" class="wizard-form steps-validation"
             action="{{ route('students.store') }}" data-fouc> --}}
-
-            <form  method="post" enctype="multipart/form-data" class="wizard-form steps-validation"
+        <form  method="post" enctype="multipart/form-data" class="wizard-form steps-validation"
             action="{{ route('students.store') }}" data-fouc>
             @csrf
 
@@ -15,7 +14,7 @@
                         <div class="form-group">
                             <label>First Name: <span class="text-danger">*</span></label>
                             <input value="{{ old('first_name') }}" required type="text" name="first_name"
-                                placeholder="First Name" class="form-control" id="first_name">
+                                placeholder="F-Name" class="form-control" id="first_name">
                             <small class="form-text text-muted text-right"
                                 id="count-first-name">0/255</small>
                         </div>
@@ -24,7 +23,7 @@
                         <div class="form-group">
                             <label>Middle Name: <span class="text-danger">*</span></label>
                             <input value="{{ old('middle_name') }}" required type="text" name="middle_name"
-                                placeholder="Middle Name" class="form-control" id="middle_name">
+                                placeholder="M-Name" class="form-control" id="middle_name">
                             <small class="form-text text-muted text-right"
                                 id="count-middle-name">0/255</small>
                         </div>
@@ -33,7 +32,7 @@
                         <div class="form-group">
                             <label>Last Name: <span class="text-danger">*</span></label>
                             <input value="{{ old('last_name') }}" required type="text" name="last_name"
-                                placeholder="Last Name" class="form-control" id="last_name">
+                                placeholder="L-Name" class="form-control" id="last_name">
                             <small class="form-text text-muted text-right"
                                 id="count-last-name">0/255</small>
                         </div>
@@ -65,7 +64,7 @@
                     <div class="col-md-3">
                         <div class="form-group">
                             <label>Phone:</label>
-                            <input value="{{ old('phone') }}" type="text" name="phone" class="form-control"
+                            <input value="{{ old('phone') }}" type="text" placeholder="Phone No." name="phone" class="form-control"
                                 placeholder="" id="phone">
                         </div>
                     </div>
@@ -93,7 +92,7 @@
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
-                            <label for="state_id">County: <span class="text-danger">*</span></label>
+                            <label for="state_id">County/State: <span class="text-danger">*</span></label>
                             <select onchange="getLGA(this.value)" required data-placeholder="Choose.."
                                 class="custom-select form-control" name="state_id" id="state_id">
                                 <option value=""></option>
@@ -112,10 +111,8 @@
                     <div class="col-md-3">
                         <div class="form-group">
                             <label for="lga_id">Town: <span class="text-danger">*</span></label>
-                            <select required data-placeholder="Select State First"
-                                class="custom-select form-control" name="lga_id" id="lga_id">
-                                <option value=""></option>
-                            </select>
+                            <input type="text" name="town" placeholder="town"
+                                class="form-control"  id="town">
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -179,13 +176,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label for="session">Session:</label>
-                            <input type="text" name="session" placeholder="Session" class="form-control"
-                                readonly id="session">
-                        </div>
-                    </div>
+                    
                 </div>
 
                 <div class="row">
@@ -197,7 +188,7 @@
                             <select data-placeholder="Choose..." required name="year_admitted"
                                 id="year_admitted" class="custom-select">
                                 <option value=""></option>
-                                @for($y = date('Y', strtotime('- 10 years')); $y <= date('Y'); $y++) <option
+                                @for($y = date('Y', strtotime('- 40 years')); $y <= date('Y'); $y++) <option
                                     {{ (old('year_admitted') == $y) ? 'selected' : '' }} value="{{ $y }}">
                                     {{ $y }}
                                     </option>
@@ -219,38 +210,21 @@
                                 @endforeach
                             </select>
                         </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label for="dorm_room_no">Dormitory Room No:</label>
-                            <input type="text" name="dorm_room_no" placeholder="Dormitory Room No"
-                                class="form-control" value="{{ old('dorm_room_no') }}">
-                        </div>
-                    </div>
+                    </div>                    
                 </div>
 
                 <div class="row">
                     <!-- Third Row: Sport House, Enter Number, Admission Number -->
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label for="house">Sport House:</label>
-                            <input type="text" name="house" placeholder="Sport House" class="form-control"
-                                value="{{ old('house') }}">
-                        </div>
+                    <div class="form-group">
+                        <label for="upi_number">UPI Number:</label>
+                        <input type="text" name="upi_number" required placeholder="UPI Number"
+                            class="form-control" id="upi_number" value="{{ old('upi_number') }}">
                     </div>
-
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label for="inputNumber">Enter Number:</label>
-                            <input type="number" name="inputNumber" placeholder="Enter Number"
-                                class="form-control" id="inputNumber">
-                            <small class="form-text text-muted">This number will be part of the admission
-                                number.</small>
-                        </div>
+                    <div class="col-md-4">                        
                         <div class="form-group">
                             <label for="adm_no">Admission Number:</label>
                             <input type="text" name="adm_no" placeholder="Admission Number"
-                                class="form-control" readonly id="adm_no">
+                                class="form-control"  id="adm_no">
                         </div>
                     </div>
 
@@ -260,11 +234,7 @@
                             <input type="number" name="kcpe_marks" placeholder="KCPE Marks"
                                 class="form-control" id="kcpe_marks" value="{{ old('kcpe_marks') }}">
                         </div>
-                        <div class="form-group">
-                            <label for="upi_number">UPI Number:</label>
-                            <input type="text" name="upi_number" placeholder="UPI Number"
-                                class="form-control" id="upi_number" value="{{ old('upi_number') }}">
-                        </div>
+                       
                     </div>
 
                     <div class="col-md-4">
@@ -295,15 +265,17 @@
                 </div>
             </fieldset>
 
-
-
-
-
-
             <!-- Step 3: Parent Details -->
             <h6>Parent Details</h6>
             <fieldset>
                 <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="id_number">Id Number:</label>
+                            <input type="text" id="id_number" name="id_number" class="form-control"
+                                value="{{ old('id_number') }}" required>
+                        </div>
+                    </div>
                     <div class="col-md-3">
                         <div class="form-group">
                             <label for="parent_first_name">Parent's First Name:</label>
@@ -325,13 +297,7 @@
                                 class="form-control" value="{{ old('parent_last_name') }}" required>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="nin">National Identification Number:</label>
-                            <input type="text" id="nin" name="nin" class="form-control"
-                                value="{{ old('nin') }}" required>
-                        </div>
-                    </div>
+                   
                 </div>
                 <div class="row">
                     <div class="col-md-3">
@@ -342,18 +308,21 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-
                         <div class="form-group">
                             <label for="parent_email">Parent's Email:</label>
                             <input type="email" id="parent_email" name="parent_email" class="form-control"
                                 value="{{ old('parent_email') }}" required>
                         </div>
                     </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="parent_email">Parent's Password:</label>
+                            <input type="password" id="parent_password" name="parent_password" class="form-control"
+                                value="{{ old('parent_password') }}" required>
+                        </div>
+                    </div>
                 </div>
             </fieldset>
-
-
-
 
             <h6>Password</h6>
             <fieldset>
@@ -394,8 +363,7 @@
                         </div>
                     </div>
                 </div>
-            </fieldset>a
+            </fieldset>
         </form>
     </div>
-</div>
 </div>
