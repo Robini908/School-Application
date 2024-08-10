@@ -168,7 +168,7 @@ class StudentRecordController extends Controller
             'kcpe'=> $studentKcpe,
             'student_password'=>$studentPassword
         ]);        
-        return redirect()->back()->with('success', 'Data saved successfully!');
+        return redirect()->back()->with('flash_success', 'Data saved successfully!');
     } catch (Exception $e) {
         //Log::error("Failed to update student record to not graduated for record ID $sr_id: " . $e->getMessage());
         return back()->with('flash_danger', __('An error occurred while updating the student status: ') . $e->getMessage());

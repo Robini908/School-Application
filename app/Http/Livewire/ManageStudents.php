@@ -74,54 +74,11 @@ class ManageStudents extends Component
         return view('livewire.manage-students');
     }
 
-    public function applyBulkAction()
-    {
-        if ($this->bulkAction === 'approve') {
-            StudentRecord::whereIn('id', $this->selectedStudents)->update(['status' => 'approved']);
-        } elseif ($this->bulkAction === 'disapprove') {
-            StudentRecord::whereIn('id', $this->selectedStudents)->update(['status' => 'disapproved']);
-        } elseif ($this->bulkAction === 'delete') {
-            StudentRecord::destroy($this->selectedStudents);
-        }
-        $this->reset(['selectedStudents', 'bulkAction']);
-        $this->fetchStatistics();
-    }
+    
 
-    public function importFromFile()
-    {
-        if ($this->importFile) {
-            Excel::import(new StudentsImport, $this->importFile->getRealPath());
-            $this->reset('importFile');
-            $this->fetchStatistics();
-        }
-    }
+   
 
-    public function exportToCsv()
-    {
-        $fileName = 'students-' . now()->format('Y-m-d') . '.csv';
-        $students = StudentRecord::all();
-        $headers = ['Content-Type' => 'text/csv'];
-        $handle = fopen('php://output', 'w');
-        fputcsv($handle, ['Name', 'Email', 'Gender', 'Class', 'Section', 'Status']);
-        foreach ($students as $student) {
-            fputcsv($handle, [
-                $student->user->name ?? 'N/A',
-                $student->user->email ?? 'N/A',
-                $student->user->gender ?? 'N/A',
-                $student->my_class->name ?? 'N/A',
-                $student->section->name ?? 'N/A',
-                $student->status,
-            ]);
-        }
-        fclose($handle);
-        return response()->stream(
-            function () use ($handle) {
-                fclose($handle);
-            },
-            200,
-            $headers
-            )->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
-    }
+   
 
     public function viewStudent($id)
     {

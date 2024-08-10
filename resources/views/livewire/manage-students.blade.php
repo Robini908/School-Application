@@ -3,40 +3,7 @@
         <div class="card-body">
             <!-- Dashboard Overview -->
             <div class="container mt-4">
-               <!-- <div class="row mb-4">                     
-                    <div class="col-lg-3 col-md-6">
-                        <div class="card bg-info text-white dashboard-card">
-                            <div class="card-body">
-                                <h5 class="card-title">Total Submissions</h5>
-                                <p class="card-text">{{-- $totalSubmissions--}}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <div class="card bg-success text-white dashboard-card">
-                            <div class="card-body">
-                                <h5 class="card-title">Approved Submissions</h5>
-                                <p class="card-text">{{-- $approvedSubmissions --}}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <div class="card bg-warning text-white dashboard-card">
-                            <div class="card-body">
-                                <h5 class="card-title">Pending Submissions</h5>
-                                <p class="card-text">{{-- $pendingSubmissions --}}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <div class="card bg-danger text-white dashboard-card">
-                            <div class="card-body">
-                                <h5 class="card-title">Disapproved Submissions</h5>
-                                <p class="card-text">{{-- $disapprovedSubmissions --}}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>-->
+              
                 @if (session()->has('message'))
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
                         {{ session('message') }}                        
@@ -50,7 +17,7 @@
                     </div>
                 @endif
 
-                <table class="table table-responsive datatable-button-html5-columns">
+                <table id="studentTable" class="table table-responsive">
                     <thead>
                         <tr>
                             <th>Admission</th>
@@ -208,30 +175,7 @@
 
     @push('scripts')
     <script>
-       /* Livewire.on('openModal', () => {
-            $('#detailsModal').modal('show');
-        });
-
-        Livewire.on('openEditModal', () => {
-            $('#editModal').modal('show');
-        });
-
-        Livewire.on('closeEditModal', () => {
-            $('#editModal').modal('hide');
-        });
-
-        Livewire.on('statusUpdated', () => {
-            alert('Status updated successfully.');
-        });
-
-        Livewire.on('showDeleteConfirmation', () => {
-        $('#deleteConfirmationModal').modal('show');
-    });
-
-    Livewire.on('studentDeleted', () => {
-        $('#deleteConfirmationModal').modal('hide');
-        alert('Student deleted successfully.');
-    });*/
+     
     </script>
     @endpush
 </div>
