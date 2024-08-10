@@ -72,29 +72,110 @@
 
 
     <script>
-     $(document).ready(function () {
+    $(document).ready(function () {
     var table = $('#studentTable').DataTable({
-        dom: 'Bfrtip',
+        dom: 'Bfrtip', // Include 'B' for buttons, 'f' for filter, 'r' for processing, 't' for table, 'i' for information, 'p' for pagination
         lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
         buttons: [
-            // Existing buttons
+            {
+                extend: 'csv',
+                text: 'CSV',
+                exportOptions: {
+                    columns: ':visible:not(:last-child)',
+                    modifier: {
+                        search: 'applied',  // Export only filtered data
+                        order: 'applied'    // Export data in the current order
+                    }
+                },
+                title: 'Tiger Enterprises',
+                messageTop: 'Employee Data 2024'
+            },
+            {
+                extend: 'excel',
+                text: 'Excel',
+                exportOptions: {
+                    columns: ':visible:not(:last-child)',
+                    modifier: {
+                        search: 'applied',  // Export only filtered data
+                        order: 'applied'    // Export data in the current order
+                    }
+                },
+                title: 'Tiger Enterprises',
+                messageTop: 'Employee Data 2024'
+            },
+            {
+                extend: 'pdf',
+                text: 'PDF',
+                exportOptions: {
+                    columns: ':visible:not(:last-child)',
+                    modifier: {
+                        search: 'applied',  // Export only filtered data
+                        order: 'applied'    // Export data in the current order
+                    }
+                },
+                title: 'Tiger Enterprises Mbuku',
+                messageTop: 'Employee Data 2024',
+                customize: function (doc) {
+                    doc.header = {
+                        text: 'Tiger Enterprises Kenya',
+                        alignment: 'center',
+                        margin: [0, 0, 0, 10],
+                        image: 'data:images/mbukulogo.png;base64,YOUR_BASE64_ENCODED_LOGO' // Replace with your base64 encoded image
+                    };
+                    doc.footer = function (currentPage, pageCount) {
+                        return {
+                            text: 'Page ' + currentPage + ' of ' + pageCount,
+                            alignment: 'center'
+                        };
+                    };
+                }
+            },
+            {
+                extend: 'print',
+                text: 'Print',
+                exportOptions: {
+                    columns: ':visible:not(:last-child)',
+                    modifier: {
+                        search: 'applied',  // Export only filtered data
+                        order: 'applied'    // Export data in the current order
+                    }
+                },
+                title: 'Tiger Enterprises',
+                messageTop: 'Employee Data 2024',
+                customize: function (win) {
+                    $(win.document.body)
+                        .css('font-size', '10pt')
+                        .prepend(
+                            `<div style="text-align: center; margin: 10px 0;">
+                                <img src="data:images/mbukulogo.png;base64,YOUR_BASE64_ENCODED_LOGO" style="max-width:100px;" />
+                                <h2>Tiger Enterprises Kenya</h2>
+                             </div>`
+                        );
+
+                    $(win.document.body).find('table')
+                        .addClass('compact')
+                        .css('font-size', 'inherit');
+                }
+            },
+            'colvis'
         ],
+        responsive: true,
         columnDefs: [{
             targets: -1,
             data: null,
             defaultContent: `
-                <div class="actions-dropdown" style="position: relative;">
-                    <button class="breadcrumb-icon">☰</button>
+                <div class="actions-dropdown">
+                    <span class="breadcrumb-icon">☰</span>
                     <div class="dropdown-menu">
-                        <a href="#" class="edit">Edit</a><br>
-                        <a href="#" class="delete">Delete</a><br>
+                        <a href="#" class="edit">Edit</a>
+                        <a href="#" class="delete">Delete</a>
                         <a href="#" class="view-report">View Report</a>
                     </div>
                 </div>`
         }]
     });
 
-    // Existing functionality for dropdown actions
+    // Event handling for dropdown actions
     $('#studentTable tbody').on('click', '.breadcrumb-icon', function (e) {
         e.stopPropagation();
         var dropdownMenu = $(this).siblings('.dropdown-menu');
@@ -108,7 +189,6 @@
 
     $('#studentTable tbody').on('click', '.edit', function () {
         var data = table.row($(this).parents('tr')).data();
-        $('#modal').show().css({ top: $(this).offset().top, left: $(this).offset().left });
         alert('Edit ' + data[0]); // Replace with actual edit functionality
     });
 
@@ -121,10 +201,10 @@
 
     $('#studentTable tbody').on('click', '.view-report', function () {
         var data = table.row($(this).parents('tr')).data();
-        generatePDFReport([data]);
+        var reportData = data.slice(0, -1); // Remove actions column data
+        generatePDFReport([reportData]);
     });
 
-    // Function to generate a single PDF report
     function generatePDFReport(data) {
         var iframe = document.createElement('iframe');
         iframe.style.position = 'absolute';
@@ -247,31 +327,24 @@
         }, 500);
     }
 
-    // Function to generate multiple PDF reports based on row range
     $('#generateReports').on('click', function () {
         var startRow = parseInt($('#startRow').val(), 10);
         var endRow = parseInt($('#endRow').val(), 10);
         var totalRows = table.rows().count();
         
-        // Validation
-        if (isNaN(startRow) || isNaN(endRow) || startRow < 1 || endRow < 1 || startRow > totalRows || endRow > totalRows || startRow > endRow) {
-            alert('Please enter a valid row range.');
+        if (isNaN(startRow) || isNaN(endRow) || startRow < 1 || endRow < 1 || startRow > endRow || startRow > totalRows || endRow > totalRows) {
+            alert('Please enter valid start and end row numbers.');
             return;
         }
-        
-        // Generate reports for each row in the range
-        var dataToGenerate = [];
+
         for (var i = startRow - 1; i < endRow; i++) {
-            var rowData = table.row(i).data();
-            dataToGenerate.push(rowData);
+            var data = table.row(i).data();
+            var reportData = data.slice(0, -1); // Remove actions column data
+            generatePDFReport([reportData]);
         }
-        
-        // Generate PDF reports for each row in the range
-        dataToGenerate.forEach(function (data) {
-            generatePDFReport([data]);
-        });
     });
 });
+
 
 
     </script>
