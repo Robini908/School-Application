@@ -7,8 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta id="csrf-token" name="csrf-token" content="{{ csrf_token() }}">
     <meta name="author" content="CJ Inspired">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.7.1/css/buttons.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.7.1/css/buttons.dataTables.min.css">
 
     <title> @yield('page_title') | {{ config('app.name') }} </title>
 
@@ -17,112 +18,93 @@
     @livewireStyles
 
     <style>
+        /* Custom styles for the dropdown menu */
         .actions-dropdown {
-            cursor: pointer;
-            padding: 5px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
             position: relative;
             display: inline-block;
         }
+
         .actions-dropdown .breadcrumb-icon {
-            font-size: 16px;
-            font-weight: bold;
-        }
-        .dropdown-menu {
-            display: none;
-            position: absolute;
-            background-color: #fff;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            border-radius: 3px;
-            right: 0;
-            top: 100%;
-            z-index: 1000;
-            min-width: 150px;
-        }
-        .dropdown-menu a {
-            display: block;
-            padding: 8px 12px;
-            text-decoration: none;
-            color: #333;
-        }
-        .dropdown-menu a:hover {
-            background-color: #f1f1f1;
-        }
-        .breadcrumb-icon::after {
-            content: '▼';
-            font-size: 12px;
-            margin-left: 5px;
-        }
-        .dataTables_wrapper .dt-buttons {
-            margin-bottom: 10px;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgb(0,0,0);
-            background-color: rgba(0,0,0,0.4);
-            padding-top: 60px;
-        }
-
-        .modal-content {
-            background-color: #fefefe;
-            margin: 5% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            position: relative;
-        }
-
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            position: absolute;
-            top: 10px;
-            right: 20px;
-        }
-
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
             cursor: pointer;
-        }
-
-        #reportContent {
-            margin-top: 10px; 
-            padding:5px;
-            border: 1px solid green;
-            border-radius: 0px;
-            background-color:#fff;
-            /* Add margin to avoid overlap with close button */
-        }
-
-        #printReportBtn {
-            display: block;
-            margin: 20px auto;
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
+            padding: 5px 10px;
             border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            float: left;
+            background: #e9ecef;
+            border-radius: 4px;
         }
 
-        #printReportBtn:hover {
-            background-color: #45a049;
+        .actions-dropdown .dropdown-menu {
+            display: none;
+            position: absolute;
+            left: 0;
+            top: 100%;
+            background: #fff;
+            border: 1px solid #ddd;
+            z-index: 1000;
+            padding: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
+
+        .actions-dropdown .dropdown-menu a {
+            display: block;
+            padding: 5px;
+            text-decoration: none;
+            color: #007bff;
+        }
+
+        .actions-dropdown .dropdown-menu a:hover {
+            background: #f8f9fa;
+        }
+
+        #modal {
+            display: none;
+            position: absolute;
+            z-index: 2000;
+            width: 300px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .report-generator {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.input-group {
+    margin-bottom: 10px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+#generateReports {
+    background-color: #3b82f6;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#generateReports:hover {
+    background-color: #2563eb;
+}
+
     </style>
+    
 
 </head>
 
