@@ -65,46 +65,138 @@
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
+
+        /* Container for layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        /* Flex container for side-by-side layout */
+        .flex {
+            display: flex;
+            gap: 1rem;
+            /* Adds space between cards */
+        }
+
+        /* Card styling for both report-generator and advanced-filter */
+        .report-generator,
+        .advanced-filter {
+            flex: 1;
+            /* Ensures both cards take up equal space */
+            background-color: #ffffff;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+        }
+
+        /* Styling for report generator */
         .report-generator {
-    margin-bottom: 20px;
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+        }
 
-.input-group {
-    margin-bottom: 10px;
-}
+        /* Styling for advanced filter */
+        .advanced-filter {
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+        }
 
-.input-group label {
-    display: block;
-    margin-bottom: 5px;
-}
+        /* Input group styling */
+        .input-group {
+            margin-bottom: 1rem;
+        }
 
-.input-group input {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
+        /* Label styling inside input group */
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
 
-#generateReports {
-    background-color: #3b82f6;
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
+        /* Input styling inside input group */
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 0.25rem;
+        }
 
-#generateReports:hover {
-    background-color: #2563eb;
-}
+        /* Button styling */
+        #generateReports,
+        #applyFilter {
+            background-color: #3b82f6;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            font-weight: 600;
+        }
 
+        /* Button hover effect */
+        #generateReports:hover,
+        #applyFilter:hover {
+            background-color: #2563eb;
+        }
+
+        /* Additional Tailwind CSS classes */
+        .text-lg {
+            font-size: 1.125rem;
+        }
+
+        .font-bold {
+            font-weight: 700;
+        }
+
+        .mb-4 {
+            margin-bottom: 1rem;
+        }
+
+        .block {
+            display: block;
+        }
+
+        .w-full {
+            width: 100%;
+        }
+
+        .border {
+            border: 1px solid #d1d5db;
+        }
+
+        .border-gray-300 {
+            border-color: #d1d5db;
+        }
+
+        .shadow-sm {
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .bg-blue-500 {
+            background-color: #3b82f6;
+        }
+
+        .text-white {
+            color: #ffffff;
+        }
+
+        .hover\:bg-blue-600:hover {
+            background-color: #2563eb;
+        }
+
+        .bg-green-500 {
+            background-color: #10b981;
+        }
+
+        .hover\:bg-green-600:hover {
+            background-color: #059669;
+        }
     </style>
-    
+
 
 </head>
 
