@@ -16,6 +16,7 @@ class MyClassRepo
         return MyClass::orderBy('name', 'asc')->with('class_type')->get();
     }
 
+
     public function getMC($data)
     {
         return MyClass::where($data)->with('section');

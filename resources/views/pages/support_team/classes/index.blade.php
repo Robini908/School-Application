@@ -26,16 +26,18 @@
                                 {{-- <th>Class Type</th> --}}
                                 <th>Entry</th>
                                 <th>Class Master</th>
+                                <th>Session</th>
                                 <th>Action</th>
                             </tr>
                             </thead>
                             <tbody>
-                            @foreach($my_classes as $c )
+                            @foreach($my_classes as $c ) 
                                 <tr>
                                     <td>{{ $loop->iteration }}</td> 
                                     <td>{{ $c->name }}</td>
                                     <td>{{ $users->where('user_type', 'student')->where('class_id', $c->id)->count(); }}</td>
                                     <td>{{ $c->teacher ? $c->teacher->name : 'No teacher assigned' }}</td>
+                                    <td>{{ $c->session }}</td>
                                     <td class="text-center">
                                         <div><a href="{{ route('view-class.show', $c->id) }}">View class</a></div>
                                         <div class="list-icons">
@@ -54,6 +56,10 @@
                                                     <a id="{{ $c->id }}" onclick="confirmDelete(this.id)" href="#" class="dropdown-item"><i class="icon-trash"></i> Delete</a>
                                                     <form method="post" id="item-delete-{{ $c->id }}" action="{{ route('classes.destroy', $c->id) }}" class="hidden">@csrf @method('delete')</form>
                                                         @endif
+                                                        @if(Qs::userIsTeamSA())
+                                                        {{--Add Classmaster--}}
+                                                        <a href="{{ route('classmasters.edit', $c->id) }}" class="dropdown-item"><i class="icon-pencil"></i> Add Classmaster</a>
+                                                       @endif
 
                                                 </div>
                                             </div>
@@ -86,6 +92,20 @@
                                         <input name="name" value="{{ old('name') }}" required type="text" class="form-control" placeholder="Name of Class">
                                     </div>
                                 </div>
+
+                                 <div class="form-group row">
+                                    <label class="col-lg-3 col-form-label font-weight-semibold">Session <span class="text-danger">*</span></label>
+                                    <select data-placeholder="Choose..." required name="year_admitted" id="year_admitted" class="custom-select">
+                                        <option value="session"></option>
+                                        @for($y = date('Y', strtotime('-40 years')); $y <= date('Y'); $y++)
+                                            <option {{ (old('year_admitted') == $y) ? 'selected' : '' }} value="{{ $y }}">
+                                                {{ $y }}
+                                            </option>
+                                        @endfor
+                                    </select>
+                                </div> 
+
+                                
 
                                {{--  <div class="form-group row">
                                     <label for="class_type_id" class="col-lg-3 col-form-label font-weight-semibold">Class Type</label>
