@@ -9,7 +9,8 @@
     <meta name="author" content="CJ Inspired">
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.7.1/css/buttons.dataTables.min.css">
-
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    
     <title> @yield('page_title') | {{ config('app.name') }} </title>
 
 
@@ -82,9 +83,9 @@
         }
 
         .close {
-            color: #aaa;
+            color: #f4f80c;
             float: right;
-            font-size: 28px;
+            font-size: 38px;
             font-weight: bold;
             position: absolute;
             top: 10px;
@@ -93,7 +94,7 @@
 
         .close:hover,
         .close:focus {
-            color: black;
+            color: #f4f80c;
             text-decoration: none;
             cursor: pointer;
         }
@@ -108,11 +109,11 @@
         }
 
         #printReportBtn {
-            display: block;
+            /*display: block;
             margin: 20px auto;
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
+            padding: 10px 20px;*/
+            background-color: #f4f80c;
+            color: rgb(8, 0, 0);
             border: none;
             border-radius: 5px;
             cursor: pointer;
@@ -122,6 +123,7 @@
         #printReportBtn:hover {
             background-color: #45a049;
         }
+
     </style>
 
 </head>
@@ -133,7 +135,7 @@
         @include('partials.menu')
         <div class="content-wrapper">
 
-            @include('partials.header')
+            {{--@include('partials.header')--}}
 
             {{-- Include Notify Component --}}
             @include('notify::components.notify')

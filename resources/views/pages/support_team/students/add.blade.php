@@ -3,9 +3,9 @@
 @section('content')
 <link href=" {{ asset('assets/css/admit_student.css') }}" rel="stylesheet" type="text/css">
 <div class="card">
-    <div class="card-header bg-white header-elements-inline">
+   {{-- <div class="card-header bg-white header-elements-inline">
         {!! Qs::getPanelOptions() !!}
-    </div>
+    </div>--}}
     <div class="card-body">
         <ul class="nav nav-tabs nav-tabs-highlight p-3">
             <li class="nav-item">
@@ -21,7 +21,7 @@
             </li>
         </ul>
 
-        <div class="tab-content mt-3">
+        <div class="tab-content" style="margin-top:-50px;">
             <!-- Manage Students Tab -->
             @livewire('manage-students')
             @livewire('admit-student')
@@ -41,6 +41,20 @@
                 </div>
             </div>
         </div>
+    </div>
+    <div id="reportModal" class="modal">
+        <div class="modal-content" style="position: relative; top:5px; margin: auto; width: 70%;">
+            <div class="bg-success">
+              {{--  <button id="printReportBtn" class="m-1 btn-primary">Print Report</button>--}}
+                <span class="close">&times;</span>
+            </div>
+            <div id="reportContent"></div>           
+        </div>
+    </div>
+
+
+    <div id="pdfModal" style="display:none;">
+        <iframe id="pdfFrame" width="100%" height="500px"></iframe>
     </div>
     @endsection
     @section('scripts')
@@ -157,6 +171,25 @@
                 defaultContent: '<div class="actions-dropdown"><span class="breadcrumb-icon">☰</span><div class="dropdown-menu"><a href="#" class="edit">Edit</a><a href="#" class="delete">Delete</a><a href="#" class="view-report">View Report</a></div></div>'
             }]
         });
+
+        // Filter by form
+        $('#form').on('change', function () 
+           {
+               table.column(4).search(this.value).draw();
+           });
+
+        // Filter by stream
+        $('#section').on('change', function () 
+            {
+                table.column(5).search(this.value).draw();
+            });
+        
+        // Filter by status
+        $('#status').on('change', function () 
+            {
+                table.column(6).search(this.value).draw();
+            });
+
     });
 
 
@@ -186,13 +219,282 @@
 
         // Handle view report
         $('#studentTable tbody').on('click', '.view-report', function() {
-            var data = table.row($(this).parents('tr')).data();
-            generatePDFReport(data); // Replace with actual PDF generation
-            
+            //alert("testing")
+           //var data = table.row($(this).parents('tr')).data();
+           //alert(data);
+            //generatePDFReport(); // Replace with actual PDF generation
+            generateReportInModal()
         });
 
+    //generating report from html template
+    function generatePDFReport() {
+    // Create a new iframe element
+        var iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.width = '0px';
+        iframe.style.height = '0px';
+        iframe.style.border = 'none';
+        document.body.appendChild(iframe);
+
+        // Get the iframe document
+        var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+        // Write the HTML content to the iframe
+        iframeDoc.open();
+        iframeDoc.write(`
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Employee Report</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        margin: 0;
+                        padding: 0;
+                    }
+                    .container {
+                        width: 80%;
+                        margin: 20px auto;
+                        padding: 20px;
+                        border: 1px solid #ccc;
+                        border-radius: 8px;
+                    }
+                    .header, .footer {
+                        text-align: center;
+                        margin-bottom: 20px;
+                    }
+                    .header img {
+                        max-width: 100px;
+                    }
+                    .report-title {
+                        font-size: 24px;
+                        font-weight: bold;
+                        margin-bottom: 10px;
+                    }
+                    .details {
+                        margin-bottom: 20px;
+                    }
+                    .details table {
+                        width: 100%;
+                        border-collapse: collapse;
+                    }
+                    .details table th, .details table td {
+                        border: 1px solid #ddd;
+                        padding: 8px;
+                        text-align: left;
+                    }
+                    .details table th {
+                        background-color: #f4f4f4;
+                    }
+                    .footer {
+                        font-size: 12px;
+                        color: #777;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        
+                        <div class="report-title">Employee Salary Report</div>
+                    </div>
+                    <div class="details">
+                        <table>
+                            <tr>
+                                <th>Name</th>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <th>Position</th>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <th>Office</th>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <th>Age</th>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <th>Salary</th>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <th>New Salary</th>
+                                <td></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="footer">
+                        Report generated by Kakamega High School Office
+                    </div>
+                </div>
+            </body>
+            </html>
+        `);
+        iframeDoc.close();
+
+        // Wait for the content to load and then print
+        iframe.onload = function() {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+            document.body.removeChild(iframe); // Remove the iframe after printing
+        };
+    }
+
+    //viewing the report in a modal
+function generateReportInModal() {
+    // Get the modal and the modal content container
+    var modal = document.getElementById('reportModal');
+    var reportContent = document.getElementById('reportContent');
+
+    // Set the report content
+    reportContent.innerHTML = `
+        <div class="container text-center">
+            <div class="header">
+                <img src="images/kakamega.png" alt="Company Logo" class="img-fluid mx-auto">
+                <div class="report-title">Employee Salary Report</div>
+            </div>
+            <div class="details">
+                <table class="table table-reponsive">
+                    <tr>
+                        <th>Name</th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>Position</th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>Office</th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>Age</th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>Salary</th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>New Salary</th>
+                        <td></td>
+                    </tr>
+                </table>
+            </div>
+            <div class="footer">
+                Report generated by Kakamega High School Office
+            </div>
+        </div>
+    `;
+
+    // Display the modal
+    modal.style.display = "block";
+
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close")[0];
+
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    // Print button functionality
+    var printButton = document.getElementById('printReportBtn');
+    printButton.onclick = function() {
+        var printWindow = window.open('', '', 'height=600,width=800');
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>Employee Report</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        margin: 0;
+                        padding: 0;
+                    }
+                    .container {
+                        width: 80%;
+                        margin: 20px auto;
+                        padding: 20px;
+                        border: 1px solid #ccc;
+                        border-radius: 8px;
+                    }
+                    .header, .footer {
+                        text-align: center;
+                        margin-bottom: 20px;
+                    }
+                    .header img {
+                        max-width: 100px;
+                    }
+                    .report-title {
+                        font-size: 24px;
+                        font-weight: bold;
+                        margin-bottom: 10px;
+                    }
+                    .details {
+                        margin-bottom: 20px;
+                    }
+                    .details table {
+                        width: 100%;
+                        border-collapse: collapse;
+                    }
+                    .details table th, .details table td {
+                        border: 1px solid #ddd;
+                        padding: 8px;
+                        text-align: left;
+                    }
+                    .details table th {
+                        background-color: #f4f4f4;
+                    }
+                    .footer {
+                        font-size: 12px;
+                        color: #777;
+                    }
+                </style>
+            </head>
+            <body>
+                ${reportContent.innerHTML}
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
+    }
+}
+
+ // Display the modal
+ modal.style.display = "block";
+
+// Get the <span> element that closes the modal
+var span = document.getElementsByClassName("close")[0];
+
+// When the user clicks on <span> (x), close the modal
+span.onclick = function() {
+    modal.style.display = "none";
+}
+
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function(event) {
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+}
+
+ 
 
 
 
-    </script>
-    @endsection
+</script>
+@endsection
