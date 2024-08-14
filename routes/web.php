@@ -1,9 +1,10 @@
 <?php
 
-use App\Http\Controllers\SubjectRanges;
+use App\Models\StudentRecord;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 //use App\Http\Controllers\AdmissionController;
+use App\Http\Controllers\SubjectRanges;
 use App\Http\Controllers\StudentRecordController;
 
 
@@ -22,6 +23,11 @@ Route::get('/terms-of-use', 'HomeController@terms_of_use')->name('terms_of_use')
 Route::get('/get-session', 'SessionController@getSession')->name('get-session');
 
 
+Route::get('/student-info/{id}', function ($id) {
+   
+
+    return view('pages.support_team.students.student_info', ['student' => $id]);
+})->name('student.info');
 
 //Route to view class details
 Route::resource('view-class', 'ViewClassController');

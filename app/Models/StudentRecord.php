@@ -8,14 +8,20 @@ use Illuminate\Database\Eloquent\Model;
 class StudentRecord extends Model
 {
     use HasFactory;
+    // Ensure that the 'id' column is the primary key
+    protected $primaryKey = 'id';
 
+    // If the primary key is not an incrementing integer
+    public $incrementing = true;
+    protected $keyType = 'int';
     protected $fillable = [
+        'id',
         'parent_id',
         'my_class_id',
-        'section_id',       
+        'section_id',
         'dorm_id',
         'adm_no',
-        'year_admitted', 
+        'year_admitted',
         'kcpe',
         'first_name',
         'middle_name',
@@ -28,7 +34,7 @@ class StudentRecord extends Model
         'state_id',
         'town',
         'bg_id',
-        'photo',        
+        'photo',
         'status',
         'student_password'
     ];
@@ -36,9 +42,9 @@ class StudentRecord extends Model
     public function parent_detail()
     {
         return $this->belongsTo(ParentDetail::class);
-    } 
+    }
 
-   /* public function my_parent()
+    /* public function my_parent()
     {
         return $this->belongsTo(UserType::class, 'my_parent_id');
     } */

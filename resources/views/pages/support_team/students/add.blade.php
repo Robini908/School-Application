@@ -21,10 +21,15 @@
             </li>
         </ul>
 
-        <div class="tab-content" style="margin-top:-50px;">
+        <div class="tab-content mt-3">
             <!-- Manage Students Tab -->
-            @livewire('manage-students')
-            @livewire('admit-student')
+            <div class="tab-pane fade show active" id="manage-students">
+                @livewire('manage-students')
+            </div>
+            <div class="tab-pane fade " id="admit-student">
+                @livewire('admit-student')
+            </div>
+
 
 
             <div class="tab-pane fade" id="bulk-admit">
@@ -63,77 +68,76 @@
     <script src="{{ asset('global_assets/js/main/add_student.js') }}"></script>
     <script src="{{ asset('global_assets/js/main/manage_admissions.js') }}"></script>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/1.7.1/js/dataTables.buttons.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.2.2/jszip.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/1.7.1/js/buttons.html5.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/1.7.1/js/buttons.print.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/1.7.1/js/buttons.colVis.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.68/pdfmake.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.68/vfs_fonts.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"
-        integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous">
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.colVis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"
+        integrity="sha384-e0Ri0eHb9NvcGhrkvq6xY4fZG+W5dNg6p+orHHCfh/0kBh1sZ/Nprf3Wc7lBlTR1" crossorigin="anonymous">
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js"
-        integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"
+        integrity="sha384-+YQ4HkS8e5FGG3C2FPJdK0H6N2KAy4LHCpzlVZ81L/Pdf/0I7p7NuOSX2Ulm6oxk" crossorigin="anonymous">
     </script>
-    <script>
-        
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-        $(document).ready(function() {
-        var table = $('#studentTable').DataTable({
-            dom: 'Bfrtip',
-            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
-            buttons: [
-                
-                {
-                    extend: 'csv',
-                    text: 'CSV',
-                    exportOptions: {
-                        columns: ':visible:not(:last-child)',
-                        modifier: {
-                            search: 'applied',  // Export only filtered data
-                            order: 'applied'    // Export data in the current order
-                        }
-                    },
-                    title: 'Tiger Enterprises',
-                    messageTop: 'Employee Data 2024'
+
+    <script>
+        $(document).ready(function () {
+    var table = $('#studentTable').DataTable({
+        dom: 'Bfrtip', // Ensure this includes 'B' for buttons and 'frtip' for filter, pagination, etc.
+        lengthMenu: [[5, 10, 25, 50, 100, -1], [5, 10, 25, 50, 100, "All"]],
+        buttons: [
+            {
+                extend: 'csv',
+                text: 'CSV',
+                exportOptions: {
+                    columns: ':visible:not(:last-child)',
+                    modifier: {
+                        search: 'applied',
+                        order: 'applied'
+                    }
                 },
-                {
-                    extend: 'excel',
-                    text: 'Excel',
-                    exportOptions: {
-                        columns: ':visible:not(:last-child)',
-                        modifier: {
-                            search: 'applied',  // Export only filtered data
-                            order: 'applied'    // Export data in the current order
-                        }
-                    },
-                    title: 'Tiger Enterprises',
-                    messageTop: 'Employee Data 2024'
+                title: 'Tiger Enterprises',
+                messageTop: 'Employee Data 2024'
+            },
+            {
+                extend: 'excel',
+                text: 'Excel',
+                exportOptions: {
+                    columns: ':visible:not(:last-child)',
+                    modifier: {
+                        search: 'applied',
+                        order: 'applied'
+                    }
                 },
-                {
-                    extend: 'pdf',
-                    text: 'PDF',
-                    exportOptions: {
-                        columns: ':visible:not(:last-child)',
-                        modifier: {
-                            search: 'applied',  // Export only filtered data
-                            order: 'applied'    // Export data in the current order
-                        }
-                    },
-                    title: 'Tiger Enterprises Mbuku',
-                    messageTop: 'Employee Data 2024',
-                    customize: function(doc) {
-                        doc.header = {
-                            text: 'Tiger Enterprises Kenya',
-                            alignment: 'center',
-                            margin: [0, 0, 0, 10],
-                            image: 'data:images/mbukulogo.png;base64,YOUR_BASE64_ENCODED_LOGO' // Replace with your base64 encoded image
-                        };
-                        doc.footer = {
-                            text: 'Page ' + doc.pageNumber + ' of ' + doc.pageCount,
+                title: 'Tiger Enterprises',
+                messageTop: 'Employee Data 2024'
+            },
+            {
+                extend: 'pdf',
+                text: 'PDF',
+                exportOptions: {
+                    columns: ':visible:not(:last-child)',
+                    modifier: {
+                        search: 'applied',
+                        order: 'applied'
+                    }
+                },
+                title: 'Tiger Enterprises Mbuku',
+                messageTop: 'Employee Data 2024',
+                customize: function (doc) {
+                    doc.content.unshift({
+                        text: 'Tiger Enterprises Kenya',
+                        alignment: 'center',
+                        margin: [0, 0, 0, 10]
+                    });
+                    doc.footer = function (currentPage, pageCount) {
+                        return {
+                            text: 'Page ' + currentPage + ' of ' + pageCount,
                             alignment: 'center'
                         };
                     }
@@ -171,328 +175,40 @@
                 defaultContent: '<div class="actions-dropdown"><span class="breadcrumb-icon">☰</span><div class="dropdown-menu"><a href="#" class="edit">Edit</a><a href="#" class="delete">Delete</a><a href="#" class="view-report">View Report</a></div></div>'
             }]
         });
-
-        // Filter by form
-        $('#form').on('change', function () 
-           {
-               table.column(4).search(this.value).draw();
-           });
-
-        // Filter by stream
-        $('#section').on('change', function () 
-            {
-                table.column(5).search(this.value).draw();
-            });
-        
-        // Filter by status
-        $('#status').on('change', function () 
-            {
-                table.column(6).search(this.value).draw();
-            });
-
     });
 
+    // Existing functionality for dropdown actions
+    $('#studentTable tbody').on('click', '.breadcrumb-icon', function (e) {
+        e.stopPropagation();
+        var dropdownMenu = $(this).siblings('.dropdown-menu');
+        $('.dropdown-menu').not(dropdownMenu).hide();
+        dropdownMenu.toggle();
+    });
 
-    $('#studentTable tbody').on('click', '.actions-dropdown', function(e) {
-            e.stopPropagation();
-            $(this).find('.dropdown-menu').toggle();
-        });
+    $(document).click(function () {
+        $('.dropdown-menu').hide();
+    });
 
-        // Close dropdown when clicking outside
-        $(document).click(function() {
-            $('.dropdown-menu').hide();
-        });
+    $('#studentTable tbody').on('click', '.edit', function () {
+        var data = table.row($(this).parents('tr')).data();
+        $('#modal').show().css({ top: $(this).offset().top, left: $(this).offset().left });
+        alert('Edit ' + data[0]); // Replace with actual edit functionality
+    });
 
-        // Handle edit
-        $('#studentTable tbody').on('click', '.edit', function() {
-            var data = table.row($(this).parents('tr')).data();
-            alert('Edit ' + data[0]); // Replace with actual edit functionality
-        });
-
-        // Handle delete
-        $('#studentTable tbody').on('click', '.delete', function() {
-            var data = table.row($(this).parents('tr')).data();
-            if (confirm('Are you sure you want to delete ' + data[0] + '?')) {
-                table.row($(this).parents('tr')).remove().draw();
-            }
-        });
+    $('#studentTable tbody').on('click', '.delete', function () {
+        var data = table.row($(this).parents('tr')).data();
+        if (confirm('Are you sure you want to delete ' + data[0] + '?')) {
+            table.row($(this).parents('tr')).remove().draw();
+        }
+    });
 
         // Handle view report
         $('#studentTable tbody').on('click', '.view-report', function() {
-            //alert("testing")
-           //var data = table.row($(this).parents('tr')).data();
-           //alert(data);
-            //generatePDFReport(); // Replace with actual PDF generation
-            generateReportInModal()
+            var data = table.row($(this).parents('tr')).data();
+            generatePDFReport(data); // Replace with actual PDF generation
+            
         });
 
-    //generating report from html template
-    function generatePDFReport() {
-    // Create a new iframe element
-        var iframe = document.createElement('iframe');
-        iframe.style.position = 'absolute';
-        iframe.style.width = '0px';
-        iframe.style.height = '0px';
-        iframe.style.border = 'none';
-        document.body.appendChild(iframe);
-
-        // Get the iframe document
-        var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-
-        // Write the HTML content to the iframe
-        iframeDoc.open();
-        iframeDoc.write(`
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Employee Report</title>
-                <style>
-                    body {
-                        font-family: Arial, sans-serif;
-                        margin: 0;
-                        padding: 0;
-                    }
-                    .container {
-                        width: 80%;
-                        margin: 20px auto;
-                        padding: 20px;
-                        border: 1px solid #ccc;
-                        border-radius: 8px;
-                    }
-                    .header, .footer {
-                        text-align: center;
-                        margin-bottom: 20px;
-                    }
-                    .header img {
-                        max-width: 100px;
-                    }
-                    .report-title {
-                        font-size: 24px;
-                        font-weight: bold;
-                        margin-bottom: 10px;
-                    }
-                    .details {
-                        margin-bottom: 20px;
-                    }
-                    .details table {
-                        width: 100%;
-                        border-collapse: collapse;
-                    }
-                    .details table th, .details table td {
-                        border: 1px solid #ddd;
-                        padding: 8px;
-                        text-align: left;
-                    }
-                    .details table th {
-                        background-color: #f4f4f4;
-                    }
-                    .footer {
-                        font-size: 12px;
-                        color: #777;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <div class="header">
-                        
-                        <div class="report-title">Employee Salary Report</div>
-                    </div>
-                    <div class="details">
-                        <table>
-                            <tr>
-                                <th>Name</th>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <th>Position</th>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <th>Office</th>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <th>Age</th>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <th>Salary</th>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <th>New Salary</th>
-                                <td></td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div class="footer">
-                        Report generated by Kakamega High School Office
-                    </div>
-                </div>
-            </body>
-            </html>
-        `);
-        iframeDoc.close();
-
-        // Wait for the content to load and then print
-        iframe.onload = function() {
-            iframe.contentWindow.focus();
-            iframe.contentWindow.print();
-            document.body.removeChild(iframe); // Remove the iframe after printing
-        };
-    }
-
-    //viewing the report in a modal
-function generateReportInModal() {
-    // Get the modal and the modal content container
-    var modal = document.getElementById('reportModal');
-    var reportContent = document.getElementById('reportContent');
-
-    // Set the report content
-    reportContent.innerHTML = `
-        <div class="container text-center">
-            <div class="header">
-                <img src="images/kakamega.png" alt="Company Logo" class="img-fluid mx-auto">
-                <div class="report-title">Employee Salary Report</div>
-            </div>
-            <div class="details">
-                <table class="table table-reponsive">
-                    <tr>
-                        <th>Name</th>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <th>Position</th>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <th>Office</th>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <th>Age</th>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <th>Salary</th>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <th>New Salary</th>
-                        <td></td>
-                    </tr>
-                </table>
-            </div>
-            <div class="footer">
-                Report generated by Kakamega High School Office
-            </div>
-        </div>
-    `;
-
-    // Display the modal
-    modal.style.display = "block";
-
-    // Get the <span> element that closes the modal
-    var span = document.getElementsByClassName("close")[0];
-
-    // When the user clicks on <span> (x), close the modal
-    span.onclick = function() {
-        modal.style.display = "none";
-    }
-
-    // When the user clicks anywhere outside of the modal, close it
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
-    }
-
-    // Print button functionality
-    var printButton = document.getElementById('printReportBtn');
-    printButton.onclick = function() {
-        var printWindow = window.open('', '', 'height=600,width=800');
-        printWindow.document.write(`
-            <html>
-            <head>
-                <title>Employee Report</title>
-                <style>
-                    body {
-                        font-family: Arial, sans-serif;
-                        margin: 0;
-                        padding: 0;
-                    }
-                    .container {
-                        width: 80%;
-                        margin: 20px auto;
-                        padding: 20px;
-                        border: 1px solid #ccc;
-                        border-radius: 8px;
-                    }
-                    .header, .footer {
-                        text-align: center;
-                        margin-bottom: 20px;
-                    }
-                    .header img {
-                        max-width: 100px;
-                    }
-                    .report-title {
-                        font-size: 24px;
-                        font-weight: bold;
-                        margin-bottom: 10px;
-                    }
-                    .details {
-                        margin-bottom: 20px;
-                    }
-                    .details table {
-                        width: 100%;
-                        border-collapse: collapse;
-                    }
-                    .details table th, .details table td {
-                        border: 1px solid #ddd;
-                        padding: 8px;
-                        text-align: left;
-                    }
-                    .details table th {
-                        background-color: #f4f4f4;
-                    }
-                    .footer {
-                        font-size: 12px;
-                        color: #777;
-                    }
-                </style>
-            </head>
-            <body>
-                ${reportContent.innerHTML}
-            </body>
-            </html>
-        `);
-        printWindow.document.close();
-        printWindow.print();
-    }
-}
-
- // Display the modal
- modal.style.display = "block";
-
-// Get the <span> element that closes the modal
-var span = document.getElementsByClassName("close")[0];
-
-// When the user clicks on <span> (x), close the modal
-span.onclick = function() {
-    modal.style.display = "none";
-}
-
-// When the user clicks anywhere outside of the modal, close it
-window.onclick = function(event) {
-    if (event.target == modal) {
-        modal.style.display = "none";
-    }
-}
-
- 
 
 
 
