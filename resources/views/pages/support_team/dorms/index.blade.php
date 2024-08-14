@@ -23,6 +23,7 @@
                                 <th>Name</th>
                                 <th>Capacity</th>
                                 <th>Occupancy</th>
+                                <th>Session</th>
                                 <th>Dorm master</th>
                                 {{-- <th>Description</th> --}}
                                 <th>Action</th>
@@ -35,6 +36,7 @@
                                     <td>{{ $d->name }}</td>
                                     <td>{{ $d->capacity }}</td>
                                     <td>{{ $users->where('user_type', 'student')->where('dorm_id', $d->id)->count() }}</td>
+                                    <td>{{ $d->session }}</td>
                                     <td>{{ $d->teacher ? $d->teacher->name : 'No dorm master assigned' }}</td>
                                     {{-- <td>{{ $d->description}}</td> --}}
                                     <td class="text-center">

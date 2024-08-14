@@ -1,5 +1,5 @@
 @extends('layouts.master')
-@section('page_title', 'Add Dorm Master - '.$c->name)
+@section('page_title', 'Add Dorm Master - ')
 @section('content')
 
 <div class="card">

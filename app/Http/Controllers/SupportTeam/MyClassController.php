@@ -50,7 +50,7 @@ class MyClassController extends Controller
         
         $mc = $this->my_class->create($data);
 
-       dd($mc);
+       
 
         // Create Default Section
         $s =['my_class_id' => $mc->id,
