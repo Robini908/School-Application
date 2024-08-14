@@ -34,7 +34,9 @@ class DormController extends Controller
 
     public function store(DormCreate $req)
     {
-        $data = $req->only(['name', 'capacity','dorm_master']);
+        $data = $req->all();
+        $data['session'] = $req->input('year_admitted');
+        
         $this->dorm->create($data);
         
 

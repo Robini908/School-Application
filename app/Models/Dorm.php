@@ -8,17 +8,14 @@ use App\Models\DormMaster;
 
 class Dorm extends Eloquent
 {
-    protected $fillable = ['name', 'capacity','occupancy','dorm_master','dorm_master_id', 'teacher_id'];
+    protected $fillable = ['name', 'capacity','user_id','session'];
 
-    public function users()
-    {
-        return $this-> hasOneThrough(User::class, DormMaster::class, 'user_id', 'id');
-    }
+    
 
     public function teacher()
     {
-        return $this->belongsTo(User::class, 'teacher_id');
-    }
+        return $this->belongsTo(User::class, 'user_id')->where('user_type', 'teacher');
+    } 
 
     public function student_record()
     {

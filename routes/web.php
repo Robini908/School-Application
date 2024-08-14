@@ -33,6 +33,11 @@ Route::get('classmasters/{id}/edit', 'ClassMasterController@edit')->name('classm
 Route::put('classmasters/{id}', 'ClassMasterController@update')->name('classmasters.update');
 
 
+Route::resource('dormasters', 'DormMasterController');
+Route::get('dormasters/{id}/edit', 'DormMasterController@edit')->name('dormasters.edit');
+Route::put('dormasters/{id}', 'DormMasterController@update')->name('dormasters.update');
+
+
 
 Route::resource('grading_system', 'GradingSystemController')->name('grading_system', ['except' => ['show']]);
 Route::group(['prefix' => 'grading_system/{grading_system}'], function () {
