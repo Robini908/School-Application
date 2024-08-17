@@ -24,14 +24,20 @@ class MyClassController extends Controller
         $this->user = $user;
     }
 
-    public function index($class_id=NULL) 
+    public function index() 
     {
         $d['my_classes'] = $this->my_class->all();
+
         /* $d['teachers'] = $this->user->getUserByType('teacher'); */
         /* $d['class_types'] = $this->my_class->getTypes(); */
-        $d['students'] = $this->my_class->countStudents($class_id);
-        $d['teachers'] = $this->user->getUserByType('teacher');
+       
+        /* $d['teachers'] = $this->user->getUserByType('teacher'); */
         $d['users'] = $this->user->getAll();
+
+        $d['teachers'] = $this->user->getUserByType('teacher');
+        $d['teacherids'] = $this->user->getTeacherIds();
+        
+       
         
 
         return view('pages.support_team.classes.index', $d); 
@@ -40,7 +46,11 @@ class MyClassController extends Controller
     public function store(ClassCreate $req)
     {
         $data = $req->all();
+        $data['session'] = $req->input('year_admitted');
+        
         $mc = $this->my_class->create($data);
+
+       
 
         // Create Default Section
         $s =['my_class_id' => $mc->id,
@@ -68,15 +78,21 @@ class MyClassController extends Controller
     {
 
         $class = MyClass::findorFail($id);
+
         
-        $class->teacher_id = Qs::unhash($req-> input('teacher_id'));
+        
+        $class->user_id = Qs::unhash($req-> input('teacher_id'));
         $class->name = $req-> input('name');
+        
+       
         $class->save();
         /* $data = $req->only(['name','teacher_id']);
         $this->my_class->update($id, $data); */
-
-        return Qs::jsonUpdateOk();
+        return redirect()->route('classes.index')->with('success', 'Record Updated Successfully');
+         /* return Qs::jsonUpdateOk(); */
     }
+       
+
 
     public function destroy($id)
     {

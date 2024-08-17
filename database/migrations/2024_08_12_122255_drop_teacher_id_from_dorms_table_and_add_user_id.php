@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddSessionAndUserIdToMyClassesTable extends Migration
+class DropTeacherIdFromDormsTableAndAddUserId extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,12 @@ class AddSessionAndUserIdToMyClassesTable extends Migration
      */
     public function up()
     {
-        Schema::table('my_classes', function (Blueprint $table) {
-            $table->string('session')->nullable();
+        Schema::table('dorms', function (Blueprint $table) {
+            $table->dropColumn(['teacher_id','dorm_master_id','occupancy','dorm_master']);
+
             $table->unsignedInteger('user_id')->nullable();
+            $table->string('session')->nullable();
+
             $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
         });
     }
@@ -27,9 +30,9 @@ class AddSessionAndUserIdToMyClassesTable extends Migration
      */
     public function down()
     {
-        Schema::table('my_classes', function (Blueprint $table) {
+        Schema::table('dorms', function (Blueprint $table) {
             $table->dropForeign(['user_id']);
-            $table->dropColumn(['session', 'user_id']);
+            $table->dropColumn(['session','user_id']);
         });
     }
 }

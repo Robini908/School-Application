@@ -34,6 +34,16 @@ Route::resource('view-class', 'ViewClassController');
 Route::get('view-class', 'ViewClassController@index')->name('view-class.index');
 Route::get('view-class/{id}', 'ViewClassController@show')->name('view-class.show');
 
+Route::resource('classmasters', 'ClassMasterController');
+Route::get('classmasters/{id}/edit', 'ClassMasterController@edit')->name('classmasters.edit');
+Route::put('classmasters/{id}', 'ClassMasterController@update')->name('classmasters.update');
+
+
+Route::resource('dormasters', 'DormMasterController');
+Route::get('dormasters/{id}/edit', 'DormMasterController@edit')->name('dormasters.edit');
+Route::put('dormasters/{id}', 'DormMasterController@update')->name('dormasters.update');
+
+
 
 Route::resource('grading_system', 'GradingSystemController')->name('grading_system', ['except' => ['show']]);
 Route::group(['prefix' => 'grading_system/{grading_system}'], function () {

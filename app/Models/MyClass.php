@@ -7,7 +7,7 @@ use Eloquent;
 
 class MyClass extends Eloquent
 {
-    protected $fillable = ['name', 'entry','teacher_id'];
+    protected $fillable = ['name', 'session','user_id'];
 
     public function section()
     {
@@ -24,8 +24,11 @@ class MyClass extends Eloquent
         return $this->hasMany(StudentRecord::class);
     }
 
-    public function teacher()
+     public function teacher()
     {
-        return $this->belongsTo(User::class, 'teacher_id');
-    }
+        return $this->belongsTo(User::class, 'user_id')->where('user_type', 'teacher');
+    } 
+
+    
+
 }

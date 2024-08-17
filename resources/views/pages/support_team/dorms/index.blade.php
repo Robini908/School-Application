@@ -23,6 +23,7 @@
                                 <th>Name</th>
                                 <th>Capacity</th>
                                 <th>Occupancy</th>
+                                <th>Session</th>
                                 <th>Dorm master</th>
                                 {{-- <th>Description</th> --}}
                                 <th>Action</th>
@@ -35,6 +36,7 @@
                                     <td>{{ $d->name }}</td>
                                     <td>{{ $d->capacity }}</td>
                                     <td>{{ $users->where('user_type', 'student')->where('dorm_id', $d->id)->count() }}</td>
+                                    <td>{{ $d->session }}</td>
                                     <td>{{ $d->teacher ? $d->teacher->name : 'No dorm master assigned' }}</td>
                                     {{-- <td>{{ $d->description}}</td> --}}
                                     <td class="text-center">
@@ -54,7 +56,10 @@
                                                     <a id="{{ $d->id }}" onclick="confirmDelete(this.id)" href="#" class="dropdown-item"><i class="icon-trash"></i> Delete</a>
                                                     <form method="post" id="item-delete-{{ $d->id }}" action="{{ route('dorms.destroy', $d->id) }}" class="hidden">@csrf @method('delete')</form>
                                                         @endif
-
+                                                        @if(Qs::userIsTeamSA())
+                                                        {{--Edit--}}
+                                                        <a href="{{ route('dormasters.edit', $d->id) }}" class="dropdown-item"><i class="icon-pencil"></i> Add dorm master</a>
+                                                       @endif
                                                 </div>
                                             </div>
                                         </div>
@@ -83,6 +88,17 @@
                                         <input name="capacity" value="{{ old('capacity') }}" required type="text" class="form-control" placeholder="Capacity">
                                     </div>
                                 </div>
+                                <div class="form-group row">
+                                    <label class="col-lg-3 col-form-label font-weight-semibold">Session <span class="text-danger">*</span></label>
+                                    <select data-placeholder="Choose..." required name="year_admitted" id="year_admitted" class="custom-select">
+                                        <option value="session"></option>
+                                        @for($y = date('Y', strtotime('-40 years')); $y <= date('Y'); $y++)
+                                            <option {{ (old('year_admitted') == $y) ? 'selected' : '' }} value="{{ $y }}">
+                                                {{ $y }}
+                                            </option>
+                                        @endfor
+                                    </select>
+                                </div> 
 
                                 {{-- <div class="form-group row">
                                     <label class="col-lg-3 col-form-label font-weight-semibold">Description</label>

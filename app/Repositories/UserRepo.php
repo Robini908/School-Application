@@ -31,6 +31,13 @@ class UserRepo {
         return User::where(['user_type' => $type])->orderBy('name', 'asc')->get();
     }
 
+    public function getTeacherIds(){
+
+        return User::where(['user_type' => 'teacher'])->pluck('id')->toArray();
+    }
+
+
+
     public function getAllTypes()
     {
         return UserType::all();
@@ -72,4 +79,6 @@ class UserRepo {
     {
         return BloodGroup::orderBy('name')->get();
     }
+
+    //get teacher 
 }

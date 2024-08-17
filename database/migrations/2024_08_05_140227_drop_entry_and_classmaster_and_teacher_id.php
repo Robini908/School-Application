@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class RemoveEntryClassmasterTeacherId extends Migration
+class DropEntryAndClassmasterAndTeacherId extends Migration
 {
     /**
      * Run the migrations.
@@ -14,9 +14,7 @@ class RemoveEntryClassmasterTeacherId extends Migration
     public function up()
     {
         Schema::table('my_classes', function (Blueprint $table) {
-            $table->dropColumn('entry');
-            $table->dropColumn('classmaster');
-            $table->dropColumn('teacher_id');
+            $table->dropColumn(['entry', 'classmaster', 'teacher_id']);
         });
     }
 
