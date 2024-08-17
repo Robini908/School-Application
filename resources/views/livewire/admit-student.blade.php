@@ -1,5 +1,5 @@
 
-    <div class="card container">
+<div class="card container">
         {{--<form id="ajax-reg" method="post" enctype="multipart/form-data" class="wizard-form steps-validation"
             action="{{ route('students.store') }}" data-fouc> --}}
         <form  method="post" enctype="multipart/form-data" class="wizard-form steps-validation"

@@ -1,8 +1,51 @@
-<div class="card mt-4 shadow-sm" x-data="{ showModal: false, selectedStudentId: null }">
+<!--<div class="card mt-4 shadow-sm" x-data="{ showModal: false, selectedStudentId: null }">-->
+<div class="tab-pane fade show active container-fluid" id="manage-students" >
     <div class="card-body">
+        <div class="card container-fluid m-2" style="width:98%;">
+            <div class="row g-3 align-items-center m-1">
+              <div class="col-auto">
+                <label for="officeFilter" class="form-label">Form: </label>
+              </div>
+              <div class="col-auto">
+                <select id="form" class="form-control p-1">
+                    <option value="">Select Form...</option>
+                    <option value="">All</option>
+                    <option value="Form 1">Form 1</option>
+                    <option value="Form 2">Form 2 </option>
+                    <option value="Form 3">Form 3 </option>
+                    <option value="Form 4">Form 4 </option>
+                </select>
+              </div> 
+              <div class="col-auto">
+                <label  class="col-form-label">Stream:</label>
+              </div>
+              <div class="col-auto">
+                <select id="section" class="form-control p-1">
+                    <option value="">Select Stream...</option>
+                    <option value="">All</option>
+                    <option value="Diamond">Diamond</option>
+                    <option value="Silver">Silver</option>                        
+                </select>
+              </div>   
+              <div class="col-auto">
+                <label  class="col-form-label">Status:</label>
+              </div>
+              <div class="col-auto">
+                <select id="status" class="form-control p-1">
+                    <option value="">Select Status...</option>
+                    <option value="">All</option>
+                    <option value="verified">Verified</option>
+                    <option value="unverified">Unverified</option>                        
+                </select>
+              </div>               
+            </div>
+            
+            <div class="row g-3 align-items-center m-1">
+                         
+            </div>
+        </div>
         <!-- Dashboard Overview -->
-        <div class="container-fluid mt-4">
-
+        <div class=" container-fluid m-auto m-1 p-1 mt-3">
             <!-- Display success and error messages -->
             @if (session()->has('message'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -19,11 +62,11 @@
             @endif
 
             <!-- Report Filter Component -->
-            @livewire('report-filter')
+           {{--   @livewire('report-filter')--}}
 
             <!-- Data Table -->
-            <div class="table-responsive mt-4">
-                <table id="studentTable" class="table table-hover table-bordered">
+            
+                <table id="studentTable" class="table table-responsive table-hover table-bordered">
                     <thead class="table-light">
                         <tr>
                             <th>Admission</th>
@@ -93,8 +136,7 @@
                         @endforeach
                     </tbody>
                 </table>
-            </div>
-
+           
         </div>
     </div>
 </div>

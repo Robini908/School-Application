@@ -3,9 +3,6 @@
 @section('content')
 <link href=" {{ asset('assets/css/admit_student.css') }}" rel="stylesheet" type="text/css">
 <div class="card">
-    <div class="card-header bg-white header-elements-inline">
-        {!! Qs::getPanelOptions() !!}
-    </div>
     <div class="card-body">
         <ul class="nav nav-tabs nav-tabs-highlight p-3">
             <li class="nav-item">
@@ -21,29 +18,16 @@
             </li>
         </ul>
 
-        <div class="tab-content mt-1">
+        <div class="tab-content" style="margin-top:-50px;">
             <!-- Manage Students Tab -->
             <div class="tab-pane fade show active" id="manage-students">
                 @livewire('manage-students')
             </div>
-            <div class="tab-pane fade " id="admit-student">
+            <div class="tab-pane fade p-1" id="admit-student" style="margin-top:-20px;">
                 @livewire('admit-student')
             </div>
-
-
-
-            <div class="tab-pane fade" id="bulk-admit">
-                <div class="card container">
-                    <form method="POST" action="" enctype="multipart/form-data">
-                        @csrf
-                        <div class="form-group">
-                            <label for="bulk_files">Upload Bulk Files:</label>
-                            <input type="file" name="bulk_files[]" id="bulk_files" class="form-control-file" multiple>
-                            <small class="form-text text-muted">Upload Excel, Word, or PDF files.</small>
-                        </div>
-                        <button type="submit" class="btn btn-md btn-primary m-1 float-right">Upload Files</button>
-                    </form>
-                </div>
+            <div class="tab-pane fade p-1" id="bulk-admit" style="margin-top:-20px;">
+                @livewire('addbulk')
             </div>
         </div>
     </div>

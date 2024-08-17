@@ -207,7 +207,7 @@
         @include('partials.menu')
         <div class="content-wrapper">
 
-            @include('partials.header')
+           {{-- @include('partials.header')--}}
 
             {{-- Include Notify Component --}}
             @include('notify::components.notify')

@@ -15,9 +15,9 @@
     <!-- Sidebar content -->
     <div class="sidebar-content">
 
-        <div class="sidebar-user">
+         {{-- <div class="sidebar-user">
             <div class="card-body">
-                <div class="media">
+              <div class="media">
                     <div class="mr-3">
                         @php
                         $userPhoto = Auth::user()->photo;
@@ -43,7 +43,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div>--}}
 
 
         <!-- Main navigation -->

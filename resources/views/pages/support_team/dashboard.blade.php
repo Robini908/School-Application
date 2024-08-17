@@ -6,7 +6,7 @@
        <div class="row">
            <!-- Total Students Card -->
            <div class="col-sm-6 col-xl-3">
-               <div class="card card-body bg-blue-400 has-bg-image">
+               <div class="card card-body bg-blue-400 has-bg-image" style="height: 100px;">
                    <div class="media">
                        <div class="media-body">
                            <h3 class="mb-0">{{ $users->where('user_type', 'student')->count() }}</h3>
@@ -22,7 +22,7 @@
 
            <!-- Total Teachers Card -->
            <div class="col-sm-6 col-xl-3">
-               <div class="card card-body bg-danger-400 has-bg-image">
+               <div class="card card-body bg-danger-400 has-bg-image" style="height: 100px;">
                    <div class="media">
                        <div class="media-body">
                            <h3 class="mb-0">{{ $users->where('user_type', 'teacher')->count() }}</h3>
@@ -38,7 +38,7 @@
 
            <!-- Total Administrators Card -->
            <div class="col-sm-6 col-xl-3">
-               <div class="card card-body bg-success-400 has-bg-image">
+               <div class="card card-body bg-success-400 has-bg-image" style="height: 100px;">
                    <div class="media">
                        <div class="mr-3 align-self-center">
                            <i class="icon-pointer icon-3x opacity-75"></i>
@@ -54,7 +54,7 @@
 
            <!-- Total Parents Card -->
            <div class="col-sm-6 col-xl-3">
-               <div class="card card-body bg-indigo-400 has-bg-image">
+               <div class="card card-body bg-indigo-400 has-bg-image" style="height: 100px;">
                    <div class="media">
                        <div class="mr-3 align-self-center">
                            <i class="icon-user icon-3x opacity-75"></i>
@@ -75,11 +75,11 @@
     <div class="card-body">
         <div class="row">
             <!-- Left side with calendar -->
-            <div class="col-lg-6">
+            <div class="col m-1">
                 <div class="card bg-light shadow-sm h-100"> <!-- Added 'h-100' class to make the card fill the height -->
-                    <div class="card-header bg-primary text-white">
+                    {{--<div class="card-header bg-primary text-white">
                         <h5 class="card-title mb-0">School Events Calendar</h5>
-                    </div>
+                    </div>--}}
                     <div class="card-body">
                         <div class="fullcalendar-basic">
                             <!-- Your calendar content goes here -->
@@ -89,7 +89,7 @@
             </div>
 
             <!-- Right side with visualization -->
-            <div class="col-lg-6">
+           {{--<div class="col-lg-6">
                 <div class="card bg-light shadow-sm h-100"> <!-- Added 'h-100' class to make the card fill the height -->
                     <div class="card-header bg-success text-white">
                         <h5 class="card-title mb-0">All users(Pie Chart)</h5>
@@ -98,7 +98,7 @@
                         <canvas id="userPieChart"></canvas>
                     </div>
                 </div>
-            </div>
+            </div>--}}
         </div>
     </div>
 </div>
@@ -106,72 +106,8 @@
     {{--Events Calendar Ends--}}
 
     {{-- Recent Students Panel Begins --}}
-    <div class="card">
-    <div class="card-body">
-        <h5 class="card-title mb-4">Recently Added Students</h5>
-        <div class="table-responsive">
-            <table class="table datatable-button-html5-columns">
-                <thead class="thead-dark">
-                    <tr>
-                        <th class="text-center">Admission Number</th>
-                        <th class="text-center">Name</th>
-                        <th class="text-center">Dorm Room Number</th>
-                        <th class="text-center">Session</th>
-                        <th class="text-center">Year Admitted</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($users->where('user_type', 'student') as $student)
-                    <tr>
-                        <td class="text-center">{{ $student->adm_no }}</td>
-                        <td>{{ $student->name }}</td>
-                        <td class="text-center">{{ $student->dorm_room_no }}</td>
-                        <td class="text-center">{{ $student->session }}</td>
-                        <td class="text-center">{{ $student->year_admitted }}</td>
-                    </tr>
-                    @endforeach 
-                </tbody>
-            </table>
-        </div>
-    </div>
+<div class="card">
+    @livewire('manage-students')
 </div>
-
-
-    {{-- Recent Students Panel Ends --}}
-    {{-- Recent Teachers Panel Starts --}}
-    <div class="card">
-    <div class="card-body">
-        <h5 class="card-title">Recently Added Teachers</h5>
-        <div class="table-responsive">
-            <table class="table datatable-button-html5-columns">
-                <thead class="thead-dark">
-                    <tr>
-                        <th scope="col">Employee ID</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Email</th>
-                        <th scope="col">Department</th>
-                        <th scope="col">Date Added</th>
-                    </tr>
-                </thead>
-                <tbody>
-                
-                   @foreach($users->where('user_type', 'teacher') as $teacher)
-                    <tr>
-                        <td>{{ $teacher->employee_id }}</td>
-                        <td>{{ $teacher->name }}</td>
-                        <td>{{ $teacher->email }}</td>
-                        <td>{{ $teacher->department }}</td>
-                        <td>{{ $teacher->created_at ? $teacher->created_at->format('Y-m-d') : '' }}</td>
-                    </tr>
-                    @endforeach 
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-
-{{-- Recent Teachers Panel Ends --}}
-
 
 @endsection
