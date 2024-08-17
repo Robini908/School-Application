@@ -7,9 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta id="csrf-token" name="csrf-token" content="{{ csrf_token() }}">
     <meta name="author" content="CJ Inspired">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.7.1/css/buttons.dataTables.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.7.1/css/buttons.dataTables.min.css">
 
     <title> @yield('page_title') | {{ config('app.name') }} </title>
 
@@ -73,64 +72,47 @@
             padding: 1rem;
         }
 
-        /* Flex container for side-by-side layout */
-        .flex {
-            display: flex;
-            gap: 1rem;
-            /* Adds space between cards */
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            position: relative;
         }
 
-        /* Card styling for both report-generator and advanced-filter */
-        .report-generator,
-        .advanced-filter {
-            flex: 1;
-            /* Ensures both cards take up equal space */
-            background-color: #ffffff;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 1rem;
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 20px;
         }
 
-        /* Styling for report generator */
-        .report-generator {
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
         }
 
-        /* Styling for advanced filter */
-        .advanced-filter {
-            background-color: #ffffff;
-            border: 1px solid #ddd;
+        #reportContent {
+            margin-top: 10px; 
+            padding:5px;
+            border: 1px solid green;
+            border-radius: 0px;
+            background-color:#fff;
+            /* Add margin to avoid overlap with close button */
         }
 
-        /* Input group styling */
-        .input-group {
-            margin-bottom: 1rem;
-        }
-
-        /* Label styling inside input group */
-        .input-group label {
+        #printReportBtn {
             display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-        }
-
-        /* Input styling inside input group */
-        .input-group input,
-        .input-group select {
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #ccc;
-            border-radius: 0.25rem;
-        }
-
-        /* Button styling */
-        #generateReports,
-        #applyFilter {
-            background-color: #3b82f6;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #4CAF50;
             color: white;
-            padding: 0.5rem 1rem;
             border: none;
             border-radius: 0.25rem;
             cursor: pointer;
@@ -195,6 +177,7 @@
         .hover\:bg-green-600:hover {
             background-color: #059669;
         }
+
     </style>
 
 
