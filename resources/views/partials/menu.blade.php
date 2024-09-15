@@ -161,6 +161,14 @@
                                 <span class="fas fa-thumbs-down text-danger"></span>Grading System</a>
                         </li>
 
+                        <li class="nav-item  {{ in_array(Route::currentRouteName(), ['exams.index']) ? 'nav-item-expanded nav-item-open' : '' }}">
+                            <a href="{{ route('exams.index') }}" class="nav-link">
+                                <span> Exam Management</span>
+                            </a>
+                        </li>
+
+
+
 
                         {{--Exams--}}
                         @if(Qs::userIsTeamSAT())

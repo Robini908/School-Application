@@ -21,6 +21,9 @@
 
 
 
+
+
+
 {{--<!-- /global stylesheets -->--}}
 
 {{--DatePickers--}}
@@ -35,6 +38,7 @@
 <link href=" {{ asset('assets/css/class.css') }}" rel="stylesheet" type="text/css">
 <link href=" {{ asset('assets/css/index_grading.css') }}" rel="stylesheet" type="text/css">
 <link href=" {{ asset('assets/css/index_subject.css') }}" rel="stylesheet" type="text/css">
+<link href=" {{ asset('assets/css/jquery-datatables.css') }}" rel="stylesheet" type="text/css">
 
 
 

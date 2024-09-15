@@ -1,0 +1,162 @@
+
+/* Custom styles for the dropdown menu */
+.actions-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.actions-dropdown .breadcrumb-icon {
+    cursor: pointer;
+    padding: 5px 10px;
+    border: none;
+    background: #e9ecef;
+    border-radius: 4px;
+}
+
+.actions-dropdown .dropdown-menu {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 100%;
+    background: #fff;
+    border: 1px solid #ddd;
+    z-index: 1000;
+    padding: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.actions-dropdown .dropdown-menu a {
+    display: block;
+    padding: 5px;
+    text-decoration: none;
+    color: #007bff;
+}
+
+.actions-dropdown .dropdown-menu a:hover {
+    background: #f8f9fa;
+}
+
+#modal {
+    display: none;
+    position: absolute;
+    z-index: 2000;
+    width: 300px;
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Container for layout */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    position: relative;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#reportContent {
+    margin-top: 10px; 
+    padding:5px;
+    border: 1px solid green;
+    border-radius: 0px;
+    background-color:#fff;
+    /* Add margin to avoid overlap with close button */
+}
+
+#printReportBtn {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* Button hover effect */
+#generateReports:hover,
+#applyFilter:hover {
+    background-color: #2563eb;
+}
+
+/* Additional Tailwind CSS classes */
+.text-lg {
+    font-size: 1.125rem;
+}
+
+.font-bold {
+    font-weight: 700;
+}
+
+.mb-4 {
+    margin-bottom: 1rem;
+}
+
+.block {
+    display: block;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.border {
+    border: 1px solid #d1d5db;
+}
+
+.border-gray-300 {
+    border-color: #d1d5db;
+}
+
+.shadow-sm {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.bg-blue-500 {
+    background-color: #3b82f6;
+}
+
+.text-white {
+    color: #ffffff;
+}
+
+.hover\:bg-blue-600:hover {
+    background-color: #2563eb;
+}
+
+.bg-green-500 {
+    background-color: #10b981;
+}
+
+.hover\:bg-green-600:hover {
+    background-color: #059669;
+}
+
