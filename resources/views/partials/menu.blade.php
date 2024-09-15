@@ -150,7 +150,7 @@
                         <li class="nav-item">
                             <a href="{{ route('grades.index') }}"
                                 class="nav-link {{ in_array(Route::currentRouteName(), ['grades.index', 'grades.edit']) ? 'active' : '' }}">
-                                <span class="fas fa-thumbs-down text-danger"></span>Grading</a>
+                                <span ></span>Grading</a>
                         </li>
 
 
@@ -158,7 +158,7 @@
                         <li class="nav-item">
                             <a href="{{ route('grading_system.index') }}"
                                 class="nav-link {{ in_array(Route::currentRouteName(), ['grading_system.index', 'grading_system.edit','grading_system.create']) ? 'active' : '' }}">
-                                <span class="fas fa-thumbs-down text-danger"></span>Grading System</a>
+                                <span ></span>Grading System</a>
                         </li>
 
                         <li class="nav-item  {{ in_array(Route::currentRouteName(), ['exams.index']) ? 'nav-item-expanded nav-item-open' : '' }}">
