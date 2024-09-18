@@ -29,6 +29,14 @@ Route::get('/student-info/{id}', function ($id) {
     return view('pages.support_team.students.student_info', ['student' => $id]);
 })->name('student.info');
 
+
+Route::get('/pages/support_team/exams/set', function () {
+    return view('pages.support_team.exams.set');
+})->name('exams.set');
+
+
+
+
 //Route to view class details
 Route::resource('view-class', 'ViewClassController');
 Route::get('view-class', 'ViewClassController@index')->name('view-class.index');

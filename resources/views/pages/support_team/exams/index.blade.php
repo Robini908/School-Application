@@ -96,7 +96,7 @@
                         @livewire('exam-analysis')
                     </div>
                     <div x-show="subTab === 'reports'" class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <!-- Content for Reports -->
+                        {{-- <!-- Content for Reports --> --}}
                         @livewire('exam-report')
                     </div>
                 </div>

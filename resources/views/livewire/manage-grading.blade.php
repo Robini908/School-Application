@@ -72,7 +72,7 @@
                             @endforeach
                         </div>
 
-                        <!-- Tailwind CSS Pagination Links -->
+                        
                         <div class="mt-4">
                             {{ $gradingSystems->links() }}
                         </div>

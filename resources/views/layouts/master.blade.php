@@ -23,10 +23,6 @@
 
     @include('partials.inc_top')
     @livewireStyles
-
-   
-
-
 </head>
 
 <body
@@ -82,8 +78,10 @@
     </div>
     <x-notify::notify />
     @include('partials.inc_bottom')
-    @livewireScripts
+   
     @yield('scripts')
+
+    @livewireScripts
 </body>
 
 </html>

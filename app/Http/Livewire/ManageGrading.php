@@ -14,7 +14,7 @@ class ManageGrading extends Component
     public $name;
     public $subjects;
 
-    protected $paginationTheme = 'tailwind'; // Ensure Tailwind pagination styles are used
+    protected $paginationTheme = 'bootstrap'; // Ensure Tailwind pagination styles are used
 
     public function mount()
     {

@@ -39,7 +39,7 @@
                                     <td>{{ $c->teacher ? $c->teacher->name : 'No teacher assigned' }}</td>
                                     <td>{{ $c->session }}</td>
                                     <td class="text-center">
-                                        <div><a href="{{ route('view-class.show', $c->id) }}">View class</a></div>
+                                        <div><a href="{{ route('view-class.show', $c->id) }} wire:navigate.hover">View class</a></div>
                                         <div class="list-icons">
                                             <div class="dropdown">
                                                 <a href="#" class="list-icons-item" data-toggle="dropdown">
@@ -49,16 +49,16 @@
                                                 <div class="dropdown-menu dropdown-menu-left">
                                                     @if(Qs::userIsTeamSA())
                                                     {{--Edit--}}
-                                                    <a href="{{ route('classes.edit', $c->id) }}" class="dropdown-item"><i class="icon-pencil"></i> Edit</a>
+                                                    <a href="{{ route('classes.edit', $c->id) }}" wire:navigate.hover class="dropdown-item"><i class="icon-pencil"></i> Edit</a>
                                                    @endif
                                                         @if(Qs::userIsSuperAdmin())
                                                     {{--Delete--}}
                                                     <a id="{{ $c->id }}" onclick="confirmDelete(this.id)" href="#" class="dropdown-item"><i class="icon-trash"></i> Delete</a>
-                                                    <form method="post" id="item-delete-{{ $c->id }}" action="{{ route('classes.destroy', $c->id) }}" class="hidden">@csrf @method('delete')</form>
+                                                    <form method="post" id="item-delete-{{ $c->id }}" action="{{ route('classes.destroy', $c->id) }}" wire:navigate.hover class="hidden">@csrf @method('delete')</form>
                                                         @endif
                                                         @if(Qs::userIsTeamSA())
                                                         {{--Add Classmaster--}}
-                                                        <a href="{{ route('classmasters.edit', $c->id) }}" class="dropdown-item"><i class="icon-pencil"></i> Add Classmaster</a>
+                                                        <a href="{{ route('classmasters.edit', $c->id) }}" wire:navigate.hover class="dropdown-item"><i class="icon-pencil"></i> Add Classmaster</a>
                                                        @endif
 
                                                 </div>

@@ -163,9 +163,16 @@
 
                         <li class="nav-item  {{ in_array(Route::currentRouteName(), ['exams.index']) ? 'nav-item-expanded nav-item-open' : '' }}">
                             <a href="{{ route('exams.index') }}" class="nav-link">
+                                <span> Exam Manage</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-item {{ in_array(Route::currentRouteName(), ['exams.set']) ? 'nav-item-expanded nav-item-open' : '' }}">
+                            <a href="{{ route('exams.set') }}" class="nav-link">
                                 <span> Exam Management</span>
                             </a>
                         </li>
+                        
 
 
 
@@ -174,6 +181,8 @@
                         @if(Qs::userIsTeamSAT())
                         <li
                             class="nav-item nav-item-submenu {{ in_array(Route::currentRouteName(), ['exams.index', 'exams.edit', 'grades.index', 'grades.edit', 'marks.index', 'marks.manage', 'marks.bulk', 'marks.tabulation', 'marks.show', 'marks.batch_fix',]) ? 'nav-item-expanded nav-item-open' : '' }} ">
+                       
+                       
                             <a href="#" class="nav-link"><span> Exams</span></a>
 
                             <ul class="nav nav-group-sub" data-submenu-title="Manage Exams">

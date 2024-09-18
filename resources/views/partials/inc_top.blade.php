@@ -32,12 +32,12 @@
 
 {{-- Custom App CSS--}}
 <link href=" {{ asset('assets/css/qs.css') }}" rel="stylesheet" type="text/css">
-<link href=" {{ asset('assets/css/admit_student.css') }}" rel="stylesheet" type="text/css">
+{{-- <link href=" {{ asset('assets/css/admit_student.css') }}" rel="stylesheet" type="text/css">
 <link href=" {{ asset('assets/css/add_grading.css') }}" rel="stylesheet" type="text/css">
 <link href=" {{ asset('assets/css/admin_dashboard.css') }}" rel="stylesheet" type="text/css">
 <link href=" {{ asset('assets/css/class.css') }}" rel="stylesheet" type="text/css">
 <link href=" {{ asset('assets/css/index_grading.css') }}" rel="stylesheet" type="text/css">
-<link href=" {{ asset('assets/css/index_subject.css') }}" rel="stylesheet" type="text/css">
+<link href=" {{ asset('assets/css/index_subject.css') }}" rel="stylesheet" type="text/css"> --}}
 <link href=" {{ asset('assets/css/jquery-datatables.css') }}" rel="stylesheet" type="text/css">
 
 
