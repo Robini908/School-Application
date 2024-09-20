@@ -30,7 +30,7 @@
                                 <label for="category" class="col-lg-3 col-form-label font-weight-semibold">Select
                                     Subject <span class="text-danger">*</span></label>
                                 <div class="col-lg-9">
-                                    <select id="category" class="form-control select2" required>
+                                    <select id="category" class="form-control select2" >
                                         <option value="">Select Subject</option>
                                         <optgroup label="Core Subjects (Compulsory)">
                                             <option value="English" data-abbrev="ENG" data-code="101">English</option>
@@ -64,8 +64,7 @@
                                                 Hindu Religious Education</option>
                                         </optgroup>
                                         <optgroup label="Applied Technical Subjects">
-                                            <!-- Add options for Applied Technical Subjects here -->
-                                            <!-- Example: <option value="Applied Technical Subject" data-abbrev="XXX" data-code="XXX">Applied Technical Subject</option> -->
+
                                         </optgroup>
                                         <optgroup label="Languages and Others">
                                             <option value="Business Studies" data-abbrev="BUS" data-code="565">Business

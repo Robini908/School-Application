@@ -1,143 +1,143 @@
 @extends('layouts.master')
-
 @section('page_title', 'Manage Exams')
-
 @section('content')
-<div class="container-fluid p-0">
-    <div x-data="{ mainTab: 'exam-management', subTab: 'exam-list' }" class="bg-white shadow-lg rounded-lg border border-gray-200">
-        <!-- Main Tabs (Exam Management, Grading System) -->
-        <ul class="nav nav-tabs border-b border-gray-300 mb-6">
-            <li class="nav-item">
-                <a href="#" @click.prevent="mainTab = 'exam-management'; subTab = 'exam-list'"
-                   :class="{ 'active': mainTab === 'exam-management' }"
-                   class="nav-link rounded-md px-4 py-2 transition-colors duration-300"
-                   :class="{ 'bg-gray-200 text-blue-700': mainTab === 'exam-management', 'text-gray-600': mainTab !== 'exam-management' }">
-                   <i class="fas fa-clipboard-list"></i> Exam Management
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="#" @click.prevent="mainTab = 'grading-system'; subTab = 'grade-list'"
-                   :class="{ 'active': mainTab === 'grading-system' }"
-                   class="nav-link rounded-md px-4 py-2 transition-colors duration-300"
-                   :class="{ 'bg-gray-200 text-blue-700': mainTab === 'grading-system', 'text-gray-600': mainTab !== 'grading-system' }">
-                   <i class="fas fa-chart-bar"></i> Grading System
-                </a>
-            </li>
+
+<div class="card">
+    <div class="card-header header-elements-inline">
+        <h6 class="card-title">Manage Exams</h6>
+        {!! Qs::getPanelOptions() !!}
+    </div>
+
+    <div class="card-body">
+        <ul class="nav nav-tabs nav-tabs-highlight">
+            <li class="nav-item"><a href="#all-exams" class="nav-link active" data-toggle="tab">Manage Exam</a></li>
+            <li class="nav-item"><a href="#new-exam" class="nav-link" data-toggle="tab"><i class="icon-plus2"></i> Add Exam</a></li>
         </ul>
 
-        <!-- Content for Main Tabs -->
-        <div class="p-4">
-            <!-- Exam Management Tab -->
-            <div x-show="mainTab === 'exam-management'" class="tab-content">
-                <!-- Sub-tabs for Exam Management -->
-                <ul class="nav nav-pills mb-6">
-                    <li class="nav-item">
-                        <a href="#" @click.prevent="subTab = 'exam-list'"
-                           :class="{ 'active': subTab === 'exam-list' }"
-                           class="nav-link rounded-md px-4 py-2 transition-colors duration-300"
-                           :class="{ 'bg-gray-100 text-blue-600': subTab === 'exam-list', 'text-gray-500': subTab !== 'exam-list' }">
-                           <i class="fas fa-list"></i> Exam List
-                        </a>
-                    </li>
-                    @if(Qs::userIsTeamSAT())
-                    <li class="nav-item">
-                        <a href="#" @click.prevent="subTab = 'marks'"
-                           :class="{ 'active': subTab === 'marks' }"
-                           class="nav-link rounded-md px-4 py-2 transition-colors duration-300"
-                           :class="{ 'bg-gray-100 text-blue-600': subTab === 'marks', 'text-gray-500': subTab !== 'marks' }">
-                           <i class="fas fa-tachometer-alt"></i> Marks
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" @click.prevent="subTab = 'marksheet'"
-                           :class="{ 'active': subTab === 'marksheet' }"
-                           class="nav-link rounded-md px-4 py-2 transition-colors duration-300"
-                           :class="{ 'bg-gray-100 text-blue-600': subTab === 'marksheet', 'text-gray-500': subTab !== 'marksheet' }">
-                           <i class="fas fa-file-alt"></i> Marksheet
-                        </a>
-                    </li>
-                    @endif
-                    <li class="nav-item">
-                        <a href="#" @click.prevent="subTab = 'exam-analysis'"
-                           :class="{ 'active': subTab === 'exam-analysis' }"
-                           class="nav-link rounded-md px-4 py-2 transition-colors duration-300"
-                           :class="{ 'bg-gray-100 text-blue-600': subTab === 'exam-analysis', 'text-gray-500': subTab !== 'exam-analysis' }">
-                           <i class="fas fa-chart-line"></i> Exam Analysis
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" @click.prevent="subTab = 'reports'"
-                           :class="{ 'active': subTab === 'reports' }"
-                           class="nav-link rounded-md px-4 py-2 transition-colors duration-300"
-                           :class="{ 'bg-gray-100 text-blue-600': subTab === 'reports', 'text-gray-500': subTab !== 'reports' }">
-                           <i class="fas fa-file"></i> Reports
-                        </a>
-                    </li>
-                </ul>
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="all-exams">
+                <table class="table datatable-button-html5-columns">
+                    <thead>
+                        <tr>
+                            <th>S/N</th>
+                            <th>Name</th>
+                            <th>Term</th>
+                            <th>Session</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($exams as $ex)
+                        <tr>
+                            <td>{{ $loop->iteration }}</td>
+                            <td>{{ $ex->name }}</td>
+                            <td>{{ 'Term '.$ex->term }}</td>
+                            <td>{{ $ex->year }}</td>
+                            <td class="text-center">
+                                <div class="list-icons">
+                                    <div class="dropdown">
+                                        <a href="#" class="list-icons-item" data-toggle="dropdown">
+                                            <i class="icon-menu9"></i>
+                                        </a>
 
-                <!-- Content for Sub-tabs of Exam Management -->
-                <div class="tab-content transition-opacity duration-500 ease-in-out">
-                    <div x-show="subTab === 'exam-list'" class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <!-- Content for Exam List -->
-                        @livewire('exam-list')
-                    </div>
-                    @if(Qs::userIsTeamSAT())
-                    <div x-show="subTab === 'marks'" class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <!-- Content for Marks -->
-                        @livewire('manage-marks')
-                    </div>
-                    <div x-show="subTab === 'marksheet'" class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <!-- Content for Marksheet -->
-                        @livewire('marks-bulk')
-                    </div>
-                    @endif
-                    <div x-show="subTab === 'exam-analysis'" class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <!-- Content for Exam Analysis -->
-                        @livewire('exam-analysis')
-                    </div>
-                    <div x-show="subTab === 'reports'" class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        {{-- <!-- Content for Reports --> --}}
-                        @livewire('exam-report')
-                    </div>
-                </div>
+                                        <div class="dropdown-menu dropdown-menu-left">
+                                            @if(Qs::userIsTeamSA())
+                                            {{--Edit--}}
+                                            <a href="{{ route('exams.edit', $ex->id) }}" class="dropdown-item"><i class="icon-pencil"></i> Edit</a>
+                                            @endif
+                                            @if(Qs::userIsSuperAdmin())
+                                            {{--Delete--}}
+                                            <a id="{{ $ex->id }}" onclick="confirmDelete(this.id)" href="#" class="dropdown-item"><i class="icon-trash"></i> Delete</a>
+                                            <form method="post" id="item-delete-{{ $ex->id }}" action="{{ route('exams.destroy', $ex->id) }}" class="hidden">@csrf @method('delete')</form>
+                                            @endif
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
 
-            <!-- Grading System Tab -->
-            <div x-show="mainTab === 'grading-system'" class="tab-content">
-                <!-- Sub-tabs for Grading System -->
-                <ul class="nav nav-pills mb-6">
-                    <li class="nav-item">
-                        <a href="#" @click.prevent="subTab = 'grade-list'"
-                           :class="{ 'active': subTab === 'grade-list' }"
-                           class="nav-link rounded-md px-4 py-2 transition-colors duration-300"
-                           :class="{ 'bg-gray-100 text-blue-600': subTab === 'grade-list', 'text-gray-500': subTab !== 'grade-list' }">
-                           <i class="fas fa-graduation-cap"></i> Grade List
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" @click.prevent="subTab = 'grade-scale'"
-                           :class="{ 'active': subTab === 'grade-scale' }"
-                           class="nav-link rounded-md px-4 py-2 transition-colors duration-300"
-                           :class="{ 'bg-gray-100 text-blue-600': subTab === 'grade-scale', 'text-gray-500': subTab !== 'grade-scale' }">
-                           <i class="fas fa-equals"></i> Grade Scale
-                        </a>
-                    </li>
-                </ul>
+            <div class="tab-pane fade" id="new-exam">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="alert alert-info border-0 alert-dismissible">
+                            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
 
-                <!-- Content for Sub-tabs of Grading System -->
-                <div class="tab-content transition-opacity duration-500 ease-in-out">
-                    <div x-show="subTab === 'grade-list'" class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <!-- Content for Grade List -->
-                        @livewire('manage-grading')
+                            <span>You are creating an Exam for the Current Session <strong>{{ Qs::getSetting('current_session') }}</strong></span>
+                        </div>
                     </div>
-                    <div x-show="subTab === 'grade-scale'" class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <!-- Content for Grade Scale -->
-                        <p>Coming soon</p>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <form method="post" action="{{ route('exams.store') }}">
+                            @csrf
+                            <div class="form-group row">
+                                <label class="col-lg-3 col-form-label font-weight-semibold">Name <span class="text-danger">*</span></label>
+                                <div class="col-lg-9">
+                                    <input name="name" value="{{ old('name') }}" required type="text" class="form-control" placeholder="Name of Exam">
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label for="term" class="col-lg-3 col-form-label font-weight-semibold">Term</label>
+                                <div class="col-lg-9">
+                                    <select data-placeholder="Select Teacher" class="form-control select-search" name="term" id="term">
+                                        <option {{ old('term') == 1 ? 'selected' : '' }} value="1">First Term</option>
+                                        <option {{ old('term') == 2 ? 'selected' : '' }} value="2">Second Term</option>
+                                        <option {{ old('term') == 3 ? 'selected' : '' }} value="3">Third Term</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label for="term" class="col-lg-3 col-form-label font-weight-semibold">Grading System</label>
+                                <div class="col-lg-9">
+                                    <!-- make width full -->
+                                    <select class="form-control select-search w-100 " name="grading_system_id" id="grading_system_id">
+                                        @foreach ($gradingSystems as $system)
+                                        <option value="{{ $system->id }}">
+                                            {{ $system->name }}
+                                        </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+
+
+                            <div class="form-group row w-full">
+                                <label for="term" class="col-lg-3 col-form-label font-weight-semibold">Select Classes</label>
+                                <div class="col-lg-9 w-full">
+                                    <!-- make width full -->
+                                    <select class="form-control select-search w-100" name="classes[]" id="classes" multiple style="height: fit-content;">
+                                        @foreach ($classes_ as $class_)
+                                        <option value="{{ $class_->id }}" selected>
+                                            {{ $class_->name }}
+                                        </option>
+                                        @endforeach
+                                    </select>
+
+                                </div>
+                            </div>
+
+
+
+
+
+                            <div class="text-right">
+                                <button type="submit" class="btn btn-primary">Submit form <i class="icon-paperplane ml-2"></i></button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-@endsection
 
+{{--Class List Ends--}}
+
+@endsection

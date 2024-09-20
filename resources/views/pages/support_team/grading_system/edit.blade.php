@@ -9,13 +9,12 @@
     </div>
     <div class="card-body">
         <ul class="nav nav-tabs nav-tabs-highlight">
-            <li class="nav-item"><a href="#all-gradings" class="nav-link active" data-toggle="tab">Manage Grading</a>
+            <li class="nav-item"><a href="#new-gradingsystem" class="nav-link active" data-toggle="tab"><i class="fas fa-edit"></i>  {{ $gradingSystem->name }}</a>
             </li>
-            <li class="nav-item"><a href="#new-gradingsystem" class="nav-link" data-toggle="tab"><i
-                        class="icon-plus2"></i> {{ $gradingSystem->name }}</a></li>
+            <li class="nav-item"><a href="#all-gradings" class="nav-link" data-toggle="tab">Manage Grading</a></li>
         </ul>
         <div class="tab-content">
-            <div class="tab-pane fade show active" id="all-gradings">
+            <div class="tab-pane fade" id="all-gradings">
                 <div class="swiper-container" style="height: 500px;">
                     <div class="swiper-wrapper">
                         @foreach ($gradingSystems->chunk(2) as $chunk)
@@ -85,7 +84,7 @@
                 </div>
             </div>
 
-            <div class="tab-pane fade" id="new-gradingsystem">
+            <div  class="tab-pane fade show active" id="new-gradingsystem">
                 <form action="{{ route('grading_system.update', $gradingSystem->id) }}" method="POST" id="grading_form">
                     @csrf
                     @method('PUT')

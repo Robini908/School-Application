@@ -19,6 +19,11 @@ class MyClass extends Eloquent
         return $this->belongsTo(ClassType::class);
     }
 
+    public function exams()
+    {
+        return $this->belongsToMany(Exam::class, 'class_exam', 'class_id', 'exam_id');
+    }
+
     public function student_record()
     {
         return $this->hasMany(StudentRecord::class);

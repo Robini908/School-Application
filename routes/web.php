@@ -29,13 +29,16 @@ Route::get('/student-info/{id}', function ($id) {
     return view('pages.support_team.students.student_info', ['student' => $id]);
 })->name('student.info');
 
+// Exam management routes
 
 Route::get('/pages/support_team/exams/set', function () {
     return view('pages.support_team.exams.set');
 })->name('exams.set');
-
-
-
+// Modify the route to accept the examId parameter
+Route::get('/pages/support_team/exams/assign-exam-marks', function () {
+    // Pass the examId to the view
+    return view('pages.support_team.exams.assign-exam-marks');
+})->name('exams.assignExamMarks');
 
 //Route to view class details
 Route::resource('view-class', 'ViewClassController');
@@ -59,7 +62,6 @@ Route::group(['prefix' => 'grading_system/{grading_system}'], function () {
     Route::get('subject-ranges/{subject_range}', 'SubjectRangesController@show')->name('subject-ranges.show');
     Route::put('subject-ranges/{subject_range}', 'SubjectRangesController@edit')->name('subject-ranges.edit');
 });
-
 
 //routes for the external site pages before logging in
 Route::get('/', 'HomeController@landingpage');
@@ -127,7 +129,6 @@ Route::group(['middleware' => 'auth'], function () {
                 Route::get('print/{ttr}', 'TimeTableController@print_record')->name('ttr.print');
                 Route::delete('/{ttr}', 'TimeTableController@delete_record')->name('ttr.destroy');
             });
-
             /*************** Time Slots *****************/
             Route::group(['prefix' => 'time_slots', 'middleware' => 'teamSA'], function () {
                 Route::post('/', 'TimeTableController@store_time_slot')->name('ts.store');
@@ -137,7 +138,6 @@ Route::group(['middleware' => 'auth'], function () {
                 Route::put('/{ts}', 'TimeTableController@update_time_slot')->name('ts.update');
             });
         });
-
         /*************** Payments *****************/
         Route::group(['prefix' => 'payments'], function () {
 
@@ -151,6 +151,8 @@ Route::group(['middleware' => 'auth'], function () {
             Route::post('pay_now/{id}', 'PaymentController@pay_now')->name('payments.pay_now');
         });
 
+        
+
         /*************** Pins *****************/
         Route::group(['prefix' => 'pins'], function () {
             Route::get('create', 'PinController@create')->name('pins.create');
@@ -160,6 +162,8 @@ Route::group(['middleware' => 'auth'], function () {
             Route::post('verify/{id}', 'PinController@verify')->name('pins.verify');
             Route::delete('/', 'PinController@destroy')->name('pins.destroy');
         });
+
+
 
         /*************** Marks *****************/
         Route::group(['prefix' => 'marks'], function () {
