@@ -1,5 +1,6 @@
 <?php
 
+
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
@@ -15,14 +16,14 @@ class CreateMyClassesTable extends Migration
     {
         Schema::create('my_classes', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('name', 100);
+            $table->string('name', 100)->unique();
             $table->unsignedInteger('class_type_id')->nullable();
+            $table->unsignedInteger('exam_id')->nullable(); // Make exam_id nullable
+            $table->unsignedInteger('subject_id')->nullable(); // Make subject_id nullable
             $table->timestamps();
         });
 
-        Schema::table('my_classes', function (Blueprint $table) {
-            $table->unique(['class_type_id', 'name']);
-        });
+        
     }
 
     /**
@@ -32,6 +33,12 @@ class CreateMyClassesTable extends Migration
      */
     public function down()
     {
+        Schema::table('my_classes', function (Blueprint $table) {
+            $table->unique(['class_type_id', 'name']);
+          
+        });
+
         Schema::dropIfExists('my_classes');
     }
 }
+

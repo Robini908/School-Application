@@ -18,11 +18,15 @@ class CreateExamsTable extends Migration
             $table->string('name');
             $table->tinyInteger('term');
             $table->string('year', 40);
+            $table->unsignedInteger('class_id'); // Foreign key for class
+            $table->unsignedInteger('section_id')->nullable(); // Foreign key for section
             $table->timestamps();
         });
 
         Schema::table('exams', function (Blueprint $table) {
             $table->unique(['term', 'year']);
+            $table->foreign('class_id')->references('id')->on('my_classes')->onDelete('cascade');
+            $table->foreign('section_id')->references('id')->on('sections')->onDelete('set null'); // Link to sections, set to null on delete
         });
     }
 
@@ -33,6 +37,11 @@ class CreateExamsTable extends Migration
      */
     public function down()
     {
+        Schema::table('exams', function (Blueprint $table) {
+            $table->dropForeign(['class_id']);
+            $table->dropForeign(['section_id']); // Drop section foreign key
+        });
+        
         Schema::dropIfExists('exams');
     }
 }
