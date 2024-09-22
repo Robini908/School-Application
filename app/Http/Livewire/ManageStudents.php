@@ -32,11 +32,21 @@ class ManageStudents extends Component
         $this->mystudents = DB::table('student_records')
             ->join('my_classes', 'student_records.my_class_id', '=', 'my_classes.id')
             ->join('sections', 'student_records.section_id', '=', 'sections.id')
-            ->join('parent_details', 'student_records.parent_id', '=', 'parent_details.parent_id_no')
-            ->select('student_records.*', 'my_classes.name as classname', 'sections.name as sectionname', 'parent_details.parent_first_name', 'parent_details.parent_last_name', 'parent_details.parent_phone_number')
+            ->join('parent_details', 'student_records.parent_id_no', '=', 'parent_details.parent_id_no') // Ensure the correct column is used
+            ->select(
+                'student_records.*',
+                'my_classes.name as classname',
+                'sections.name as sectionname',
+                'parent_details.parent_first_name',
+                'parent_details.parent_last_name',
+                'parent_details.parent_phone_number'
+            )
             ->orderBy('student_records.id', 'desc')
             ->get();
     }
+
+
+
 
     public function verifyStatus($studentId)
     {

@@ -24,8 +24,7 @@ class CreateFks extends Migration
         // Foreign key constraints for 'my_classes' table
         Schema::table('my_classes', function (Blueprint $table) {
             $table->foreign('class_type_id')->references('id')->on('class_types')->onDelete('set null');
-            $table->foreign('exam_id')->references('id')->on('exams')->onDelete('set null');
-            $table->foreign('subject_id')->references('id')->on('subjects')->onDelete('set null');
+
         });
 
         // Foreign key constraints for 'sections' table
@@ -212,8 +211,7 @@ class CreateFks extends Migration
 
         Schema::table('my_classes', function (Blueprint $table) {
             $table->dropForeign(['class_type_id']);
-            $table->dropForeign(['exam_id']);
-            $table->dropForeign(['subject_id']);
+           
         });
 
         Schema::table('users', function (Blueprint $table) {

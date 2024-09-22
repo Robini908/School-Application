@@ -4,8 +4,8 @@
 
 @section('content')
 
-<div class="card">
-@livewire('exam-management-component')
-</div>
+
+        @livewire('exam-management-component')
+  
 
 @endsection

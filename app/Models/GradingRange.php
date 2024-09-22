@@ -8,13 +8,27 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class GradingRange extends Model
 {
-    protected $fillable = ['range_from', 'range_to', 'grade','remark','gpa','subject_id'];
-    protected $table = 'grading_ranges';
-
     use HasFactory;
 
-    public function GradingSytem(): BelongsTo
+    protected $fillable = [
+        'range_from',
+        'range_to',
+        'grade',
+        'remark',
+        'gpa',
+        'grading_system_id', // Ensure this is included for the relationship
+        'subject_id',
+    ];
+
+    protected $table = 'grading_ranges';
+
+    public function gradingSystem(): BelongsTo
     {
         return $this->belongsTo(GradingSystem::class);
+    }
+
+    public function subject(): BelongsTo
+    {
+        return $this->belongsTo(Subject::class);
     }
 }

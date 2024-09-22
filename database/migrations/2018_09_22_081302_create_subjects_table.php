@@ -14,7 +14,7 @@ class CreateSubjectsTable extends Migration
     public function up()
     {
         Schema::create('subjects', function (Blueprint $table) {
-            $table->increments('id')->unique();
+            $table->increments('id'); // Auto-incrementing primary key
             $table->string('subject_name', 100);
             $table->string('subject_code', 100);
             $table->string('abbreviation', 100);

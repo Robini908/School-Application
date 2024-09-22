@@ -41,7 +41,7 @@ class StudentRecord extends Model
 
     public function parent_detail()
     {
-        return $this->belongsTo(ParentDetail::class);
+        return $this->belongsTo(ParentDetail::class, 'parent_id_no', 'parent_id_no');
     }
 
     /* public function my_parent()
@@ -63,4 +63,5 @@ class StudentRecord extends Model
     {
         return $this->belongsTo(Dorm::class);
     }
+    
 }

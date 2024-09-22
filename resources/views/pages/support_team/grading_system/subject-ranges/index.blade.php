@@ -1,4 +1,4 @@
-@extends('layouts.master')
+{{-- @extends('layouts.master')
 @section('page_title', 'Manage Grading System')
 @section('content')
 <link href=" {{ asset('assets/css/edit_grading.css') }}" rel="stylesheet" type="text/css">
@@ -123,7 +123,7 @@
     </div>
 </div>
 
-<script src="{{ asset('assets/js/grading_system/edit.js') }}"></script>
+
 <script>
     // Initialize Swiper
     var swiper = new Swiper('.swiper-container', {
@@ -135,4 +135,4 @@
     });
 </script>
 
-@endsection
+@endsection --}}

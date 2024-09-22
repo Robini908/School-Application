@@ -3,25 +3,36 @@
 namespace App\Models;
 
 use App\User;
-use Eloquent;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class Section extends Eloquent
+class Section extends Model
 {
     protected $fillable = ['name', 'my_class_id', 'active', 'teacher_id'];
 
-    public function my_class()
+    // Define the relationship with MyClass
+    public function myClass(): BelongsTo
     {
-        return $this->belongsTo(MyClass::class);
+        return $this->belongsTo(MyClass::class, 'my_class_id');
     }
 
-    public function teacher()
+    // Define the relationship with Teacher
+    public function teacher(): BelongsTo
     {
         return $this->belongsTo(User::class, 'teacher_id');
     }
 
-    public function student_record()
+    // Define the relationship with StudentRecord
+    public function studentRecords(): HasMany
     {
         return $this->hasMany(StudentRecord::class);
     }
-}
 
+    public function exams(): BelongsToMany
+    {
+        return $this->belongsToMany(Exam::class, 'exam_class_section', 'section_id', 'exam_id')
+            ->withPivot('class_id');
+    }
+}

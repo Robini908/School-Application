@@ -2,16 +2,24 @@
 
 namespace App\Models;
 
-use App\User;
-use Eloquent;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class Subject extends Eloquent
+class Subject extends Model
 {
-    protected $fillable = ['subject_name', 'subject_code', 'abbreviation']; 
+    use HasFactory;
 
-//     public function my_class()
-// {
-//     return $this->belongsTo(MyClass::class, 'my_class_id');
-// }
-    
+    protected $fillable = ['subject_name', 'subject_code', 'abbreviation'];
+
+    public function gradingRanges(): HasMany
+    {
+        return $this->hasMany(GradingRange::class);
+    }
+
+    public function gradingSystems(): BelongsToMany
+    {
+        return $this->belongsToMany(GradingSystem::class, 'grading_system_subject', 'subject_id', 'grading_system_id');
+    }
 }

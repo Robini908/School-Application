@@ -3,78 +3,82 @@
 namespace App\Http\Livewire;
 
 use Livewire\Component;
-use App\Models\MyClass; // Assuming this is your class model
-use App\Models\StudentRecord; // Assuming this is your student record model
+use App\Models\MyClass;
+use App\Models\StudentRecord;
 use App\Models\Exam;
 use App\Models\Subject;
+use App\Models\GradingRange; // Add GradingRange model
 
 class AssignBatchMarks extends Component
 {
-    public $classes; // List of all classes
-    public $selectedClass = null; // Holds the selected class
-    public $selectedClassName = ''; // Holds the name of the selected class
-    public $exams = []; // List of exams for the selected class
-    public $selectedExam = null; // Holds the selected exam
-    public $selectedExamName = ''; // Holds the name of the selected exam
-    public $students = []; // List of students for the selected class
-    public $subjects = []; // List of all subjects
-    public $marks = []; // To store marks for each student per subject
-
-    
+    public $classes;
+    public $selectedClass = null;
+    public $selectedClassName = '';
+    public $exams = [];
+    public $selectedExam = null;
+    public $selectedExamName = '';
+    public $students = [];
+    public $subjects = [];
+    public $marks = [];
+    public $examDetails = null;
+    public $gradingRanges = []; // For grading ranges
+    public $showGradingRanges = false; // To control visibility
 
     public function mount()
     {
-        // Fetch all classes on component mount
-        $this->classes = MyClass::all(); // Fetch all classes
-        $this->subjects = Subject::all(); // Fetch all subjects
+        $this->classes = MyClass::all();
+        $this->subjects = Subject::all();
+        $this->examDetails = Exam::all();
     }
 
     public function updatedSelectedClass($classId)
     {
-        // Fetch the selected class
         $class = MyClass::find($classId);
         $this->selectedClassName = $class ? $class->name : '';
-
-        // Fetch all exams (you can modify this to filter exams based on the selected class if needed)
         $this->exams = Exam::all();
-
-        // Fetch students based on the selected class using 'my_class_id'
         $this->students = StudentRecord::where('my_class_id', $classId)->get();
-
-        // Reset the selected exam and marks
         $this->selectedExam = null;
         $this->marks = [];
     }
 
-
+     // Update to hold single exam details
 
     public function updatedSelectedExam($examId)
     {
-        // When an exam is selected, store its name
-        $exam = Exam::find($examId);
-        $this->selectedExamName = $exam ? $exam->name : '';
+        // Fetch the selected exam details
+        $this->examDetails = Exam::find($examId);
+    
+        // Fetch grading ranges based on the selected exam's grading system
+        if ($this->examDetails && $this->examDetails->grading_system_id) {
+            $this->gradingRanges = GradingRange::where('grading_system_id', $this->examDetails->grading_system_id)->get();
+        } else {
+            $this->gradingRanges = [];
+        }
+    }
+    
+
+    // Toggle the grading ranges visibility
+    public function toggleGradingRanges()
+    {
+        $this->showGradingRanges = !$this->showGradingRanges;
     }
 
     public function assignMarks()
     {
-        // Validate marks
         foreach ($this->students as $student) {
             foreach ($this->subjects as $subject) {
                 $this->validate([
-                    "marks.{$student->id}.{$subject->id}" => 'required|numeric|min:0|max:100', // Example validation
+                    "marks.{$student->id}.{$subject->id}" => 'required|numeric|min:0|max:100',
                 ]);
             }
         }
 
-        // Loop through students and assign marks
         foreach ($this->students as $student) {
             foreach ($this->subjects as $subject) {
-                // Save marks logic here (e.g., store in database)
-                // Example: Mark::create([...]);
+                // Logic to save marks
             }
         }
 
-        // Set a success message
         session()->flash('message', 'Marks successfully assigned!');
     }
 
