@@ -235,6 +235,8 @@ class ManageSections extends Component
         }
     }
 
+
+
     public function assignTeacher($sectionId)
     {
         try {
@@ -251,40 +253,51 @@ class ManageSections extends Component
     }
 
 
+    public function closeForm()
+    {
+        $this->resetForm();
+    }
 
     public function delete($sectionId)
     {
-        $this->confirmingDelete = true;
+        // Set the ID of the section to be deleted
         $this->deleteSectionId = $sectionId;
+
+        // Show the confirmation modal
+        $this->confirmingDelete = true;
     }
 
     public function confirmDelete()
     {
         try {
+            // Find the section by ID and delete it
             Section::findOrFail($this->deleteSectionId)->delete();
+
+            // Reload sections list or perform necessary action after deletion
             $this->loadSections();
+
+            // Reset modal and section ID after deletion
             $this->confirmingDelete = false;
             $this->deleteSectionId = null;
-            $this->checkAllTeachersAssigned();
 
+            // Flash success message
             session()->flash('success', 'Section deleted successfully.');
         } catch (ModelNotFoundException $e) {
+            // Section was not found for deletion
             session()->flash('error', 'Section not found for deletion.');
         } catch (Exception $e) {
+            // Handle any other errors
             session()->flash('error', 'An error occurred while deleting the section.');
         }
     }
 
     public function cancelDelete()
     {
+        // Reset the modal and section ID without performing deletion
         $this->confirmingDelete = false;
         $this->deleteSectionId = null;
     }
 
-    public function closeForm()
-    {
-        $this->resetForm();
-    }
 
     public function resetForm()
     {
