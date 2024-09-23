@@ -201,9 +201,6 @@
             <div class="mt-4">
                 <button wire:click="closeDetails" class="btn btn-secondary">Close</button>
             </div>
-
-
-
             @endif
         </div>
     </div>
@@ -241,19 +238,50 @@
                             <td>{{ $section->name }}</td>
                             <td>{{ $section->my_class->name }}</td>
                             <td>{{ $section->teacher ? $section->teacher->name : 'Not Assigned' }}</td>
-                            <td>
-                                <button wire:click="edit({{ $section->id }})" class="btn btn-warning">Edit</button>
-                                @if(!$section->teacher)
-                                <button wire:click="assignTeacher({{ $section->id }})" class="btn btn-info">Assign
-                                    Teacher</button>
-                                @else
-                                <button wire:click="changeClassTeacher({{ $section->id }})"
-                                    class="btn btn-primary">Change Class Teacher</button>
-                                @endif
-                                <button wire:click="delete({{ $section->id }})" class="btn btn-danger">Delete</button>
-                                <button wire:click="showDetails({{ $section->id }})"
-                                    class="btn btn-secondary">Details</button>
+
+                            <td class="text-center">
+                                <div class="list-icons">
+                                    <div class="dropdown">
+                                        <a href="#" class="list-icons-item" data-toggle="dropdown">
+                                            <i class="icon-menu9"></i>
+                                        </a>
+
+                                        <div class="dropdown-menu dropdown-menu-left">
+                                            {{-- Edit Button --}}
+                                            <button wire:click="edit({{ $section->id }})"
+                                                class="dropdown-item btn btn-warning">
+                                                <i class="icon-pencil"></i> Edit
+                                            </button>
+
+                                            {{-- Assign or Change Teacher based on condition --}}
+                                            @if(!$section->teacher)
+                                            <button wire:click="assignTeacher({{ $section->id }})"
+                                                class="dropdown-item btn btn-info">
+                                                <i class="icon-user"></i> Assign Teacher
+                                            </button>
+                                            @else
+                                            <button wire:click="changeClassTeacher({{ $section->id }})"
+                                                class="dropdown-item btn btn-primary">
+                                                <i class="icon-user-check"></i> Change Class Teacher
+                                            </button>
+                                            @endif
+
+                                            {{-- Delete Button --}}
+                                            <button wire:click="delete({{ $section->id }})"
+                                                class="dropdown-item btn btn-danger">
+                                                <i class="icon-trash"></i> Delete
+                                            </button>
+
+                                            {{-- Show Details Button --}}
+                                            <button wire:click="showDetails({{ $section->id }})"
+                                                class="dropdown-item btn btn-secondary">
+                                                <i class="icon-info3"></i> Details
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
+
                         </tr>
                         @endforeach
                     </tbody>

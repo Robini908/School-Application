@@ -63,7 +63,7 @@
                         </button>
                     </div>
                 </div>
-                
+
 
                 <div x-show="!showInstructions" class="mt-3">
                     <div class="alert alert-info mt-2">
@@ -167,146 +167,137 @@
         <!-- Exam Form -->
         <div class="card">
             <div class="card-body">
-                <form wire:submit.prevent="store" class="container mt-4">
-                    <div class="row">
-                        <!-- Exam Name -->
-                        <div class="col-12 mb-3">
-                            <div class="form-group">
-                                <label for="name">Exam Name</label>
-                                <input type="text" id="name" wire:model="name" class="form-control"
-                                    placeholder="Enter exam name" />
-                                @error('name')
-                                <small class="form-text text-danger">{{ $message }}</small>
-                                @enderror
-                            </div>
+                <form wire:submit.prevent="store" class="mt-4">
+                    <!-- Exam Name -->
+                    <div class="mb-4">
+                        <label for="name" class="form-label">Exam Name</label>
+                        <input type="text" id="name" wire:model="name" class="form-control form-control-lg"
+                            placeholder="Exam Name" />
+                        @error('name')
+                        <small class="form-text text-danger">{{ $message }}</small>
+                        @enderror
+                    </div>
+
+                    <!-- Term, Year, and Class Selection -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label for="term" class="form-label">Term</label>
+                            <select id="term" wire:model="term" class="form-control form-select-lg">
+                                <option value="">Select Term</option>
+                                @foreach ($terms as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            @error('term')
+                            <small class="form-text text-danger">{{ $message }}</small>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="year" class="form-label">Year</label>
+                            <select id="year" wire:model="year" class="form-control form-select-lg">
+                                <option value="">Select Year</option>
+                                @foreach (range(2000, date('Y')) as $yearOption)
+                                <option value="{{ $yearOption }}">{{ $yearOption }}</option>
+                                @endforeach
+                            </select>
+                            @error('year')
+                            <small class="form-text text-danger">{{ $message }}</small>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="class" class="form-label">Class</label>
+                            <select id="class" wire:model="selectedClass" class="form-control form-select-lg">
+                                <option value="">Select Class</option>
+                                @foreach ($classes as $class)
+                                <option value="{{ $class->id }}">{{ $class->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('selectedClass')
+                            <small class="form-text text-danger">{{ $message }}</small>
+                            @enderror
                         </div>
                     </div>
 
-                    <div class="row">
-                        <!-- Term, Year, Class Selection -->
-                        <div class="col-12 col-md-4 mb-3">
-                            <div class="form-group">
-                                <label for="term">Term</label>
-                                <select id="term" wire:model="term" class="form-control">
-                                    <option value="">Select Term</option>
-                                    @foreach ($terms as $value => $label)
-                                    <option value="{{ $value }}">{{ $label }}</option>
-                                    @endforeach
-                                </select>
-                                @error('term')
-                                <small class="form-text text-danger">{{ $message }}</small>
-                                @enderror
-                            </div>
+                    <!-- Stream Selection -->
+                    <div class="mb-4">
+                        @if ($selectedClass && $sections->count() > 0)
+                        <label class="form-label">Select Stream</label>
+                        <div class="d-flex align-items-center mb-2">
+                            <input type="checkbox" id="selectAllSections" wire:model="selectAllSections"
+                                wire:click="toggleSelectAllSections">
+                            <label for="selectAllSections" class="ms-2">Select All Streams</label>
                         </div>
-
-                        <div class="col-12 col-md-4 mb-3">
-                            <div class="form-group">
-                                <label for="year">Year</label>
-                                <select id="year" wire:model="year" class="form-control">
-                                    <option value="">Select Year</option>
-                                    @foreach (range(2000, date('Y')) as $yearOption)
-                                    <option value="{{ $yearOption }}">{{ $yearOption }}</option>
-                                    @endforeach
-                                </select>
-                                @error('year')
-                                <small class="form-text text-danger">{{ $message }}</small>
-                                @enderror
+                        <div class="row">
+                            @foreach ($sections as $section)
+                            <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                <div class="form-check">
+                                    <input type="checkbox" id="section{{ $section->id }}" value="{{ $section->id }}"
+                                        wire:model="selectedSections" class="form-check-input">
+                                    <label class="form-check-label" for="section{{ $section->id }}">{{ $section->name
+                                        }}</label>
+                                </div>
                             </div>
+                            @endforeach
                         </div>
-
-                        <div class="col-12 col-md-4 mb-3">
-                            <div class="form-group">
-                                <label for="class">Class</label>
-                                <select id="class" wire:model="selectedClass" class="form-control">
-                                    <option value="">Select Class</option>
-                                    @foreach ($classes as $class)
-                                    <option value="{{ $class->id }}">{{ $class->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('selectedClass')
-                                <small class="form-text text-danger">{{ $message }}</small>
-                                @enderror
-                            </div>
-                        </div>
+                        @error('selectedSections')
+                        <small class="form-text text-danger">{{ $message }}</small>
+                        @enderror
+                        @endif
                     </div>
 
-                    <div class="row">
-                        <!-- Stream Selection -->
-                        <div class="col-12 mb-3">
-                            @if ($selectedClass && $sections->count() > 0)
-                            <div class="form-group">
-                                <label>Select Stream</label>
-                                <div class="d-flex align-items-center mb-2">
-                                    <input type="checkbox" id="selectAllSections" wire:model="selectAllSections"
-                                        wire:click="toggleSelectAllSections">
-                                    <label for="selectAllSections" class="ml-2">Select All Stream</label>
-                                </div>
-                                <div class="row">
-                                    @foreach ($sections as $section)
-                                    <div class="col-6 col-md-4 col-lg-3 mb-2">
-                                        <span class="badge custom-badge d-flex align-items-center">
-                                            <input type="checkbox" id="section{{ $section->id }}"
-                                                value="{{ $section->id }}" wire:model="selectedSections"
-                                                class="form-check-input mr-2">
-                                            {{ $section->name }}
-                                        </span>
-                                    </div>
-                                    @endforeach
-                                </div>
-                                @error('selectedSections')
-                                <small class="form-text text-danger">{{ $message }}</small>
-                                @enderror
-                            </div>
+                    <!-- Grading System Selection -->
+                    <div class="mb-4">
+                        <label for="gradingSystem" class="form-label">Grading System</label>
+                        @if ($gradingSystems->count() > 0)
+                        <select id="gradingSystem" wire:model="grading_system_id" class="form-control form-select-lg">
+                            <option value="">Select Grading System</option>
+                            @foreach ($gradingSystems as $gradingSystem)
+                            <option value="{{ $gradingSystem->id }}">{{ $gradingSystem->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('grading_system_id')
+                        <small class="form-text text-danger">{{ $message }}</small>
+                        @enderror
+                        <div class="mt-2">
+                            @if ($grading_system_id)
+                            <a href="#" wire:click="viewGradingSystemDetails"
+                                class="text-info d-flex align-items-center">
+                                <i class="fas fa-chevron-right me-2"></i>
+                                <span>View Details for {{ $gradingSystems->find($grading_system_id)->name }}</span>
+                            </a>
                             @endif
                         </div>
 
-                    </div>
-
-                    <div class="row">
-                        <!-- Grading System Selection -->
-                        <div class="col-12 col-md-6 mb-3">
-                            @if ($gradingSystems->count() > 0)
-                            <div class="form-group">
-                                <label for="gradingSystem">Select Grading System</label>
-                                <select id="gradingSystem" wire:model="grading_system_id" class="form-control">
-                                    <option value="">Select Grading System</option>
-                                    @foreach ($gradingSystems as $gradingSystem)
-                                    <option value="{{ $gradingSystem->id }}">{{ $gradingSystem->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('grading_system_id')
-                                <small class="form-text text-danger">{{ $message }}</small>
-                                @enderror
-
-                                <div class="mt-2">
-                                    <div class="d-flex justify-content-between">
-                                        @if ($grading_system_id)
-                                        <button type="button" wire:click="viewGradingSystemDetails"
-                                            class="btn btn-info btn-sm">
-                                            View Details for {{ $gradingSystems->find($grading_system_id)->name }}
-                                        </button>
-                                        @endif
-                                        <button type="button" wire:click="toggleGradingSystemForm"
-                                            class="btn btn-link btn-sm text-lg">Add Grading System</button>
-                                    </div>
-                                </div>
-                            </div>
-                            @endif
+                        @else
+                        <div class="form-text text-muted mt-2">
+                            There are no grading systems available!
                         </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-12">
-                            <button type="submit" class="btn btn-primary mt-3">
-                                {{ $examId ? 'Update Exam' : 'Add Exam' }}
+                        @endif
+                        <div class="form-text text-muted mt-2">
+                            Not seeing the grading system you want? You can always add it.
+                            <button type="button" wire:click="toggleGradingSystemForm"
+                                class="btn btn-info btn-sm text-decoration-none ms-2">
+                                Add Grading System
                             </button>
-                            <button type="button" wire:click="resetForm"
-                                class="btn btn-secondary ml-2 mt-3">Cancel</button>
                         </div>
+                    </div>
+
+
+
+
+                    <!-- Submit and Cancel Buttons -->
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            {{ $examId ? 'Update Exam' : 'Add Exam' }}
+                        </button>
+                        <button type="button" wire:click="resetForm" class="btn btn-secondary">Cancel</button>
                     </div>
                 </form>
             </div>
         </div>
+
 
 
 
@@ -430,13 +421,36 @@
                         @endif
                     </td>
                     <td class="column-responsive">
-                        <button wire:click="edit({{ $exam->id }})" class="btn btn-warning btn-sm">Edit</button>
-                        <button wire:click="confirmDelete({{ $exam->id }})" class="btn btn-danger btn-sm"
-                            data-toggle="modal" data-target="#deleteExamModal">Delete</button>
-                        <button wire:click="showDetails({{ $exam->id }})" class="btn btn-info btn-sm">Details</button>
+                        <div class="list-icons">
+                            <div class="dropdown">
+                                <a href="#" class="list-icons-item" data-toggle="dropdown">
+                                    <i class="icon-menu9"></i>
+                                </a>
 
+                                <div class="dropdown-menu dropdown-menu-left">
+                                    {{-- Edit Button --}}
+                                    <button wire:click="edit({{ $exam->id }})"
+                                        class="dropdown-item btn btn-warning btn-sm">
+                                        <i class="icon-pencil"></i> Edit
+                                    </button>
 
+                                    {{-- Delete Button (with modal trigger) --}}
+                                    <button wire:click="confirmDelete({{ $exam->id }})"
+                                        class="dropdown-item btn btn-danger btn-sm" data-toggle="modal"
+                                        data-target="#deleteExamModal">
+                                        <i class="icon-trash"></i> Delete
+                                    </button>
+
+                                    {{-- Show Details Button --}}
+                                    <button wire:click="showDetails({{ $exam->id }})"
+                                        class="dropdown-item btn btn-info btn-sm">
+                                        <i class="icon-info3"></i> Details
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </td>
+
                 </tr>
                 @empty
                 <tr>
@@ -479,6 +493,7 @@
         </div>
     </div>
 </div>
+<div class="modal-backdrop fade show"></div>
 @endif
 <!-- Delete Confirmation Modal -->
 @if($isConfirmingDeleting)
@@ -502,6 +517,7 @@
         </div>
     </div>
 </div>
+<div class="modal-backdrop fade show"></div>
 @endif
 
 <!-- Your existing delete button -->
