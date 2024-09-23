@@ -54,3 +54,4 @@
 <script src="{{ asset('global_assets/js/main/swiper-bundle.min.js') }} "></script>
 <script src="{{ asset('global_assets/js/main/fuse.min.js') }} "></script>
 <script src="{{ asset('global_assets/js/main/datatable.js') }} "></script>
+<script src="{{ asset('global_assets/js/main/compatible_alpine.js') }} "></script>

@@ -6,6 +6,23 @@
     @if($isCreating || $isEditing || $isAssigningTeacher || $sectionDetails)
     <div class="card">
         <div class="card-body">
+            @if(session()->has('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+            @endif
+
+            @if(session()->has('error'))
+            <div class="alert alert-danger">
+                {{ session('error') }}
+            </div>
+            @endif
+
+            @if(session()->has('warning'))
+            <div class="alert alert-warning">
+                {{ session('warning') }}
+            </div>
+            @endif
 
             @if($isCreating)
             <h5>Create New Stream</h5>
@@ -25,26 +42,28 @@
             <div class="alert alert-danger">No teachers available. You cannot edit this stream without teachers.</div>
             @elseif($allTeachersAssignedMessage === 'All teachers are assigned to classes.')
             <div class="alert alert-info">All teachers are
-                currently assigned to classes.<br><br>You cannot therefore update the <strong>Class Teacher</strong> of this stream.
+                currently assigned to classes.<br><br>You cannot therefore update the <strong>Class Teacher</strong> of
+                this stream.
             </div>
             @else
             <div class="alert alert-info">Modify the details of the selected stream as needed.</div>
             @endif
             @elseif($isAssigningTeacher)
-            <h5>Change Class Teacher for Section: {{ $name }}</h5>
+            <h5>Change Class Teacher for Stream: {{ $name }}</h5>
             @if($teachers->isEmpty())
             <div class="alert alert-danger">No teachers available. You cannot assign a class teacher to this section.
             </div>
             @elseif($allTeachersAssignedMessage === 'All teachers are assigned to classes.')
-            <div class="alert alert-warning">All teachers are currently assigned to classes.<br><br> You cannot therefore change or assign a Class
+            <div class="alert alert-warning">All teachers are currently assigned to classes.<br><br> You cannot
+                therefore change or assign a Class
                 teacher of this stream.<br><br> Consider adding more teachers</div>
             @else
-            <div class="alert alert-warning">You cannot assign a class teacher to this section.<br><br> Consider adding more
+            <div class="alert alert-warning">You cannot assign a class teacher to this section.<br><br> Consider adding
+                more
                 teachers to your system.</div>
             @endif
             @elseif($sectionDetails)
-            <h5>Section Details</h5>
-            <div class="alert alert-success">Viewing details for section: {{ $sectionDetails->name }}.</div>
+
             @endif
 
 
@@ -97,25 +116,94 @@
                 ? 'disabled' : '' }}>Save Assignment</button>
             <button wire:click="resetForm" class="btn btn-secondary mt-2">Cancel</button>
             @elseif($sectionDetails)
-            <p><strong>Name:</strong> {{ $sectionDetails->name }}</p>
-            <p><strong>Class:</strong> {{ $sectionDetails->my_class->name }}</p>
-            <p><strong>Teacher:</strong> {{ $sectionDetails->teacher ? $sectionDetails->teacher->name : 'None' }}</p>
 
-            <h4>Students in this Section:</h4>
-            <ul>
-                @foreach($students as $student)
-                <li>{{ $student->name }}</li>
-                @endforeach
-            </ul>
 
-            <h4>Subjects:</h4>
-            <ul>
-                @foreach($subjects as $subject)
-                <li>{{ $subject->name }}</li>
-                @endforeach
-            </ul>
+            <h2 class="text-2xl font-semibold mb-4"> {{ $sectionDetails->my_class->name }} {{ $sectionDetails->name }}
+                Details</h2>
 
-            <button wire:click="closeDetails" class="btn btn-secondary">Close</button>
+            <div class="mb-4">
+                <p class="h5"><strong>Class Teacher:</strong> {{ $sectionDetails->teacher ?
+                    $sectionDetails->teacher->name : 'None' }}</p>
+                @if(!$sectionDetails->teacher)
+                <!-- Check if there's no teacher assigned -->
+                <button wire:click="assignTeacher({{ $sectionDetails->id }})" class="btn btn-info">Assign
+                    Teacher</button>
+                @endif
+            </div>
+
+
+            <h4 class="h5 mt-6 mb-2">Students in this Stream:</h4>
+            @if($students->isEmpty())
+            <div class="alert alert-danger">No students are enrolled in this section.</div>
+            @else
+            <table class="table table-bordered table-responsive">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Photo</th>
+                        <th>Admission No</th>
+                        <th>First Name</th>
+                        <th>Middle Name</th>
+                        <th>Last Name</th>
+                        <th>Gender</th>
+                        <th>Email</th>
+                        <th>Year Admitted</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($students as $student)
+                    <tr>
+                        <td>
+                            @if ($student->photo)
+                            <img src="{{ asset($student->photo) }}" alt="Student Photo" class="img-thumbnail"
+                                style="width: 50px; height: 50px;">
+                            @else
+                            <span class="text-muted">No Image</span>
+                            @endif
+                        </td>
+                        <td>{{ $student->adm_no }}</td>
+                        <td>{{ $student->first_name }}</td>
+                        <td>{{ $student->middle_name }}</td>
+                        <td>{{ $student->last_name }}</td>
+                        <td>{{ $student->gender }}</td>
+                        <td>{{ $student->email }}</td>
+                        <td>{{ $student->year_admitted }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            @endif
+
+
+            <h4 class="h5 mt-6 mb-2">Subjects done in this stream:</h4>
+            @if($subjects->isEmpty())
+            <div class="alert alert-danger">No subjects are available in the system.</div>
+            @else
+            <table class="table table-bordered table-responsive">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Code</th>
+                        <th>Abbreviation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($subjects as $subject)
+                    <tr>
+                        <td>{{ $subject->subject_name }}</td>
+                        <td>{{ $subject->subject_code }}</td>
+                        <td>{{ $subject->abbreviation }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            @endif
+
+            <div class="mt-4">
+                <button wire:click="closeDetails" class="btn btn-secondary">Close</button>
+            </div>
+
+
+
             @endif
         </div>
     </div>
@@ -198,3 +286,4 @@
     </div>
     @endif
 </div>
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2" defer></script>

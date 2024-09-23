@@ -5,9 +5,11 @@ namespace App\Http\Livewire;
 use App\User;
 use App\Models\MyClass;
 use App\Models\Section;
-use App\Models\Subject;
 use Livewire\Component;
 use App\Models\StudentRecord;
+use App\Models\Subject;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Exception;
 
 class ManageSections extends Component
 {
@@ -45,10 +47,20 @@ class ManageSections extends Component
 
     public function showDetails($sectionId)
     {
-        // Fetch the section details with related class and teacher
-        $this->sectionDetails = Section::with(['my_class', 'teacher'])->findOrFail($sectionId);
-        $this->students = StudentRecord::where('section_id', $sectionId)->get();
-        $this->subjects = Subject::all();
+        try {
+            // Fetch the section details with related class and teacher
+            $this->sectionDetails = Section::with(['my_class', 'teacher'])->findOrFail($sectionId);
+
+            // Fetch students in this section
+            $this->students = StudentRecord::where('section_id', $sectionId)->get();
+
+            // Fetch all subjects from the database
+            $this->subjects = Subject::all();
+        } catch (ModelNotFoundException $e) {
+            session()->flash('error', 'Section not found.');
+        } catch (Exception $e) {
+            session()->flash('error', 'An error occurred while fetching details.');
+        }
     }
 
     public function closeDetails()
@@ -57,8 +69,6 @@ class ManageSections extends Component
         $this->students = []; // Clear the students array
         $this->subjects = []; // Clear the subjects array
     }
-
-
 
     public function updatedTeacherId($value)
     {
@@ -72,19 +82,18 @@ class ManageSections extends Component
     }
 
     public function checkAllTeachersAssigned()
-{
-    $assignedTeachers = Section::whereNotNull('teacher_id')->distinct('teacher_id')->pluck('teacher_id');
-    $totalTeachersCount = $this->teachers->count();
+    {
+        $assignedTeachers = Section::whereNotNull('teacher_id')->distinct('teacher_id')->pluck('teacher_id');
+        $totalTeachersCount = $this->teachers->count();
 
-    if ($totalTeachersCount === 0) {
-        $this->allTeachersAssignedMessage = 'No teachers available for assignment.';
-    } elseif ($assignedTeachers->count() >= $totalTeachersCount) {
-        $this->allTeachersAssignedMessage = 'All teachers are assigned to classes.';
-    } else {
-        $this->allTeachersAssignedMessage = null; // No message needed if some teachers are available
+        if ($totalTeachersCount === 0) {
+            $this->allTeachersAssignedMessage = 'No teachers available for assignment.';
+        } elseif ($assignedTeachers->count() >= $totalTeachersCount) {
+            $this->allTeachersAssignedMessage = 'All teachers are assigned to classes.';
+        } else {
+            $this->allTeachersAssignedMessage = null; // No message needed if some teachers are available
+        }
     }
-}
-
 
     public function loadSections()
     {
@@ -103,65 +112,87 @@ class ManageSections extends Component
 
     public function edit($sectionId)
     {
-        $this->isEditing = true;
-        $this->editSectionId = $sectionId;
+        try {
+            $this->isEditing = true;
+            $this->editSectionId = $sectionId;
 
-        $section = Section::findOrFail($sectionId);
-        $this->name = $section->name;
-        $this->my_class_id = $section->my_class_id;
-        $this->teacher_id = $section->teacher_id;
+            $section = Section::findOrFail($sectionId);
+            $this->name = $section->name;
+            $this->my_class_id = $section->my_class_id;
+            $this->teacher_id = $section->teacher_id;
 
-        // Check if there are available teachers for this section
-        $this->checkAllTeachersAssigned();
-    }
-
-    public function assignTeacher($sectionId)
-    {
-        $this->editSectionId = $sectionId;
-        $this->teacher_id = null;
-        $this->isAssigningTeacher = true;
-
-        $section = Section::findOrFail($sectionId);
-        $this->name = $section->name;
-        $this->my_class_id = $section->my_class_id;
+            // Check if there are available teachers for this section
+            $this->checkAllTeachersAssigned();
+        } catch (ModelNotFoundException $e) {
+            session()->flash('error', 'Section not found for editing.');
+        } catch (Exception $e) {
+            session()->flash('error', 'An error occurred while loading the section for editing.');
+        }
     }
 
     public function save()
     {
         $this->validate();
 
-        if ($this->isEditing) {
-            $section = Section::findOrFail($this->editSectionId);
-            $section->update([
-                'name' => $this->name,
-                'my_class_id' => $this->my_class_id,
-                'teacher_id' => $this->teacher_id,
-            ]);
-        } else {
-            if ($this->allTeachersAssignedMessage) {
-                return; // Prevent creation if all teachers are assigned
-            }
-
-            // Ensure teacher assigned is unique to the class
-            $existingTeacher = Section::where('my_class_id', $this->my_class_id)
-                ->where('teacher_id', $this->teacher_id)
+        try {
+            // Check if the section name is unique for the given class when creating or editing
+            $sectionExists = Section::where('name', $this->name)
+                ->where('my_class_id', $this->my_class_id)
+                ->when($this->isEditing, function ($query) {
+                    // Exclude the current section when editing
+                    $query->where('id', '!=', $this->editSectionId);
+                })
                 ->exists();
 
-            if ($existingTeacher) {
-                return; // Handle duplicate assignment if needed
+            if ($sectionExists) {
+                session()->flash('error', 'There exists a stream with that name.Please use a different unique name');
+                return;
             }
 
-            Section::create([
-                'name' => $this->name,
-                'my_class_id' => $this->my_class_id,
-                'teacher_id' => $this->teacher_id,
-            ]);
-        }
+            if ($this->isEditing) {
+                $section = Section::findOrFail($this->editSectionId);
+                $section->update([
+                    'name' => $this->name,
+                    'my_class_id' => $this->my_class_id,
+                    'teacher_id' => $this->teacher_id,
+                ]);
+                session()->flash('success', 'Section updated successfully.');
+            } else {
+                if ($this->allTeachersAssignedMessage) {
+                    session()->flash('warning', 'All teachers are already assigned.');
+                    return;
+                }
 
-        $this->loadSections();
-        $this->resetForm();
-        $this->checkAllTeachersAssigned(); // Check again after save
+                // Ensure teacher assigned is unique to the class
+                $existingTeacher = Section::where('my_class_id', $this->my_class_id)
+                    ->where('teacher_id', $this->teacher_id)
+                    ->exists();
+
+                if ($existingTeacher) {
+                    session()->flash('warning', 'This teacher is already assigned to this class.');
+                    return;
+                }
+
+                Section::create([
+                    'name' => $this->name,
+                    'my_class_id' => $this->my_class_id,
+                    'teacher_id' => $this->teacher_id,
+                ]);
+                session()->flash('success', 'Section created successfully.');
+            }
+
+            $this->loadSections();
+            $this->resetForm();
+            $this->checkAllTeachersAssigned();
+        } catch (ModelNotFoundException $e) {
+            session()->flash('error', 'The section could not be found.');
+        } catch (\Throwable $e) {
+            // Log the error for further analysis
+            \Log::error('Error saving section: ' . $e->getMessage(), ['exception' => $e]);
+            session()->flash('error', 'An unexpected error occurred while saving the section.');
+        }
     }
+
 
     public function assignTeacherSave()
     {
@@ -169,14 +200,56 @@ class ManageSections extends Component
             'teacher_id' => 'required|exists:users,id',
         ]);
 
-        $section = Section::findOrFail($this->editSectionId);
-        $section->teacher_id = $this->teacher_id;
-        $section->save();
+        try {
+            $section = Section::findOrFail($this->editSectionId);
+            $section->teacher_id = $this->teacher_id;
+            $section->save();
 
-        $this->loadSections();
-        $this->isAssigningTeacher = false;
-        $this->teacher_id = null;
-        $this->checkAllTeachersAssigned(); // Check again after assigning teacher
+            $this->loadSections();
+            $this->isAssigningTeacher = false;
+            $this->teacher_id = null;
+            $this->checkAllTeachersAssigned();
+
+            session()->flash('success', 'Teacher assigned successfully.');
+        } catch (ModelNotFoundException $e) {
+            session()->flash('error', 'Section not found for assigning teacher.');
+        } catch (Exception $e) {
+            session()->flash('error', 'An error occurred while assigning the teacher.');
+        }
+    }
+
+    public function delete($sectionId)
+    {
+        $this->confirmingDelete = true;
+        $this->deleteSectionId = $sectionId;
+    }
+
+    public function confirmDelete()
+    {
+        try {
+            Section::findOrFail($this->deleteSectionId)->delete();
+            $this->loadSections();
+            $this->confirmingDelete = false;
+            $this->deleteSectionId = null;
+            $this->checkAllTeachersAssigned();
+
+            session()->flash('success', 'Section deleted successfully.');
+        } catch (ModelNotFoundException $e) {
+            session()->flash('error', 'Section not found for deletion.');
+        } catch (Exception $e) {
+            session()->flash('error', 'An error occurred while deleting the section.');
+        }
+    }
+
+    public function cancelDelete()
+    {
+        $this->confirmingDelete = false;
+        $this->deleteSectionId = null;
+    }
+
+    public function closeForm()
+    {
+        $this->resetForm();
     }
 
     public function resetForm()
@@ -188,45 +261,6 @@ class ManageSections extends Component
         $this->isEditing = false;
         $this->editSectionId = null;
         $this->isAssigningTeacher = false;
-    }
-
-    public function delete($sectionId)
-    {
-        $this->confirmingDelete = true;
-        $this->deleteSectionId = $sectionId;
-    }
-
-    public function confirmDelete()
-    {
-        Section::findOrFail($this->deleteSectionId)->delete();
-        $this->loadSections();
-        $this->confirmingDelete = false;
-        $this->deleteSectionId = null;
-        $this->checkAllTeachersAssigned(); // Check again after deletion
-    }
-
-    public function cancelDelete()
-    {
-        $this->confirmingDelete = false;
-        $this->deleteSectionId = null;
-    }
-
-    public function changeClassTeacher($sectionId)
-    {
-        $this->editSectionId = $sectionId;
-        $this->teacher_id = Section::findOrFail($sectionId)->teacher_id;
-        $this->isAssigningTeacher = true;
-
-        $section = Section::findOrFail($sectionId);
-        $this->name = $section->name;
-        $this->my_class_id = $section->my_class_id;
-
-        $this->checkAllTeachersAssigned();
-    }
-
-    public function closeForm()
-    {
-        $this->resetForm();
     }
 
     public function render()

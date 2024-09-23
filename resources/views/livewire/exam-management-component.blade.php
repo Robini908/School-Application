@@ -231,15 +231,15 @@
                     </div>
 
                     <div class="row">
-                        <!-- Sections Selection -->
+                        <!-- Stream Selection -->
                         <div class="col-12 mb-3">
                             @if ($selectedClass && $sections->count() > 0)
                             <div class="form-group">
-                                <label>Select Sections</label>
+                                <label>Select Stream</label>
                                 <div class="d-flex align-items-center mb-2">
                                     <input type="checkbox" id="selectAllSections" wire:model="selectAllSections"
                                         wire:click="toggleSelectAllSections">
-                                    <label for="selectAllSections" class="ml-2">Select All Sections</label>
+                                    <label for="selectAllSections" class="ml-2">Select All Stream</label>
                                 </div>
                                 <div class="row">
                                     @foreach ($sections as $section)
@@ -390,7 +390,7 @@
         <button wire:click="create" class="btn btn-primary float-right">Add Exam</button>
     </div>
     <div class="card-body">
-        <table class="table table-striped datatable-button-html5-columns">
+        <table class="table table-responsive datatable-button-html5-columns">
             <thead>
                 <tr>
                     <th>Name</th>
@@ -398,7 +398,7 @@
                     <th>Year</th>
                     <th>Grading System</th>
                     <th>Classes</th>
-                    <th>Sections</th>
+                    <th>Stream</th>
                     <th>Actions</th>
                 </tr>
             </thead>
