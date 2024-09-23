@@ -1,5 +1,5 @@
 <div class="card">
-    <style>
+    {{-- <style>
         .custom-badge {
             font-size: 0.9rem;
             /* Adjust the font size */
@@ -15,7 +15,7 @@
             transform: scale(1.2);
             /* Slightly larger checkbox */
         }
-    </style>
+    </style> --}}
 
     <div class="card-body">
         <!-- Flash Message -->
@@ -50,13 +50,11 @@
                 @if ($showGradingSystemForm)
                 <div x-show="showInstructions" class="alert alert-info mb-3" x-transition>
                     <strong>Click the "Add Grading System" button below:</strong><br><br>
-                    After adding the grading system, ensure to add the grading ranges on the second tab "Manage
-                    Grading
+                    After adding the grading system, ensure to add the grading ranges on the second tab "Manage Grading
                     Ranges".<br><br>
                     On that tab, select the grading system you've created, then select the subject.<br><br>
                     <strong>You can click the close button at the bottom when you're done.</strong><br><br>
-                    You can also browse existing grading systems below to confirm the existing grading ranges and
-                    other
+                    You can also browse existing grading systems below to confirm the existing grading ranges and other
                     parameters.
 
                     <div class="mt-3">
@@ -65,16 +63,13 @@
                         </button>
                     </div>
                 </div>
+                
 
                 <div x-show="!showInstructions" class="mt-3">
-
-
-                    <div class="alert alert-info mt-2" x-show="!showInstructions" x-transition>
-                        <strong>View the Instructions:</strong> To manage grading ranges effectively, ensure that
-                        the
+                    <div class="alert alert-info mt-2">
+                        <strong>View the Instructions:</strong> To manage grading ranges effectively, ensure that the
                         grading system is set up correctly...
-                        <button type="button" class="btn btn-link" @click="showInstructions = true">Read
-                            More</button>
+                        <button type="button" class="btn btn-link" @click="showInstructions = true">Read More</button>
                     </div>
                 </div>
 
@@ -99,6 +94,7 @@
                 </div>
             </div>
         </div>
+
         <div class="text-center mt-3">
             <button type="button" wire:click="toggleGradingSystemForm" class="btn btn-secondary">
                 <span>&larr; Done? Back to Exam creation</span>
@@ -169,141 +165,148 @@
         @else
 
         <!-- Exam Form -->
-        <form wire:submit.prevent="store" class="container mt-4">
-            <div class="row">
-                <!-- Exam Name -->
-                <div class="col-12 mb-3">
-                    <div class="form-group">
-                        <label for="name">Exam Name</label>
-                        <input type="text" id="name" wire:model="name" class="form-control"
-                            placeholder="Enter exam name" />
-                        @error('name')
-                        <small class="form-text text-danger">{{ $message }}</small>
-                        @enderror
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <!-- Term, Year, Class Selection -->
-                <div class="col-12 col-md-4 mb-3">
-                    <div class="form-group">
-                        <label for="term">Term</label>
-                        <select id="term" wire:model="term" class="form-control">
-                            <option value="">Select Term</option>
-                            @foreach ($terms as $value => $label)
-                            <option value="{{ $value }}">{{ $label }}</option>
-                            @endforeach
-                        </select>
-                        @error('term')
-                        <small class="form-text text-danger">{{ $message }}</small>
-                        @enderror
-                    </div>
-                </div>
-
-                <div class="col-12 col-md-4 mb-3">
-                    <div class="form-group">
-                        <label for="year">Year</label>
-                        <select id="year" wire:model="year" class="form-control">
-                            <option value="">Select Year</option>
-                            @foreach (range(2000, date('Y')) as $yearOption)
-                            <option value="{{ $yearOption }}">{{ $yearOption }}</option>
-                            @endforeach
-                        </select>
-                        @error('year')
-                        <small class="form-text text-danger">{{ $message }}</small>
-                        @enderror
-                    </div>
-                </div>
-
-                <div class="col-12 col-md-4 mb-3">
-                    <div class="form-group">
-                        <label for="class">Class</label>
-                        <select id="class" wire:model="selectedClass" class="form-control">
-                            <option value="">Select Class</option>
-                            @foreach ($classes as $class)
-                            <option value="{{ $class->id }}">{{ $class->name }}</option>
-                            @endforeach
-                        </select>
-                        @error('selectedClass')
-                        <small class="form-text text-danger">{{ $message }}</small>
-                        @enderror
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <!-- Sections Selection -->
-                <div class="col-12 mb-3">
-                    @if ($selectedClass && $sections->count() > 0)
-                    <div class="form-group">
-                        <label>Select Sections</label>
-                        <div class="d-flex align-items-center mb-2">
-                            <input type="checkbox" id="selectAllSections" wire:model="selectAllSections"
-                                wire:click="toggleSelectAllSections">
-                            <label for="selectAllSections" class="ml-2">Select All Sections</label>
-                        </div>
-                        <div class="row">
-                            @foreach ($sections as $section)
-                            <div class="col-6 col-md-4 col-lg-3 mb-2">
-                                <span class="badge custom-badge d-flex align-items-center">
-                                    <input type="checkbox" id="section{{ $section->id }}" value="{{ $section->id }}"
-                                        wire:model="selectedSections" class="form-check-input mr-2">
-                                    {{ $section->name }}
-                                </span>
-                            </div>
-                            @endforeach
-                        </div>
-                        @error('selectedSections')
-                        <small class="form-text text-danger">{{ $message }}</small>
-                        @enderror
-                    </div>
-                    @endif
-                </div>
-
-            </div>
-
-            <div class="row">
-                <!-- Grading System Selection -->
-                <div class="col-12 col-md-6 mb-3">
-                    @if ($gradingSystems->count() > 0)
-                    <div class="form-group">
-                        <label for="gradingSystem">Select Grading System</label>
-                        <select id="gradingSystem" wire:model="grading_system_id" class="form-control">
-                            <option value="">Select Grading System</option>
-                            @foreach ($gradingSystems as $gradingSystem)
-                            <option value="{{ $gradingSystem->id }}">{{ $gradingSystem->name }}</option>
-                            @endforeach
-                        </select>
-                        @error('grading_system_id')
-                        <small class="form-text text-danger">{{ $message }}</small>
-                        @enderror
-
-                        <div class="mt-2">
-                            <div class="d-flex justify-content-between">
-                                @if ($grading_system_id)
-                                <button type="button" wire:click="viewGradingSystemDetails" class="btn btn-info btn-sm">
-                                    View Details for {{ $gradingSystems->find($grading_system_id)->name }}
-                                </button>
-                                @endif
-                                <button type="button" wire:click="toggleGradingSystemForm"
-                                    class="btn btn-primary btn-sm">Add Grading System</button>
+        <div class="card">
+            <div class="card-body">
+                <form wire:submit.prevent="store" class="container mt-4">
+                    <div class="row">
+                        <!-- Exam Name -->
+                        <div class="col-12 mb-3">
+                            <div class="form-group">
+                                <label for="name">Exam Name</label>
+                                <input type="text" id="name" wire:model="name" class="form-control"
+                                    placeholder="Enter exam name" />
+                                @error('name')
+                                <small class="form-text text-danger">{{ $message }}</small>
+                                @enderror
                             </div>
                         </div>
                     </div>
-                    @endif
-                </div>
-            </div>
 
-            <div class="row">
-                <div class="col-12">
-                    <button type="submit" class="btn btn-primary mt-3">
-                        {{ $examId ? 'Update Exam' : 'Add Exam' }}
-                    </button>
-                    <button type="button" wire:click="resetForm" class="btn btn-secondary ml-2 mt-3">Cancel</button>
-                </div>
+                    <div class="row">
+                        <!-- Term, Year, Class Selection -->
+                        <div class="col-12 col-md-4 mb-3">
+                            <div class="form-group">
+                                <label for="term">Term</label>
+                                <select id="term" wire:model="term" class="form-control">
+                                    <option value="">Select Term</option>
+                                    @foreach ($terms as $value => $label)
+                                    <option value="{{ $value }}">{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                                @error('term')
+                                <small class="form-text text-danger">{{ $message }}</small>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-4 mb-3">
+                            <div class="form-group">
+                                <label for="year">Year</label>
+                                <select id="year" wire:model="year" class="form-control">
+                                    <option value="">Select Year</option>
+                                    @foreach (range(2000, date('Y')) as $yearOption)
+                                    <option value="{{ $yearOption }}">{{ $yearOption }}</option>
+                                    @endforeach
+                                </select>
+                                @error('year')
+                                <small class="form-text text-danger">{{ $message }}</small>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-4 mb-3">
+                            <div class="form-group">
+                                <label for="class">Class</label>
+                                <select id="class" wire:model="selectedClass" class="form-control">
+                                    <option value="">Select Class</option>
+                                    @foreach ($classes as $class)
+                                    <option value="{{ $class->id }}">{{ $class->name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('selectedClass')
+                                <small class="form-text text-danger">{{ $message }}</small>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Sections Selection -->
+                        <div class="col-12 mb-3">
+                            @if ($selectedClass && $sections->count() > 0)
+                            <div class="form-group">
+                                <label>Select Sections</label>
+                                <div class="d-flex align-items-center mb-2">
+                                    <input type="checkbox" id="selectAllSections" wire:model="selectAllSections"
+                                        wire:click="toggleSelectAllSections">
+                                    <label for="selectAllSections" class="ml-2">Select All Sections</label>
+                                </div>
+                                <div class="row">
+                                    @foreach ($sections as $section)
+                                    <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                        <span class="badge custom-badge d-flex align-items-center">
+                                            <input type="checkbox" id="section{{ $section->id }}"
+                                                value="{{ $section->id }}" wire:model="selectedSections"
+                                                class="form-check-input mr-2">
+                                            {{ $section->name }}
+                                        </span>
+                                    </div>
+                                    @endforeach
+                                </div>
+                                @error('selectedSections')
+                                <small class="form-text text-danger">{{ $message }}</small>
+                                @enderror
+                            </div>
+                            @endif
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+                        <!-- Grading System Selection -->
+                        <div class="col-12 col-md-6 mb-3">
+                            @if ($gradingSystems->count() > 0)
+                            <div class="form-group">
+                                <label for="gradingSystem">Select Grading System</label>
+                                <select id="gradingSystem" wire:model="grading_system_id" class="form-control">
+                                    <option value="">Select Grading System</option>
+                                    @foreach ($gradingSystems as $gradingSystem)
+                                    <option value="{{ $gradingSystem->id }}">{{ $gradingSystem->name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('grading_system_id')
+                                <small class="form-text text-danger">{{ $message }}</small>
+                                @enderror
+
+                                <div class="mt-2">
+                                    <div class="d-flex justify-content-between">
+                                        @if ($grading_system_id)
+                                        <button type="button" wire:click="viewGradingSystemDetails"
+                                            class="btn btn-info btn-sm">
+                                            View Details for {{ $gradingSystems->find($grading_system_id)->name }}
+                                        </button>
+                                        @endif
+                                        <button type="button" wire:click="toggleGradingSystemForm"
+                                            class="btn btn-link btn-sm text-lg">Add Grading System</button>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary mt-3">
+                                {{ $examId ? 'Update Exam' : 'Add Exam' }}
+                            </button>
+                            <button type="button" wire:click="resetForm"
+                                class="btn btn-secondary ml-2 mt-3">Cancel</button>
+                        </div>
+                    </div>
+                </form>
             </div>
-        </form>
+        </div>
 
 
 

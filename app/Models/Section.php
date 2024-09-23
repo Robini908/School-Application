@@ -13,10 +13,11 @@ class Section extends Model
     protected $fillable = ['name', 'my_class_id', 'active', 'teacher_id'];
 
     // Define the relationship with MyClass
-    public function myClass(): BelongsTo
+    public function my_class(): BelongsTo
     {
         return $this->belongsTo(MyClass::class, 'my_class_id');
     }
+    
 
     // Define the relationship with Teacher
     public function teacher(): BelongsTo

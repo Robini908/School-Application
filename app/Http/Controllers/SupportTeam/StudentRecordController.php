@@ -53,22 +53,18 @@ class StudentRecordController extends Controller
     public function create()
     {
         try {
-            // Fetch necessary data for the view
-            /*$data['my_classes'] = $this->my_class->all();
-            $data['parents'] = $this->user->getUserByType('parent');
-            $data['dorms'] = $this->student->getAllDorms();
-            $data['states'] = $this->loc->getStates();
-            $data['nationals'] = $this->loc->getAllNationals();*/
- 
-            // Fetch all student records
-            //$data['students'] = StudentRecord::all();
+            // Select students with their class, section, and parent details
+            $mystudents = DB::select("
+            select student_records.*, my_classes.name as classname, sections.name as sectionname,
+            parent_details.parent_first_name, parent_details.parent_last_name, parent_details.parent_phone_number
+            from student_records
+            join my_classes on student_records.my_class_id = my_classes.id
+            join sections on student_records.section_id = sections.id
+            join parent_details on student_records.parent_id_no = parent_details.parent_id_no
+        ");
 
-            $mystudents=DB::select("select student_records.*,my_classes.name as classname,sections.name as sectionname,
-            parent_details.parent_first_name,parent_details.parent_last_name,parent_details.parent_phone_number
-            from student_records join my_classes on student_records.my_class_id=my_classes.id join sections
-            on student_records.section_id=sections.id join parent_details on student_records.parent_id=parent_details.parent_id_no");
-            
-            return view('pages.support_team.students.add', $mystudents);
+            // Return the view with the student data
+            return view('pages.support_team.students.add', ['students' => $mystudents]);
         } catch (Exception $e) {
             Log::error("Failed to load student creation page: " . $e->getMessage());
             return back()->with('flash_danger', __('An error occurred while loading the creation page: ') . $e->getMessage());
@@ -76,154 +72,128 @@ class StudentRecordController extends Controller
     }
 
 
+
     public function store(Request $request)
     {
-        //getting all the field from a form request
-        //$data = $request->all();
-    try
-    {
-        //parent data
-        $parentId = $request->input('id_number');
-      //  dd($parentId);
-        $parentFname = $request->input('parent_first_name');
-        $parentMname = $request->input('parent_middle_name');
-        $parentLname = $request->input('parent_last_name');
-        $parentPhone = $request->input('parent_phone');
-        $parentEmail= $request->input('parent_email');
-        $parentPassword = $request->input('parent_password');
+        // Define validation rules
+        $request->validate([
+            // Parent Validation
+            'id_number' => 'required|string|max:10|unique:parent_details,parent_id_no',
+            'parent_first_name' => 'required|string|max:255',
+            'parent_middle_name' => 'nullable|string|max:255',
+            'parent_last_name' => 'required|string|max:255',
+            'parent_phone' => 'required|string|max:15',
+            'parent_email' => 'required|email|unique:parent_details,parent_email',
+            'parent_password' => 'required|min:6|confirmed',
 
-        // Check if parent exists
-        $parent = DB::table('parent_details')
-                    ->where('parent_id_no', $parentId)
-                    ->first();
-        
-        if (!$parent) 
-        {
-            // Save parent data if not exists
-            $parentId = DB::table('parent_details')->insert([
-                'parent_id_no' => $parentId,
-                'parent_first_name' => $parentFname,
-                'parent_middle_name' => $parentMname,
-                'parent_last_name' => $parentLname,
-                'parent_phone_number' => $parentPhone,
-                'parent_email' => $parentEmail,
-                'parent_password' => $parentPassword
-            ]);
-        }
-        
-        $photo="";
-        //upload the image 
-        if ($request->hasFile('photo')) 
-        {
-            $imageName = time().'.'.$request->photo->extension();
-            $request->photo->move(public_path('images'), $imageName);
-            $photo = 'images/' . $imageName;          
+            // Student Validation
+            'first_name' => 'required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|email|unique:student_records,email',
+            'phone' => 'required|string|max:15',
+            'dob' => 'required|date_format:m/d/Y|before:today',
+            'nal_id' => 'required|integer|exists:nations,id',
+            'state_id' => 'required|integer|exists:states,id',
+            'town' => 'required|string|max:255',
+            'my_class_id' => 'required|integer|exists:my_classes,id',
+            'section_id' => 'required|integer|exists:sections,id',
+            'dorm_id' => 'nullable|integer|exists:dorms,id',
+            'adm_no' => 'required|string|unique:student_records,adm_no',
+            'year_admitted' => 'required|integer|digits:4|min:2000|max:' . date('Y'),
+            'bg_id' => 'required|integer|exists:blood_groups,id',
+            'kcpe_marks' => 'nullable|numeric|min:0|max:500',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'password' => 'required|min:6|confirmed',
+        ]);
 
-        }
-                   
-        //getting the student data
-        $studentFname=$request->input('first_name');
-        $studentMname=$request->input('middle_name');
-        $studentLname=$request->input('last_name');
-        $studentEmail=$request->input('email');
-        $studentGender=$request->input('gender');
-        $studentPhone=$request->input('phone');
-        $studentDob = DateTime::createFromFormat('m/d/Y', $request->input('dob'))->format('Y-m-d');
-        $studentNation=$request->input('nal_id');
-        $studentState=$request->input('state_id');
-        $studentTown=$request->input('town');
-        $studentPhoto=$request->$photo;
-        $studentClassId=$request->input('my_class_id');
-        $studentSectionId=$request->input('section_id');
-        $studentYearAdmited=$request->input('year_admitted');
-        $studentDormId=$request->input('dorm_id');
-        $studentUpi=$request->input('upi_no');
-        $studentAdm=$request->input('adm_no');
-        $studentBloodGroup=$request->input('bg_id');
-        $studentKcpe=$request->input('kcpe_marks');
-        $studentPassword=$request->input('password');
-       
-        //dd($request->input('id_number'));
-        // Save student data
-        DB::table('student_records')->insert([
-            'parent_id' => $request->input('id_number'),
-            'my_class_id' => $studentClassId,
-            'section_id' => $studentSectionId,
-            'dorm_id' =>  $studentDormId,
-            'adm_no' => $studentAdm,
-            'year_admitted' =>  $studentYearAdmited,
-            'first_name' => $studentFname,
-            'middle_name' => $studentMname,
-            'last_name' => $studentLname,
-            'email' =>  $studentEmail,
-            'gender' => $studentGender,
-            'phone' => $studentPhone,
-            'dob' => $studentDob,
-            'nal_id' =>$studentNation,
-            'state_id' =>$studentState,
-            'town' => $studentTown,
-            'bg_id' => $studentBloodGroup,
-            'photo' => $photo,
-            'status' => 'unverified',
-            'kcpe'=> $studentKcpe,
-            'student_password'=>$studentPassword
-        ]);        
-        return redirect()->back()->with('flash_success', 'Data saved successfully!');
-    } catch (Exception $e) {
-        //Log::error("Failed to update student record to not graduated for record ID $sr_id: " . $e->getMessage());
-        return back()->with('flash_danger', __('An error occurred while updating the student status: ') . $e->getMessage());
-    }
-    }
-
-    public function storeCopy(StudentRecordCreate $req)
-    {
         try {
-            // Collect data from the request
-            $data = $req->only(Qs::getUserRecord());
-            $sr = $req->only(Qs::getStudentData());
+            // Parent data
+            $parentId = $request->input('id_number');
+            $parentFname = $request->input('parent_first_name');
+            $parentMname = $request->input('parent_middle_name');
+            $parentLname = $request->input('parent_last_name');
+            $parentPhone = $request->input('parent_phone');
+            $parentEmail = $request->input('parent_email');
+            $parentPassword = $request->input('parent_password');
 
-            // Find class type code
-            $ct = $this->my_class->findTypeByClass($req->my_class_id)->code;
+            // Check if parent exists
+            $parent = DB::table('parent_details')
+                ->where('parent_id_no', $parentId)
+                ->first();
 
-            // Set user type, name, code, password, and default photo
-            $data['user_type'] = 'student';
-            $data['name'] = ucwords($req->name);
-            $data['code'] = strtoupper(Str::random(10));
-            $data['password'] = Hash::make('student');
-            $data['photo'] = Qs::getDefaultUserImage();
-
-            // Generate admission number
-            // Set username and admission number
-            $admissionNumber = '12345'; // Example admission number, should be generated dynamically
-            $data['username'] = strtoupper(Qs::getAppCode() . '/' . $ct . '/' . $sr['year_admitted'] . '/' . $admissionNumber);
-
-            // Store photo if provided
-            if ($req->hasFile('photo')) {
-                $photo = $req->file('photo');
-                $f = Qs::getFileMetaData($photo);
-                $f['name'] = 'photo.' . $f['ext'];
-                $f['path'] = $photo->storeAs(Qs::getUploadPath('student') . $data['code'], $f['name']);
-                $data['photo'] = asset('storage/' . $f['path']);
+            if (!$parent) {
+                // Save parent data if it does not exist
+                DB::table('parent_details')->insert([
+                    'parent_id_no' => $parentId,
+                    'parent_first_name' => $parentFname,
+                    'parent_middle_name' => $parentMname,
+                    'parent_last_name' => $parentLname,
+                    'parent_phone_number' => $parentPhone,
+                    'parent_email' => $parentEmail,
+                    'parent_password' => bcrypt($parentPassword), // Secure password hashing
+                ]);
             }
 
-            // Create User
-            $user = $this->user->create($data);
+            // Handle photo upload if exists
+            $photo = "";
+            if ($request->hasFile('photo')) {
+                $imageName = time() . '.' . $request->photo->extension();
+                $request->photo->move(public_path('images'), $imageName);
+                $photo = 'images/' . $imageName;
+            }
 
-            // Assign admission number and user ID to student record
-            $admissionNumber = $req->adm_no;
-            $sr['adm_no'] = $admissionNumber;
-            $sr['user_id'] = $user->id;
-            $sr['session'] = Qs::getSetting('current_session');
+            // Student data
+            $studentFname = $request->input('first_name');
+            $studentMname = $request->input('middle_name');
+            $studentLname = $request->input('last_name');
+            $studentEmail = $request->input('email');
+            $studentGender = $request->input('gender');
+            $studentPhone = $request->input('phone');
+            $studentDob = DateTime::createFromFormat('m/d/Y', $request->input('dob'))->format('Y-m-d');
+            $studentNation = $request->input('nal_id');
+            $studentState = $request->input('state_id');
+            $studentTown = $request->input('town');
+            $studentClassId = $request->input('my_class_id');
+            $studentSectionId = $request->input('section_id');
+            $studentYearAdmited = $request->input('year_admitted');
+            $studentDormId = $request->input('dorm_id');
+            $studentAdm = $request->input('adm_no');
+            $studentBloodGroup = $request->input('bg_id');
+            $studentKcpe = $request->input('kcpe_marks');
+            $studentPassword = $request->input('password');
 
-            // Create Student
-            $this->student->createRecord($sr);
+            // Save student data
+            DB::table('student_records')->insert([
+                'parent_id_no' => $request->input('id_number'),
+                'my_class_id' => $studentClassId,
+                'section_id' => $studentSectionId,
+                'dorm_id' => $studentDormId,
+                'adm_no' => $studentAdm,
+                'year_admitted' => $studentYearAdmited,
+                'first_name' => $studentFname,
+                'middle_name' => $studentMname,
+                'last_name' => $studentLname,
+                'email' => $studentEmail,
+                'gender' => $studentGender,
+                'phone' => $studentPhone,
+                'dob' => $studentDob,
+                'nal_id' => $studentNation,
+                'state_id' => $studentState,
+                'town' => $studentTown,
+                'bg_id' => $studentBloodGroup,
+                'photo' => $photo,
+                'status' => 'unverified',
+                'kcpe' => $studentKcpe,
+                'student_password' => bcrypt($studentPassword),
+            ]);
 
-            return back()->with('flash_success', __('Student record created successfully!'));
+            return redirect()->back()->with('flash_success', 'Data saved successfully!');
         } catch (Exception $e) {
-            Log::error("Failed to store student record: " . $e->getMessage());
-            return back()->with('flash_danger', __('An error occurred while creating the student record: ') . $e->getMessage());
+            return back()->with('flash_danger', __('An error occurred while saving the student record: ') . $e->getMessage());
         }
     }
+
 
     public function listByClass($class_id)
     {
@@ -287,8 +257,6 @@ class StudentRecordController extends Controller
             Log::error("Failed to show student record for record ID $sr_id: " . $e->getMessage());
             return back()->with('flash_danger', __('An error occurred while fetching the student record: ') . $e->getMessage());
         }
-
-
     }
 
 

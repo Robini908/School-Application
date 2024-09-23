@@ -55,7 +55,6 @@ class MyClassRepo
     public function findTypeByClass($class_id)
     {
         return ClassType::find($this->find($class_id)->class_type_id);
-        
     }
 
     /************* Section *******************/
@@ -95,6 +94,19 @@ class MyClassRepo
         return Section::where(['my_class_id' => $class_id])->orderBy('name', 'asc')->get();
     }
 
+    public function getSectionByTeacher($teacher_id, $exclude_section_id = null)
+    {
+        $query = Section::where('teacher_id', $teacher_id);
+
+        // Exclude the section if it's being updated
+        if ($exclude_section_id) {
+            $query->where('id', '!=', $exclude_section_id);
+        }
+
+        return $query->first(); // Return the first section found, if any
+    }
+
+
     /************* Subject *******************/
 
     public function createSubject($data)
@@ -109,12 +121,12 @@ class MyClassRepo
 
     public function findSubjectByClass($class_id, $order_by = 'name')
     {
-        return $this->getSubject(['my_class_id'=> $class_id])->orderBy($order_by)->get();
+        return $this->getSubject(['my_class_id' => $class_id])->orderBy($order_by)->get();
     }
 
     public function findSubjectByTeacher($teacher_id, $order_by = 'name')
     {
-        return $this->getSubject(['teacher_id'=> $teacher_id])->orderBy($order_by)->get();
+        return $this->getSubject(['teacher_id' => $teacher_id])->orderBy($order_by)->get();
     }
 
     public function getSubject($data)
@@ -142,10 +154,10 @@ class MyClassRepo
         return Subject::orderBy('name', 'asc')->with(['my_class', 'teacher'])->get();
     }
 
-    
-    //count the number of students in a class
-    public function countStudents($class_id){
-        return StudentRecord::where('my_class_id', $class_id)->count();
-    } 
 
+    //count the number of students in a class
+    public function countStudents($class_id)
+    {
+        return StudentRecord::where('my_class_id', $class_id)->count();
+    }
 }

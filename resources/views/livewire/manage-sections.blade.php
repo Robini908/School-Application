@@ -1,0 +1,200 @@
+<div>
+    <div class="mb-4">
+        <button wire:click="create" class="btn btn-primary">Add New Stream</button>
+    </div>
+
+    @if($isCreating || $isEditing || $isAssigningTeacher || $sectionDetails)
+    <div class="card">
+        <div class="card-body">
+
+            @if($isCreating)
+            <h5>Create New Stream</h5>
+            @if($teachers->isEmpty())
+            <div class="alert alert-danger">No teachers available. Please add teachers before creating a stream.</div>
+            @elseif($allTeachersAssignedMessage === 'All teachers are assigned to classes.')
+            <div class="alert alert-danger">Sorry!The creation of new streams is disabled.<br><br>All teachers are
+                currently assigned to classes.<br><br> Please add more teachers to be able to select any among them and
+                assign the <strong>Class Teacher role</strong>.
+            </div>
+            @else
+            <div class="alert alert-info">Please fill in the details to create a new stream.</div>
+            @endif
+            @elseif($isEditing)
+            <h5>Edit Stream</h5>
+            @if($teachers->isEmpty())
+            <div class="alert alert-danger">No teachers available. You cannot edit this stream without teachers.</div>
+            @elseif($allTeachersAssignedMessage === 'All teachers are assigned to classes.')
+            <div class="alert alert-info">All teachers are
+                currently assigned to classes.<br><br>You cannot therefore update the <strong>Class Teacher</strong> of this stream.
+            </div>
+            @else
+            <div class="alert alert-info">Modify the details of the selected stream as needed.</div>
+            @endif
+            @elseif($isAssigningTeacher)
+            <h5>Change Class Teacher for Section: {{ $name }}</h5>
+            @if($teachers->isEmpty())
+            <div class="alert alert-danger">No teachers available. You cannot assign a class teacher to this section.
+            </div>
+            @elseif($allTeachersAssignedMessage === 'All teachers are assigned to classes.')
+            <div class="alert alert-warning">All teachers are currently assigned to classes.<br><br> You cannot therefore change or assign a Class
+                teacher of this stream.<br><br> Consider adding more teachers</div>
+            @else
+            <div class="alert alert-warning">You cannot assign a class teacher to this section.<br><br> Consider adding more
+                teachers to your system.</div>
+            @endif
+            @elseif($sectionDetails)
+            <h5>Section Details</h5>
+            <div class="alert alert-success">Viewing details for section: {{ $sectionDetails->name }}.</div>
+            @endif
+
+
+
+            @if($isCreating || $isEditing)
+            <form wire:submit.prevent="save">
+                <div class="form-group">
+                    <label for="name">Stream Name</label>
+                    <input wire:model="name" type="text" class="form-control" id="name" placeholder="Enter stream name"
+                        required>
+                    @error('name') <span class="text-danger">{{ $message }}</span> @enderror
+                </div>
+
+                <div class="form-group">
+                    <label for="class">Select Class</label>
+                    <select wire:model="my_class_id" class="form-control" id="class" required>
+                        <option value="">Select Class</option>
+                        @foreach($my_classes as $class)
+                        <option value="{{ $class->id }}">{{ $class->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('my_class_id') <span class="text-danger">{{ $message }}</span> @enderror
+                </div>
+
+                <div class="form-group">
+                    <label for="teacher">Select Teacher</label>
+                    <select wire:model="teacher_id" class="form-control" @if($isTeacherDropdownDisabled) disabled
+                        @endif>
+                        <option value="">Select Teacher</option>
+                        @foreach($teachers as $teacher)
+                        <option value="{{ $teacher->id }}">{{ $teacher->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('teacher_id') <span class="text-danger">{{ $message }}</span> @enderror
+                </div>
+
+                <button type="submit" class="btn btn-success" {{ $isCreating && $allTeachersAssignedMessage ? 'disabled'
+                    : '' }}>Save</button>
+                <button type="button" wire:click="closeForm" class="btn btn-secondary">Close</button>
+            </form>
+            @elseif($isAssigningTeacher)
+            <p>Current Class Teacher: {{ $sections->find($editSectionId)->teacher->name ?? 'Not Assigned' }}</p>
+            <select wire:model="teacher_id" class="form-control">
+                <option value="">Select a Teacher</option>
+                @foreach($teachers as $teacher)
+                <option value="{{ $teacher->id }}">{{ $teacher->name }}</option>
+                @endforeach
+            </select>
+            <button wire:click="assignTeacherSave" class="btn btn-success mt-2" {{ $allTeachersAssignedMessage
+                ? 'disabled' : '' }}>Save Assignment</button>
+            <button wire:click="resetForm" class="btn btn-secondary mt-2">Cancel</button>
+            @elseif($sectionDetails)
+            <p><strong>Name:</strong> {{ $sectionDetails->name }}</p>
+            <p><strong>Class:</strong> {{ $sectionDetails->my_class->name }}</p>
+            <p><strong>Teacher:</strong> {{ $sectionDetails->teacher ? $sectionDetails->teacher->name : 'None' }}</p>
+
+            <h4>Students in this Section:</h4>
+            <ul>
+                @foreach($students as $student)
+                <li>{{ $student->name }}</li>
+                @endforeach
+            </ul>
+
+            <h4>Subjects:</h4>
+            <ul>
+                @foreach($subjects as $subject)
+                <li>{{ $subject->name }}</li>
+                @endforeach
+            </ul>
+
+            <button wire:click="closeDetails" class="btn btn-secondary">Close</button>
+            @endif
+        </div>
+    </div>
+    @endif
+
+    @if(!$isCreating && !$isEditing && !$isAssigningTeacher && !$sectionDetails)
+    <div class="card mt-4">
+        <div class="p-3">
+            <label for="classFilter" class="form-label">Filter by Class:</label>
+            <select wire:model="selectedClass" id="classFilter" class="form-control">
+                <option value="">All Classes</option>
+                @foreach($my_classes as $class)
+                <option value="{{ $class->id }}">{{ $class->name }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="card-body">
+            <h5 class="card-title">Streams List</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped datatable-button-html5-columns">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Class</th>
+                            <th>Teacher</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($sections as $section)
+                        <tr>
+                            <td>{{ $loop->iteration }}</td>
+                            <td>{{ $section->name }}</td>
+                            <td>{{ $section->my_class->name }}</td>
+                            <td>{{ $section->teacher ? $section->teacher->name : 'Not Assigned' }}</td>
+                            <td>
+                                <button wire:click="edit({{ $section->id }})" class="btn btn-warning">Edit</button>
+                                @if(!$section->teacher)
+                                <button wire:click="assignTeacher({{ $section->id }})" class="btn btn-info">Assign
+                                    Teacher</button>
+                                @else
+                                <button wire:click="changeClassTeacher({{ $section->id }})"
+                                    class="btn btn-primary">Change Class Teacher</button>
+                                @endif
+                                <button wire:click="delete({{ $section->id }})" class="btn btn-danger">Delete</button>
+                                <button wire:click="showDetails({{ $section->id }})"
+                                    class="btn btn-secondary">Details</button>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    @if($confirmingDelete)
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmDeleteLabel">Confirm Delete</h5>
+                    <button type="button" class="close" wire:click="cancelDelete" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this section?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" wire:click="cancelDelete">Cancel</button>
+                    <button type="button" class="btn btn-danger" wire:click="confirmDelete">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+</div>

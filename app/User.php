@@ -5,6 +5,7 @@ namespace App;
 use App\Models\Lga;
 use App\Models\Dorm;
 use App\Models\State;
+use App\Models\UserType;
 use App\Models\BloodGroup;
 use App\Models\DormMaster;
 use App\Models\Nationality;
@@ -42,6 +43,10 @@ class User extends Authenticatable
     public function lga()
     {
         return $this->belongsTo(Lga::class);
+    }
+    public function userType()
+    {
+        return $this->belongsTo(UserType::class, 'user_type');
     }
 
     public function state()

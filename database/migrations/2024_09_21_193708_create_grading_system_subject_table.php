@@ -23,6 +23,7 @@ class CreateGradingSystemSubjectTable extends Migration
 
     public function down()
     {
+
         Schema::dropIfExists('grading_system_subject');
     }
 }

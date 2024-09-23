@@ -37,8 +37,10 @@ class MyClass extends Eloquent
         return $this->belongsTo(User::class, 'user_id')->where('user_type', 'teacher');
     }
 
+
+
     public function sections(): HasMany
     {
-        return $this->hasMany(Section::class);
+        return $this->hasMany(Section::class, 'my_class_id');
     }
 }
