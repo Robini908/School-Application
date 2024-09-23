@@ -218,6 +218,40 @@ class ManageSections extends Component
         }
     }
 
+    public function changeClassTeacher($sectionId)
+    {
+        try {
+            $this->editSectionId = $sectionId;
+            $this->teacher_id = Section::findOrFail($sectionId)->teacher_id;
+            $this->isAssigningTeacher = true;
+
+            $section = Section::findOrFail($sectionId);
+            $this->name = $section->name;
+            $this->my_class_id = $section->my_class_id;
+
+            $this->checkAllTeachersAssigned();
+        } catch (\Exception $e) {
+            session()->flash('error', 'Failed to load teacher change form. ' . $e->getMessage());
+        }
+    }
+
+    public function assignTeacher($sectionId)
+    {
+        try {
+            $this->editSectionId = $sectionId;
+            $this->teacher_id = null;
+            $this->isAssigningTeacher = true;
+
+            $section = Section::findOrFail($sectionId);
+            $this->name = $section->name;
+            $this->my_class_id = $section->my_class_id;
+        } catch (\Exception $e) {
+            session()->flash('error', 'Failed to load teacher assignment form. ' . $e->getMessage());
+        }
+    }
+
+
+
     public function delete($sectionId)
     {
         $this->confirmingDelete = true;
