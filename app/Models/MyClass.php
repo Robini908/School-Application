@@ -32,6 +32,8 @@ class MyClass extends Eloquent
             ->withPivot('section_id');
     }
 
+    
+
     public function teacher()
     {
         return $this->belongsTo(User::class, 'user_id')->where('user_type', 'teacher');

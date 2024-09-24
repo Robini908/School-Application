@@ -26,10 +26,10 @@
             <div class="tab-pane fade show active" id="manage-students">
                 @livewire('manage-students')
             </div>
-            <div class="tab-pane fade p-1" id="admit-student" style="margin-top:-20px;">
+            <div class="tab-pane fade p-4" id="admit-student" style="margin-top:-20px;">
                 @livewire('admit-student')
             </div>
-            <div class="tab-pane fade p-1" id="bulk-admit" style="margin-top:-20px;">
+            <div class="tab-pane fade p-4" id="bulk-admit" style="margin-top:-20px;">
                 @livewire('addbulk')
             </div>
         </div>
@@ -50,26 +50,11 @@
     </div>
     @endsection
     @section('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
     <script src="{{ asset('global_assets/js/main/add_student.js') }}"></script>
     <script src="{{ asset('global_assets/js/main/manage_admissions.js') }}"></script>
 
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.colVis.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"
-        integrity="sha384-e0Ri0eHb9NvcGhrkvq6xY4fZG+W5dNg6p+orHHCfh/0kBh1sZ/Nprf3Wc7lBlTR1" crossorigin="anonymous">
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"
-        integrity="sha384-+YQ4HkS8e5FGG3C2FPJdK0H6N2KAy4LHCpzlVZ81L/Pdf/0I7p7NuOSX2Ulm6oxk" crossorigin="anonymous">
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 
 
     <script>

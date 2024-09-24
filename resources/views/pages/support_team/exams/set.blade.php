@@ -5,7 +5,8 @@
 @section('content')
 
 
-        @livewire('exam-management-component')
+        
+        <livewire:exam-management-component lazy />
   
 
 @endsection

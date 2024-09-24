@@ -348,6 +348,7 @@ class ExamManagementComponent extends Component
         $this->isCreating = false;
         $this->isEditing = true;
         $this->showExamCard = false; // Hide the card when editing
+        
     }
 
 

@@ -84,7 +84,7 @@ class StudentRecordController extends Controller
             'parent_last_name' => 'required|string|max:255',
             'parent_phone' => 'required|string|max:15',
             'parent_email' => 'required|email|unique:parent_details,parent_email',
-            'parent_password' => 'required|min:6|confirmed',
+            'parent_password' => 'required|min:6',
 
             // Student Validation
             'first_name' => 'required|string|max:255',
@@ -93,7 +93,7 @@ class StudentRecordController extends Controller
             'email' => 'required|email|unique:student_records,email',
             'phone' => 'required|string|max:15',
             'dob' => 'required|date_format:m/d/Y|before:today',
-            'nal_id' => 'required|integer|exists:nations,id',
+            'nal_id' => 'required|integer|exists:nationalities,id',
             'state_id' => 'required|integer|exists:states,id',
             'town' => 'required|string|max:255',
             'my_class_id' => 'required|integer|exists:my_classes,id',

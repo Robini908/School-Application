@@ -36,4 +36,5 @@ class Section extends Model
         return $this->belongsToMany(Exam::class, 'exam_class_section', 'section_id', 'exam_id')
             ->withPivot('class_id');
     }
+    
 }

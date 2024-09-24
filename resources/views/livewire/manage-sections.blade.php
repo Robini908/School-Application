@@ -136,7 +136,7 @@
             @if($students->isEmpty())
             <div class="alert alert-danger">No students are enrolled in this section.</div>
             @else
-            <table class="table table-bordered table-responsive">
+            <table class="table  table-responsive">
                 <thead class="thead-light">
                     <tr>
                         <th>Photo</th>
@@ -178,7 +178,7 @@
             @if($subjects->isEmpty())
             <div class="alert alert-danger">No subjects are available in the system.</div>
             @else
-            <table class="table table-bordered table-responsive">
+            <table class="table  table-responsive">
                 <thead class="thead-light">
                     <tr>
                         <th>Name</th>
@@ -221,7 +221,7 @@
         <div class="card-body">
             <h5 class="card-title">Streams List</h5>
             <div class="table-responsive">
-                <table class="table table-bordered table-striped datatable-button-html5-columns">
+                <table class="table  datatable-button-html5-columns">
                     <thead class="table-light">
                         <tr>
                             <th>#</th>

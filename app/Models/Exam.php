@@ -39,5 +39,10 @@ class Exam extends Model
         return $this->belongsToMany(MyClass::class, 'exam_class_section', 'exam_id', 'class_id')
             ->withPivot('section_id');
     }
+    public function examMarks()
+{
+    return $this->hasMany(ExamMarks::class);
+}
+
     
 }

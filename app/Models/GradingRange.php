@@ -31,4 +31,9 @@ class GradingRange extends Model
     {
         return $this->belongsTo(Subject::class);
     }
+
+    public function examMarks()
+    {
+        return $this->hasMany(ExamMarks::class);
+    }
 }

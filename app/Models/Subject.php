@@ -22,4 +22,9 @@ class Subject extends Model
     {
         return $this->belongsToMany(GradingSystem::class, 'grading_system_subject', 'subject_id', 'grading_system_id');
     }
+
+    public function examMarks()
+    {
+        return $this->hasMany(ExamMarks::class);
+    }
 }

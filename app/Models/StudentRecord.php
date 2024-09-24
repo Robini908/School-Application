@@ -21,6 +21,7 @@ class StudentRecord extends Model
         'section_id',
         'dorm_id',
         'adm_no',
+
         'year_admitted',
         'kcpe',
         'first_name',
@@ -63,5 +64,10 @@ class StudentRecord extends Model
     {
         return $this->belongsTo(Dorm::class);
     }
+    public function examMarks()
+    {
+        return $this->hasMany(ExamMarks::class);
+    }
+
     
 }

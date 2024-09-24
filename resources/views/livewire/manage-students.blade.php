@@ -3,7 +3,7 @@
     <div class="card-body">
         
 
-        <div class="card container-fluid m-2" style="width:98%;">
+        <div class="card container-fluid m-2 px-4 pt-0.5" style="width:98%;">
             <div class="row g-3 align-items-center m-1">
                 <div class="col-auto">
                     <label for="officeFilter" class="form-label">Form: </label>

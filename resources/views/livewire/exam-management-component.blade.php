@@ -376,10 +376,14 @@
             @endif
         </div>
     </div>
-    <div class="card-header">
-        Exam List
-        <button wire:click="create" class="btn btn-primary float-right">Add Exam</button>
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Exam List</h5>
+        <div>
+            <button wire:click="create" class="btn btn-primary">Add Exam</button>
+            <a href="{{ route('exams.assignExamMarks') }}" class="btn btn-info ml-2">Assign Marks</a>
+        </div>
     </div>
+
     <div class="card-body">
         <table class="table table-responsive datatable-button-html5-columns">
             <thead>
@@ -485,7 +489,7 @@
                 <button type="button" class="btn btn-secondary" wire:click="$set('examDetails', [])">Close</button>
                 @if(isset($examDetails['id']))
                 <!-- Button to assign marks -->
-                <a href="{{ route('exams.assignExamMarks') }}" class="btn btn-info">Assign Marks</a>
+
 
 
                 @endif
