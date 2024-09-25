@@ -44,6 +44,7 @@ class ClassManagement extends Component
     public $isLoadingDelete = false;
 
     public $studentsCount = 0;
+    public $loading = false;
 
 
     // Modal Properties (for viewing stream students)
@@ -180,36 +181,46 @@ class ClassManagement extends Component
     // Save or update class
     public function saveClass()
     {
-        $this->validate([
-            'name' => 'required|string',
+        // Start loading
+        $this->loading = true;
 
-        ]);
+        try {
+            // Validate the input
+            $this->validate([
+                'name' => 'required|string',
+            ]);
 
-        // Save or update the class
-        $classData = [
-            'name' => $this->name,
+            // Save or update the class
+            $classData = [
+                'name' => $this->name,
+            ];
 
-        ];
-
-        $class = MyClass::updateOrCreate(
-            ['id' => $this->classId],
-            $classData
-        );
-
-        // Save streams
-        foreach ($this->streams as $stream) {
-            Section::updateOrCreate(
-                ['id' => $stream['id'] ?? null],
-                [
-                    'name' => $stream['name'],
-                    'my_class_id' => $class->id,
-                ]
+            $class = MyClass::updateOrCreate(
+                ['id' => $this->classId],
+                $classData
             );
-        }
 
-        // Display success message and reset form
-        session()->flash('message', $this->editMode ? 'Class updated successfully.' : 'Class created successfully.');
-        $this->resetForm();
+            // Save streams
+            foreach ($this->streams as $stream) {
+                Section::updateOrCreate(
+                    ['id' => $stream['id'] ?? null],
+                    [
+                        'name' => $stream['name'],
+                        'my_class_id' => $class->id,
+                    ]
+                );
+            }
+
+            // Display success message
+            session()->flash('message', $this->editMode ? 'Class updated successfully.' : 'Class created successfully.');
+        } catch (\Exception $e) {
+            // Handle any errors
+            session()->flash('error', 'An error occurred: ' . $e->getMessage());
+        } finally {
+            // End loading and reset form
+            $this->loading = false;
+            $this->resetForm();
+        }
     }
 
     // Add stream to the form dynamically
@@ -392,7 +403,7 @@ class ClassManagement extends Component
         $this->viewStreams($classId);
     }
     // Your Livewire Component
-   
+
 
     public function showStreamEntries($streamId)
     {
@@ -402,6 +413,17 @@ class ClassManagement extends Component
         } else {
             $this->selectedStreamEntries = []; // no data found
         }
+    }
+
+    
+
+    public function viewStreamStudents($streamId)
+    {
+        $stream = Section::with('studentRecords')->findOrFail($streamId);
+        $this->modalStudents = $stream->studentRecords;
+        $this->modalStudentsCount = $stream->studentRecords->count();
+        $this->modalStreamName = $stream->name;
+        $this->showStudentsModal = true;
     }
 
 

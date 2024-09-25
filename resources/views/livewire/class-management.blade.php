@@ -21,6 +21,16 @@
 
             <div class="card-body">
                 <form wire:submit.prevent="saveClass">
+                    <!-- Loading Indicator -->
+                    @if($loading)
+                    <div class="text-center mb-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                        <p>Saving class, please wait...</p>
+                    </div>
+                    @endif
+
                     <!-- Class Name -->
                     <div class="form-group">
                         <label for="name">Class Name</label>
@@ -98,7 +108,7 @@
 
                     <!-- Save Button -->
                     <div class="mt-4">
-                        <button type="submit" class="btn btn-success">
+                        <button type="submit" class="btn btn-success" wire:loading.attr="disabled">
                             {{ $editMode ? 'Update Class' : 'Save Class' }}
                         </button>
 
@@ -107,6 +117,7 @@
                         @endif
                     </div>
                 </form>
+
             </div>
         </div>
         <div class="card mt-4">
@@ -172,7 +183,7 @@
                             <tr>
                                 <td colspan="3">
                                     <form wire:submit.prevent="saveStreamTeacher">
-                                        <div class="form-row">
+                                        <div class="row">
                                             <div class="col">
                                                 <select wire:model="streamTeacher" class="form-control" required>
                                                     <option value="">-- Select Teacher --</option>
@@ -184,19 +195,27 @@
                                                 <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
+
                                             <div class="col">
-                                                <input type="text" wire:model="session" placeholder="Session"
-                                                    class="form-control" required>
+                                                <label for="session">Session</label>
+                                                <select wire:model="session" id="session" class="form-control" required>
+                                                    <option value="">Select a session</option>
+                                                    @foreach(range(date('Y'), 1900) as $year)
+                                                    <option value="{{ $year }}">{{ $year }}</option>
+                                                    @endforeach
+                                                </select>
                                                 @error('session')
                                                 <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
+
                                             <div class="col-auto">
                                                 <button type="submit" class="btn btn-success">Assign</button>
                                                 <button type="button" wire:click="closeInlineForm"
                                                     class="btn btn-secondary">Cancel</button>
                                             </div>
                                         </div>
+
                                     </form>
                                 </td>
                             </tr>
