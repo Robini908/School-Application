@@ -11,6 +11,8 @@ use App\Models\DormMaster;
 use App\Models\Nationality;
 use App\Models\StaffRecord;
 use App\Models\StudentRecord;
+use App\Models\MyClass;
+use App\Models\Section; // Import Section model
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -38,12 +40,12 @@ class User extends Authenticatable
         'password', 'remember_token',
     ];
 
-    
-
+    // Define relationships
     public function lga()
     {
         return $this->belongsTo(Lga::class);
     }
+
     public function userType()
     {
         return $this->belongsTo(UserType::class, 'user_type');
@@ -69,8 +71,18 @@ class User extends Authenticatable
         return $this->hasMany(StaffRecord::class);
     }
 
-    
+    // Relationship to MyClass as the master (teacher)
+    public function classes_as_master()
+    {
+        return $this->hasMany(MyClass::class, 'master_id')->where('user_type', 'teacher');
+    }
 
-    
+    /**
+     * Define the relationship with Section.
+     * Each user (teacher) can be associated with multiple sections.
+     */
+    public function sections()
+    {
+        return $this->hasMany(Section::class, 'teacher_id'); // Assuming 'teacher_id' is the foreign key in the sections table
+    }
 }
-// get rid

@@ -17,20 +17,25 @@ class GradingManagement extends Component
     public $isEditing = false;
     public $editingId = null;
 
+    public $allSelectedMessage = ''; // Message for all subjects selected
+
     public function mount()
     {
         $this->subjects = Subject::all();
+        $this->selectedSubjects = $this->subjects->pluck('id')->toArray();
+        $this->allSelectedMessage = 'All subjects are selected';
     }
 
     public function toggleSelectAll()
     {
-        if (count($this->selectedSubjects) === $this->subjects->count()) {
+        if (count($this->selectedSubjects) === count($this->subjects)) {
+            // If all are selected, clear the selection
             $this->selectedSubjects = [];
         } else {
+            // Select all subjects
             $this->selectedSubjects = $this->subjects->pluck('id')->toArray();
         }
     }
-
     public function create()
     {
         $this->resetForm();
@@ -40,6 +45,11 @@ class GradingManagement extends Component
 
     public function store()
     {
+        // Validate but ignore selectedSubjects if all are selected
+        if (count($this->selectedSubjects) === 0) {
+            $this->selectedSubjects = $this->subjects->pluck('id')->toArray(); // Ensure all are selected
+        }
+
         $this->validate($this->rules(), $this->messages());
 
         // Format rules and description
@@ -47,12 +57,15 @@ class GradingManagement extends Component
         $formattedDescription = $this->formatDescription($this->description);
 
         // Create new Grading System
-        GradingSystem::create([
+        $gradingSystem = GradingSystem::create([
             'name' => $this->name,
             'description' => $formattedDescription,
             'effective_date' => $this->effective_date,
             'rules' => $formattedRules,
-        ])->subjects()->sync($this->selectedSubjects);
+        ]);
+
+        // Sync subjects
+        $gradingSystem->subjects()->sync($this->selectedSubjects);
 
         session()->flash('message', 'Grading system created successfully.');
         $this->resetForm();
@@ -66,14 +79,31 @@ class GradingManagement extends Component
         $this->description = $gradingSystem->description;
         $this->effective_date = $gradingSystem->effective_date;
         $this->rules = $gradingSystem->rules;
+
+        // Get selected subjects for the editing context
         $this->selectedSubjects = $gradingSystem->subjects->pluck('id')->toArray();
+
+        // Ensure all subjects are selected if not already in selectedSubjects
+        $allSubjectIds = $this->subjects->pluck('id')->toArray();
+        foreach ($allSubjectIds as $subjectId) {
+            if (!in_array($subjectId, $this->selectedSubjects)) {
+                $this->selectedSubjects[] = $subjectId; // Add all subjects to selectedSubjects
+            }
+        }
+
         $this->isEditing = true;
         $this->isCreating = false;
         $this->editingId = $id;
     }
 
+
     public function update()
     {
+        // Validate but ignore selectedSubjects if all are selected
+        if (count($this->selectedSubjects) === 0) {
+            $this->selectedSubjects = $this->subjects->pluck('id')->toArray(); // Ensure all are selected
+        }
+
         $this->validate($this->rules(), $this->messages());
 
         // Format rules and description
@@ -88,12 +118,13 @@ class GradingManagement extends Component
             'rules' => $formattedRules,
         ]);
 
+        // Sync subjects on update
         $gradingSystem->subjects()->sync($this->selectedSubjects);
+
         session()->flash('message', 'Grading system updated successfully.');
         $this->resetForm();
         $this->isEditing = false;
     }
-
     public function delete($id)
     {
         $gradingSystem = GradingSystem::findOrFail($id);

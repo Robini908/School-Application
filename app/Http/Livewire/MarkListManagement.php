@@ -8,14 +8,19 @@ use App\Models\Section;
 use App\Models\Subject;
 use Livewire\Component;
 use App\Models\ExamMarks;
+use App\Models\GradingRange;
 use Livewire\WithPagination;
 use App\Models\StudentRecord;
+use App\Models\GradingSystem;
 
 class MarkListManagement extends Component
 {
     use WithPagination;
 
     public $classId;
+    public $examName;
+    public $gradingSystemRanges = []; // Initialize as an empty array
+
     public $examId;
     public $sectionId;
     public $studentDetails = []; // Property to hold student details
@@ -24,7 +29,7 @@ class MarkListManagement extends Component
     public $selectedAdmNo; // Holds the selected admission number
 
     public $studentAdditionalDetails = []; // Initialize the additional details property
-
+    public $gradingSystemDetails = [];
 
     public function mount()
     {
@@ -82,33 +87,94 @@ class MarkListManagement extends Component
     }
 
     public function fetchStudentDetails($admNo)
-    {
-        // Fetch the student by admission number
-        $student = StudentRecord::with('my_class', 'section')->where('adm_no', $admNo)->first();
+{
+    // Fetch the student by admission number
+    $student = StudentRecord::with('my_class', 'section')->where('adm_no', $admNo)->first();
 
-        if ($student) {
-            // Get all available subjects
-            $subjects = Subject::all(); // Assuming you have a Subject model
+    if ($student) {
+        // Get the latest exam the student participated in
+        $exam = Exam::whereHas('examMarks', function ($query) use ($student) {
+            $query->where('student_id', $student->id);
+        })->orderBy('created_at', 'desc')->first();
 
-            // Get marks for the student
-            $marks = ExamMarks::with('subject')
-                ->where('student_id', $student->id)
-                ->get()
-                ->keyBy('subject_id') // Key marks by subject ID for easier access
-                ->toArray();
+        // Initialize $marks as an empty array to avoid uninitialized variable issues
+        $marks = [];
 
-            // Prepare student details with subjects and their marks
-            $this->studentDetails = [];
-            foreach ($subjects as $subject) {
-                $this->studentDetails[] = [
-                    'subject_name' => $subject->subject_name,
-                    'marks' => isset($marks[$subject->id]) ? $marks[$subject->id]['marks'] : 'N/A', // Check if marks exist, else 'N/A'
+        // Check if an exam was found
+        if ($exam) {
+            // Get the grading system associated with the exam
+            $gradingSystem = $exam->gradingSystem;
+
+            // Check if the grading system exists
+            if ($gradingSystem) {
+                // Get all subjects for which the student has marks in this exam
+                $marks = ExamMarks::with('subject')
+                    ->where('student_id', $student->id)
+                    ->where('exam_id', $exam->id)
+                    ->get()
+                    ->keyBy('subject_id') // Key marks by subject ID for easier access
+                    ->toArray();
+
+                // Prepare student details with subjects, marks, grades, remarks, and GPA
+                $this->studentDetails = [];
+
+                foreach ($marks as $mark) {
+                    $subjectId = $mark['subject_id'];
+                    $subjectName = $mark['subject']['subject_name'];
+                    $subjectMarks = $mark['marks'];
+
+                    // Fetch the grading range for this subject based on the marks and grading system
+                    $gradingRange = GradingRange::where('grading_system_id', $gradingSystem->id)
+                        ->where('subject_id', $subjectId)
+                        ->where('range_from', '<=', $subjectMarks)
+                        ->where('range_to', '>=', $subjectMarks)
+                        ->first();
+
+                    // Populate grade, remark, and GPA if the grading range exists
+                    if ($gradingRange) {
+                        $grade = $gradingRange->grade;
+                        $remark = $gradingRange->remark;
+                        $gpa = $gradingRange->gpa;
+                    } else {
+                        $grade = 'N/A';
+                        $remark = 'N/A';
+                        $gpa = 'N/A';
+                    }
+
+                    // Add the subject, marks, grade, remark, and GPA to the student details array
+                    $this->studentDetails[] = [
+                        'subject_name' => $subjectName,
+                        'marks' => $subjectMarks,
+                        'grade' => $grade,
+                        'remark' => $remark,
+                        'gpa' => $gpa,
+                    ];
+                }
+
+                // Add the grading system name and description to student details
+                $this->gradingSystemDetails = [
+                    'name' => $gradingSystem->name,
+                    'description' => $gradingSystem->description,
+                    'effective_date' => $gradingSystem->effective_date,
                 ];
+
+            } else {
+                // If no grading system found, set student details to display subjects but without grades, remarks, or GPA
+                foreach ($marks as $mark) {
+                    $this->studentDetails[] = [
+                        'subject_name' => $mark['subject']['subject_name'] ?? 'N/A',
+                        'marks' => $mark['marks'] ?? 'N/A',
+                        'grade' => 'N/A',
+                        'remark' => 'N/A',
+                        'gpa' => 'N/A',
+                    ];
+                }
+                $this->gradingSystemDetails = ['name' => 'N/A', 'description' => 'N/A', 'effective_date' => 'N/A'];
             }
 
             // Fetch class and section names using their relationships
-            $className = $student->my_class ? $student->my_class->name : 'N/A'; // Assuming you have a relationship named 'my_class'
-            $sectionName = $student->section ? $student->section->name : 'N/A'; // Assuming you have a relationship named 'section'
+            $className = $student->my_class ? $student->my_class->name : 'N/A'; 
+            $sectionName = $student->section ? $student->section->name : 'N/A'; 
 
             // Add additional student details
             $this->studentAdditionalDetails = [
@@ -121,14 +187,57 @@ class MarkListManagement extends Component
                 'last_name' => $student->last_name,
             ];
 
-            // Set the selected admission number and show details
+            // Set the selected admission number and pass exam name
             $this->selectedAdmNo = $admNo;
+            $this->examName = $exam->name; // Exam name
             $this->showingDetails = true;
         } else {
-            $this->studentDetails = []; // Reset if no student found
-            $this->studentAdditionalDetails = []; // Reset additional details
+            // Reset if no exam found
+            $this->studentDetails = [];
+            $this->studentAdditionalDetails = [];
+            $this->gradingSystemDetails = [];
         }
+    } else {
+        // Reset if no student found
+        $this->studentDetails = [];
+        $this->studentAdditionalDetails = [];
+        $this->gradingSystemDetails = [];
     }
+}
+
+
+
+
+    public function getStudentGradingDetails($marks, $subjectId)
+    {
+        // Fetch the grading system associated with the exam
+        $gradingSystem = GradingSystem::where('id', $this->gradingSystemId) // Assume you have gradingSystemId defined
+            ->first();
+
+        if (!$gradingSystem) {
+            return ['grade' => 'N/A', 'remark' => 'N/A', 'gpa' => 'N/A'];
+        }
+
+        // Get the grading ranges for the subject
+        $gradingRange = GradingRange::where('subject_id', $subjectId)
+            ->where('grading_system_id', $gradingSystem->id)
+            ->where('range_from', '<=', $marks)
+            ->where('range_to', '>=', $marks)
+            ->first();
+
+        // Return the grade, remark, and GPA
+        if ($gradingRange) {
+            return [
+                'grade' => $gradingRange->grade,
+                'remark' => $gradingRange->remark,
+                'gpa' => $gradingRange->gpa,
+            ];
+        }
+
+        // Default if no range found
+        return ['grade' => 'N/A', 'remark' => 'N/A', 'gpa' => 'N/A'];
+    }
+
 
 
 

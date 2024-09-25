@@ -45,16 +45,18 @@
         <div class="col-md-6">
             <div class="card shadow-sm mb-3">
                 <div class="card-body">
-                    <h5 class="card-title">Select Subjects</h5>
+                    <h5 class="card-title alert text-info">The grading system will apply to  all subjects.</h5>
                     <div class="form-check mb-2">
-                        <input type="checkbox" class="form-check-input" id="select-all" wire:click="toggleSelectAll">
+                        <input type="checkbox" class="form-check-input" id="select-all" 
+                               wire:model="selectedSubjects" value="all" checked disabled>
                         <label class="form-check-label" for="select-all">Select All Subjects</label>
                     </div>
                     <div class="form-check">
                         @foreach($subjects as $subject)
-                        <div class="form-check mb-1">
-                            <input type="checkbox" class="form-check-input" id="subject-{{ $subject->id }}" value="{{ $subject->id }}" wire:model="selectedSubjects">
-                            <label class="form-check-label">
+                        <div class="form-check mb-1" wire:key="subject-{{ $subject->id }}">
+                            <input type="checkbox" class="form-check-input" id="subject-{{ $subject->id }}" 
+                                   value="{{ $subject->id }}" wire:model="selectedSubjects" checked disabled>
+                            <label class="form-check-label" for="subject-{{ $subject->id }}">
                                 <span class="badge bg-info text-white me-2">{{ $subject->subject_name }}</span>
                             </label>
                         </div>
@@ -66,6 +68,9 @@
                 </div>
             </div>
         </div>
+        
+        
+        
 
         <div class="col-12">
             <button type="submit" class="btn btn-primary">{{ $isEditing ? 'Update' : 'Create' }} Grading System</button>

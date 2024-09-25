@@ -9,11 +9,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class MyClass extends Eloquent
 {
-    protected $fillable = ['name', 'session', 'user_id', 'class_type_id', 'subject_id'];
+    protected $fillable = ['name', 'session', 'user_id', 'class_type_id', 'subject_id', 'master_id']; // Include master_id
 
     public function section()
     {
-        return $this->hasMany(Section::class, 'my_class_id'); // Use 'my_class_id' as the foreign key
+        return $this->hasMany(Section::class, 'my_class_id');
     }
 
     public function class_type()
@@ -32,14 +32,15 @@ class MyClass extends Eloquent
             ->withPivot('section_id');
     }
 
-    
-
     public function teacher()
     {
         return $this->belongsTo(User::class, 'user_id')->where('user_type', 'teacher');
     }
 
-
+    public function master()
+    {
+        return $this->belongsTo(User::class, 'master_id')->where('user_type', 'teacher'); // Corrected relation for class master
+    }
 
     public function sections(): HasMany
     {

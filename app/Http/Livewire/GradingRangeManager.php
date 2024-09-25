@@ -22,6 +22,12 @@ class GradingRangeManager extends Component
     {
         $this->gradingSystems = GradingSystem::all();
         $this->subjects = collect();
+        $this->refreshGradingSystems();
+    }
+    public function refreshGradingSystems()
+    {
+        // Fetch grading systems with a loading state
+        $this->gradingSystems = GradingSystem::all(); // Reload grading systems
     }
 
     public function updatedSelectedGradingSystem($gradingSystemId)

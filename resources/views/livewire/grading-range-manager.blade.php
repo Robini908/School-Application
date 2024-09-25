@@ -13,15 +13,25 @@
         <div class="card-body">
             <div class="form-group">
 
+                <button wire:click="refreshGradingSystems" class="btn btn-primary mb-3" wire:loading.attr="disabled">
+                    <i class="fas fa-sync-alt"></i> Refresh Grading Systems
+                    <span wire:loading wire:target="refreshGradingSystems">
+                        <i class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></i>
+                    </span>
+                </button>
+
                 <div class="mb-4">
                     <label for="grading-system" class="form-label">Select Grading System</label>
                     <select wire:model="selectedGradingSystem" class="form-control" id="grading-system">
                         <option value="">Select a Grading System</option>
                         @foreach($gradingSystems as $gradingSystem)
-                        <option value="{{ $gradingSystem->id }}">{{ $gradingSystem->name }}</option>
+                        <option value="{{ $gradingSystem->id }}" wire:key="grading-system-{{ $gradingSystem->id }}">
+                            {{ $gradingSystem->name }}
+                        </option>
                         @endforeach
                     </select>
                 </div>
+
 
                 @if($selectedGradingSystem)
                 <div class="mb-4">

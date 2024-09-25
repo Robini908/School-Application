@@ -5,30 +5,30 @@
     @if (!$showingDetails)
     <div class="mb-3">
         <label for="class" class="form-label">Select Class:</label>
-        <select wire:model="classId" id="class" class="form-control">
+        <select wire:model="classId" id="class" class="form-control" wire:key="class-selection">
             <option value="">Select Class</option>
             @foreach ($classes as $class)
-            <option value="{{ $class->id }}">{{ $class->name }}</option>
+            <option value="{{ $class->id }}" wire:key="class-{{ $class->id }}">{{ $class->name }}</option>
             @endforeach
         </select>
     </div>
 
     <div class="mb-3">
         <label for="exam" class="form-label">Select Exam:</label>
-        <select wire:model="examId" id="exam" class="form-control">
+        <select wire:model="examId" id="exam" class="form-control" wire:key="exam-selection">
             <option value="">Select Exam</option>
             @foreach ($exams as $exam)
-            <option value="{{ $exam->id }}">{{ $exam->name }}</option>
+            <option value="{{ $exam->id }}" wire:key="exam-{{ $exam->id }}">{{ $exam->name }}</option>
             @endforeach
         </select>
     </div>
 
     <div class="mb-3">
         <label for="section" class="form-label">Select Section:</label>
-        <select wire:model="sectionId" id="section" class="form-control">
+        <select wire:model="sectionId" id="section" class="form-control" wire:key="section-selection">
             <option value="">Select Section</option>
             @foreach ($sections as $section)
-            <option value="{{ $section->id }}">{{ $section->name }}</option>
+            <option value="{{ $section->id }}" wire:key="section-{{ $section->id }}">{{ $section->name }}</option>
             @endforeach
         </select>
     </div>
@@ -59,7 +59,7 @@
             </thead>
             <tbody>
                 @foreach ($marks as $mark)
-                <tr>
+                <tr wire:key="student-{{ $mark['adm_no'] }}">
                     <td>{{ $mark['student_name'] ?? 'N/A' }}</td>
                     <td>{{ $mark['adm_no'] ?? 'N/A' }}</td>
                     @foreach ($marks->first()['marks'] as $subjectName => $subjectMark)
@@ -81,56 +81,77 @@
 
     <!-- Details Card -->
     @if ($showingDetails)
-    <div class="card mt-4">
-        <div class="card-header">
-            <h5>Details for Admission No: {{ $selectedAdmNo }}</h5>
+
+    <div class="card mt-4" wire:key="details-card">
+        <div class="card-header bg-primary text-white">
+            <h5>Details for Admission No: {{ $selectedAdmNo ?? 'N/A' }}</h5>
         </div>
         <div class="card-body">
             <div class="row mb-4">
-                <div class="col-md-3 d-flex align-items-center">
-                    @if ($studentAdditionalDetails['photo'])
+                <div class="col-md-3 d-flex align-items-center justify-content-center">
+                    @if (!empty($studentAdditionalDetails['photo']))
                     <img src="{{ asset($studentAdditionalDetails['photo']) }}" alt="Student Photo" class="img-thumbnail"
-                        style="width: 50px; height: 50px;">
+                        style="width: 100px; height: 100px;">
                     @else
                     <span class="text-muted">No Image</span>
                     @endif
                 </div>
                 <div class="col-md-9">
-                    <h6 class="font-weight-bold">{{ $studentAdditionalDetails['first_name'] }}
-                        {{ $studentAdditionalDetails['middle_name'] }}
-                        {{ $studentAdditionalDetails['last_name'] }}</h6>
-                    <div class="row">
-                        <div class="col-6"><strong>Class:</strong> {{ $studentAdditionalDetails['class_name'] }}</div>
-                        <div class="col-6"><strong>Section:</strong> {{ $studentAdditionalDetails['section_name'] }}
-                        </div>
+                    <h4 class="font-weight-bold">
+                        {{ $studentAdditionalDetails['first_name'] ?? 'N/A' }}
+                        {{ $studentAdditionalDetails['middle_name'] ?? '' }}
+                        {{ $studentAdditionalDetails['last_name'] ?? '' }}
+                    </h4>
+                    <div class="row mt-2">
+                        <div class="col-6"><strong>Class:</strong> {{ $studentAdditionalDetails['class_name'] ?? 'N/A'
+                            }}</div>
+                        <div class="col-6"><strong>Section:</strong> {{ $studentAdditionalDetails['section_name'] ??
+                            'N/A' }}</div>
                     </div>
-                    <div class="row">
-                        <div class="col-6"><strong>Gender:</strong> {{ $studentAdditionalDetails['gender'] }}</div>
-                        <div class="col-6"><strong>Admission No:</strong> {{ $selectedAdmNo }}</div>
+                    <div class="row mt-1">
+                        <div class="col-6"><strong>Gender:</strong> {{ $studentAdditionalDetails['gender'] ?? 'N/A' }}
+                        </div>
+                        <div class="col-6"><strong>Admission No:</strong> {{ $selectedAdmNo ?? 'N/A' }}</div>
                     </div>
                 </div>
             </div>
 
             @if (!empty($studentDetails))
-            <h6 class="font-weight-bold">Subject Marks</h6>
-            <table class="table table-bordered">
+            <!-- Display Exam Name -->
+            <h6 class="font-weight-bold mb-3">Exam: {{ $examName ?? 'N/A' }}</h6>
+
+            <!-- Display Grading System Name -->
+            <h6 class="font-weight-bold mb-3">Grading System: {{ $gradingSystemDetails['name'] ?? 'N/A' }}</h6>
+
+            <!-- Display Grading System Description -->
+            <p class="text-muted mb-2">Description: {{ $gradingSystemDetails['description'] ?? 'N/A' }}</p>
+
+            <!-- Subject Marks and Grades -->
+            <h6 class="font-weight-bold mb-3">Subject Marks & Grades</h6>
+            <table class="table table-bordered table-striped text-center">
                 <thead class="thead-light">
                     <tr>
                         <th>Subject</th>
                         <th>Marks</th>
+                        <th>Grade</th>
+                        <th>Remark</th>
+                        <th>GPA</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($studentDetails as $detail)
-                    <tr>
-                        <td>{{ $detail['subject_name'] }}</td>
+                    <tr wire:key="subject-{{ $loop->index }}">
+                        <td>{{ $detail['subject_name'] ?? 'N/A' }}</td>
                         <td>{{ $detail['marks'] ?? 'N/A' }}</td>
+                        <td>{{ $detail['grade'] ?? 'N/A' }}</td>
+                        <td>{{ $detail['remark'] ?? 'N/A' }}</td>
+                        <td>{{ $detail['gpa'] ?? 'N/A' }}</td>
                     </tr>
                     @endforeach
                 </tbody>
             </table>
             @else
-            <p class="text-muted">No details found for this student.</p>
+            <p class="text-muted text-center">No details found for this student.</p>
             @endif
         </div>
 
@@ -141,5 +162,4 @@
 
 
     @endif
-
 </div>

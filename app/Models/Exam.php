@@ -40,9 +40,7 @@ class Exam extends Model
             ->withPivot('section_id');
     }
     public function examMarks()
-{
-    return $this->hasMany(ExamMarks::class);
-}
-
-    
+    {
+        return $this->hasMany(ExamMarks::class);
+    }
 }
