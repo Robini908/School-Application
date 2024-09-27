@@ -16,13 +16,14 @@
         <div x-show="showAlert" class="alert alert-info alert-dismissible fade show" role="alert">
             <strong>Important!</strong>
             <span x-show="!showMore">
-                Please ensure all marks are allocated correctly before final submission... 
+                Please ensure all marks are allocated correctly before final submission...
                 <button x-show="!showMore" @click="showMore = true" class="btn btn-link p-0">View More</button>
             </span>
             <div x-show="showMore" class="mt-2">
                 <p>Please ensure that you follow the guidelines:</p>
                 <ul class="mb-0">
-                    <li>Ensure all subjects are assigned marks for each student in each class to prevent the <strong>missing marks problems.</strong></li><br>
+                    <li>Ensure all subjects are assigned marks for each student in each class to prevent the
+                        <strong>missing marks problems.</strong></li><br>
                     <li>Double-check the marks for accuracy.</li>
                     <li>Consult with subject teachers if needed when assigning marks in bulk.</li>
                 </ul>
@@ -48,7 +49,7 @@
         <div class="tab-content">
             <!-- Bulk Marks Allocation Tab -->
             <div class="tab-pane fade show active" id="bulk-exam">
-                <livewire:assign-batch-marks lazy="on-load" /> 
+                <livewire:assign-batch-marks lazy="on-load" />
             </div>
 
             <!-- Assign Marks Subject-wise Tab -->
@@ -63,5 +64,6 @@
         </div>
     </div>
 </div>
+
 
 @endsection

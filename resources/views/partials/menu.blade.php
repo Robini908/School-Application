@@ -15,9 +15,9 @@
     <!-- Sidebar content -->
     <div class="sidebar-content">
 
-         {{-- <div class="sidebar-user">
+        {{-- <div class="sidebar-user">
             <div class="card-body">
-              <div class="media">
+                <div class="media">
                     <div class="mr-3">
                         @php
                         $userPhoto = Auth::user()->photo;
@@ -97,8 +97,8 @@
                                 Information</a>
                             <ul class="nav nav-group-sub">
                                 @foreach(App\Models\MyClass::orderBy('name')->get() as $c)
-                                <li class="nav-item"><a href="{{ route('students.list', $c->id) }}"
-                                        class="nav-link ">{{ $c->name }}</a></li>
+                                <li class="nav-item"><a href="{{ route('students.list', $c->id) }}" class="nav-link ">{{
+                                        $c->name }}</a></li>
                                 @endforeach
                             </ul>
                         </li>
@@ -150,7 +150,7 @@
                         <li class="nav-item">
                             <a href="{{ route('grades.index') }}"
                                 class="nav-link {{ in_array(Route::currentRouteName(), ['grades.index', 'grades.edit']) ? 'active' : '' }}">
-                                <span ></span>Grading</a>
+                                <span></span>Grading</a>
                         </li>
 
 
@@ -158,16 +158,24 @@
                         <li class="nav-item">
                             <a href="{{ route('grading_system.index') }}"
                                 class="nav-link {{ in_array(Route::currentRouteName(), ['grading_system.index', 'grading_system.edit','grading_system.create']) ? 'active' : '' }}">
-                                <span ></span>Grading System</a>
+                                <span></span>Grading System</a>
                         </li>
 
 
-                        <li class="nav-item {{ in_array(Route::currentRouteName(), ['exams.set']) ? 'nav-item-expanded nav-item-open' : '' }}">
+                        <li
+                            class="nav-item {{ in_array(Route::currentRouteName(), ['exams.set']) ? 'nav-item-expanded nav-item-open' : '' }}">
                             <a href="{{ route('exams.set') }}" class="nav-link">
                                 <span> Exam Management</span>
                             </a>
                         </li>
-                        
+                        <li
+                            class="nav-item {{ in_array(Route::currentRouteName(), ['exams.assignExamMarks']) ? 'nav-item-expanded nav-item-open' : '' }}">
+                            <a href="{{ route('exams.assignExamMarks') }}" class="nav-link">
+                                <span> Marks Allocation</span>
+                            </a>
+                        </li>
+
+
 
 
 
@@ -176,8 +184,8 @@
                         @if(Qs::userIsTeamSAT())
                         <li
                             class="nav-item nav-item-submenu {{ in_array(Route::currentRouteName(), ['exams.index', 'exams.edit', 'grades.index', 'grades.edit', 'marks.index', 'marks.manage', 'marks.bulk', 'marks.tabulation', 'marks.show', 'marks.batch_fix',]) ? 'nav-item-expanded nav-item-open' : '' }} ">
-                       
-                       
+
+
                             <a href="#" class="nav-link"><span> Exams</span></a>
 
                             <ul class="nav nav-group-sub" data-submenu-title="Manage Exams">

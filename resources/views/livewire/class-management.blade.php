@@ -129,16 +129,21 @@
                     <table class="table table-bordered table-hover">
                         <thead class="table-light">
                             <tr>
+                                <td>S/N</td>
                                 <th>Class Name</th>
-                                <th>Class Master</th>
+                                {{-- <th>Class Master</th> --}}
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse($classes as $class)
                             <tr>
+                                <td>
+                                    {{$loop->index + 1}}
+                                
+                                </td>
                                 <td>{{ $class->name }}</td>
-                                <td>{{ $class->master ? $class->master->name : 'Not Assigned' }}</td>
+                                {{-- <td>{{ $class->master ? $class->master->name : 'Not Assigned' }}</td> --}}
                                 <td class="text-center">
                                     <div class="btn-group dropleft">
                                         <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle"
@@ -151,6 +156,11 @@
                                                 class="dropdown-item btn btn-warning btn-sm" data-toggle="tooltip"
                                                 title="Edit Class">
                                                 <i class="icon-pencil"></i> Edit
+                                            </button>
+                                            <button wire:click="viewClassMater()"
+                                                class="dropdown-item btn btn-warning btn-sm" data-toggle="tooltip"
+                                                title="View Class Master">
+                                                <i class="icon-eye"></i> View Class Master
                                             </button>
                                             <!-- Assign Teacher Button -->
                                             <button wire:click="toggleAssignTeacher({{ $class->id }})"
@@ -359,12 +369,12 @@
             </div>
         </div>
 
-        <!-- Include Bootstrap JS for dropdowns and tooltips -->
+        {{-- <!-- Include Bootstrap JS for dropdowns and tooltips -->
         <script>
             $(function () {
                 $('[data-toggle="tooltip"]').tooltip();
             });
-        </script>
+        </script> --}}
 
 
         @endif
@@ -382,15 +392,16 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <div class="modal-body">
+                    <div class="modal-body table-responsive">
                         <p>Total Students: {{ $modalStudentsCount }}</p>
-                        <table class="table table-bordered">
+                        <table class="table table-striped">
                             <thead>
                                 <tr>
                                     <th>Admission Number</th>
                                     <th>Name</th>
                                     <th>Email</th>
                                     <th>Gender</th>
+                                    <th>KCPE</th>
                                     <th>Phone</th>
                                     <th>Date of Birth</th>
                                 </tr>
@@ -403,6 +414,7 @@
                                     </td>
                                     <td>{{ $student->email }}</td>
                                     <td>{{ ucfirst($student->gender) }}</td>
+                                    <td>{{ $student->kcpe }}</td>
                                     <td>{{ $student->phone }}</td>
                                     <td>{{ \Carbon\Carbon::parse($student->dob)->format('d M, Y') }}</td>
                                 </tr>

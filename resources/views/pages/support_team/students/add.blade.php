@@ -1,64 +1,77 @@
 @extends('layouts.master')
 @section('page_title', 'Manage and Admit Students')
 @section('content')
-<link href=" {{ asset('assets/css/admit_student.css') }}" rel="stylesheet" type="text/css">
+<link href="{{ asset('assets/css/admit_student.css') }}" rel="stylesheet" type="text/css">
+
 <div class="card">
-   {{-- <div class="card-header bg-white header-elements-inline">
+    {{-- <div class="card-header bg-white header-elements-inline">
         {!! Qs::getPanelOptions() !!}
     </div>--}}
-    <div class="card-body">
+
+    <div class="card-body" x-data="{ activeTab: 'manage-students' }">
         <ul class="nav nav-tabs nav-tabs-highlight p-3">
+            <!-- Manage Admissions Tab -->
             <li class="nav-item">
-                <a href="#manage-students" class="nav-link active" data-toggle="tab">Manage Admissions</a>
+                <a href="#" @click.prevent="activeTab = 'manage-students'"
+                    :class="{ 'active': activeTab === 'manage-students' }" class="nav-link">Manage Admissions</a>
             </li>
 
+            <!-- Admit New Student Tab -->
             <li class="nav-item">
-                <a href="#admit-student" class="nav-link " data-toggle="tab">Admit New Student</a>
+                <a href="#" @click.prevent="activeTab = 'admit-student'"
+                    :class="{ 'active': activeTab === 'admit-student' }" class="nav-link">Admit New Student</a>
             </li>
 
+            <!-- Bulk Admit Tab -->
             <li class="nav-item">
-                <a href="#bulk-admit" class="nav-link" data-toggle="tab">Bulk Admit</a>
+                <a href="#" @click.prevent="activeTab = 'bulk-admit'" :class="{ 'active': activeTab === 'bulk-admit' }"
+                    class="nav-link">Bulk Admit</a>
             </li>
         </ul>
 
         <div class="tab-content" style="margin-top:-50px;">
-            <!-- Manage Students Tab -->
-            <div class="tab-pane fade show active" id="manage-students">
+            <!-- Manage Students Tab Content -->
+            <div x-show="activeTab === 'manage-students'" class="p-4">
                 @livewire('manage-students')
             </div>
-            <div class="tab-pane fade p-4" id="admit-student" style="margin-top:-20px;">
+
+            <!-- Admit New Student Tab Content -->
+            <div x-show="activeTab === 'admit-student'" class="p-4">
                 @livewire('admit-student')
             </div>
-            <div class="tab-pane fade p-4" id="bulk-admit" style="margin-top:-20px;">
+
+            <!-- Bulk Admit Tab Content -->
+            <div x-show="activeTab === 'bulk-admit'" class="p-4">
                 @livewire('addbulk')
             </div>
         </div>
     </div>
-    <div id="reportModal" class="modal">
-        <div class="modal-content" style="position: relative; top:5px; margin: auto; width: 70%;">
-            <div class="bg-success">
-              {{--  <button id="printReportBtn" class="m-1 btn-primary">Print Report</button>--}}
-                <span class="close">&times;</span>
-            </div>
-            <div id="reportContent"></div>           
+</div>
+<div id="reportModal" class="modal">
+    <div class="modal-content" style="position: relative; top:5px; margin: auto; width: 70%;">
+        <div class="bg-success">
+            {{-- <button id="printReportBtn" class="m-1 btn-primary">Print Report</button>--}}
+            <span class="close">&times;</span>
         </div>
+        <div id="reportContent"></div>
     </div>
+</div>
 
 
-    <div id="pdfModal" style="display:none;">
-        <iframe id="pdfFrame" width="100%" height="500px"></iframe>
-    </div>
-    @endsection
-    @section('scripts')
+<div id="pdfModal" style="display:none;">
+    <iframe id="pdfFrame" width="100%" height="500px"></iframe>
+</div>
+@endsection
+@section('scripts')
 
-    <script src="{{ asset('global_assets/js/main/add_student.js') }}"></script>
-    <script src="{{ asset('global_assets/js/main/manage_admissions.js') }}"></script>
-
-
+<script src="{{ asset('global_assets/js/main/add_student.js') }}"></script>
+<script src="{{ asset('global_assets/js/main/manage_admissions.js') }}"></script>
 
 
-    <script>
-        $(document).ready(function () {
+
+
+<script>
+    $(document).ready(function () {
     var table = $('#studentTable').DataTable({
         dom: 'Bfrtip', // Ensure this includes 'B' for buttons and 'frtip' for filter, pagination, etc.
         lengthMenu: [[5, 10, 25, 50, 100, -1], [5, 10, 25, 50, 100, "All"]],

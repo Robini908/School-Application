@@ -225,9 +225,9 @@
                     <thead class="table-light">
                         <tr>
                             <th>#</th>
-                            <th>Name</th>
-                            <th>Class</th>
-                            <th>Teacher</th>
+                            <th>Stream name</th>
+                            <th>Class </th>
+                            <th>Class Teacher</th>
                             <th>Actions</th>
                         </tr>
                     </thead>

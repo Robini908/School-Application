@@ -380,7 +380,7 @@
         <h5 class="mb-0">Exam List</h5>
         <div>
             <button wire:click="create" class="btn btn-primary">Add Exam</button>
-            <a href="{{ route('exams.assignExamMarks') }}" class="btn btn-info ml-2">Assign Marks</a>
+            {{-- <a href="{{ route('exams.assignExamMarks') }}" class="btn btn-info ml-2">Assign Marks</a> --}}
         </div>
     </div>
 

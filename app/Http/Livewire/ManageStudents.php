@@ -11,28 +11,34 @@ class ManageStudents extends Component
 {
     use WithPagination;
 
-    public $selectedStudent; // Stores the currently selected student's details
-    public $mystudents;
-    public $verificationStatus = '';
-    public $student;
+    public $selectedStudent;
+    protected $mystudents;
+    protected $mystudent; // Change to protected
+    public $formFilter = '';
+    public $sectionFilter = '';
+    public $statusFilter = '';
+
+    public $forms = [];
+    public $sections = [];
+    public $statuses = ['Active', 'Inactive'];
 
     protected $listeners = [
         'refreshStudents' => 'loadStudents',
-        'studentSelected' => 'selectStudent' // Add listener for student selection
+        'studentSelected' => 'selectStudent'
     ];
 
     public function mount()
     {
-        // Initialize student data if needed or load students
-        $this->loadStudents(); // Ensure students are loaded on mount
+        $this->loadStudents();
+        $this->loadFilterOptions();
     }
 
     public function loadStudents()
     {
-        $this->mystudents = DB::table('student_records')
+        $query = DB::table('student_records')
             ->join('my_classes', 'student_records.my_class_id', '=', 'my_classes.id')
             ->join('sections', 'student_records.section_id', '=', 'sections.id')
-            ->join('parent_details', 'student_records.parent_id_no', '=', 'parent_details.parent_id_no') // Ensure the correct column is used
+            ->join('parent_details', 'student_records.parent_id_no', '=', 'parent_details.parent_id_no')
             ->select(
                 'student_records.*',
                 'my_classes.name as classname',
@@ -40,50 +46,88 @@ class ManageStudents extends Component
                 'parent_details.parent_first_name',
                 'parent_details.parent_last_name',
                 'parent_details.parent_phone_number'
-            )
-            ->orderBy('student_records.id', 'desc')
-            ->get();
+            );
+
+        // Apply filters independently
+        if ($this->formFilter) {
+            $query->where('my_classes.name', $this->formFilter);
+        }
+
+        if ($this->sectionFilter) {
+            $query->where('sections.name', $this->sectionFilter);
+        }
+
+        if ($this->statusFilter) {
+            $query->where('student_records.status', $this->statusFilter);
+        }
+
+        $this->mystudents = $query->orderBy('student_records.id', 'desc')->get();
     }
 
-
-
-
-    public function verifyStatus($studentId)
+    public function loadFilterOptions()
     {
-        $student = StudentRecord::find($studentId);
+        // Fetch distinct forms from the database
+        $this->forms = DB::table('my_classes')->pluck('name')->unique()->toArray();
 
-        if ($student) {
-            if ($student->status == 'Pending Verification') {
-                $student->status = 'Verified';
-                $student->save();
+        // If a form is selected, fetch corresponding sections
+        if ($this->formFilter) {
+            // Fetch the ID of the selected form
+            $formId = DB::table('my_classes')->where('name', $this->formFilter)->value('id');
 
-                session()->flash('message', 'Student verified successfully.');
-            } else {
-                session()->flash('error', 'Student is already verified or ineligible for verification.');
-            }
-
-            $this->emit('refreshStudents');
+            // Fetch sections corresponding to the selected form ID
+            $this->sections = DB::table('sections')
+                ->where('my_class_id', $formId)
+                ->pluck('name')
+                ->unique()
+                ->toArray();
+        } else {
+            $this->sections = []; // Reset sections if no form is selected
         }
     }
 
-    public function changeStatus($studentId, $newStatus)
+    public function updated($propertyName)
     {
-        $student = StudentRecord::find($studentId);
-
-        if ($student) {
-            $student->status = $newStatus;
-            $student->save();
-
-            session()->flash('message', "Student status changed to $newStatus successfully.");
-
-            $this->emit('refreshStudents');
+        // Re-load students when a filter is updated
+        if (in_array($propertyName, ['formFilter', 'sectionFilter', 'statusFilter'])) {
+            $this->loadStudents();
+            $this->loadFilterOptions();
         }
+    }
+
+    public function resetFilters()
+    {
+        $this->formFilter = '';
+        $this->sectionFilter = '';
+        $this->statusFilter = '';
+        $this->loadStudents();
+        $this->loadFilterOptions();
+    }
+
+    public function removeFilter($filterName)
+    {
+        if ($filterName === 'formFilter') {
+            $this->formFilter = '';
+        } elseif ($filterName === 'sectionFilter') {
+            $this->sectionFilter = '';
+        } elseif ($filterName === 'statusFilter') {
+            $this->statusFilter = '';
+        }
+
+        $this->resetPage(); // Reset pagination if using it
+    }
+
+    public function deleteRecord($studentId)
+    {
+        // Logic to delete student record
+        StudentRecord::find($studentId)->delete();
+        $this->loadStudents(); // Refresh students after deletion
     }
 
     public function render()
     {
-        return view('livewire.manage-students', [
-            'students' => $this->mystudents, // Pass data to the view
-        ]);
+        $noResults = $this->mystudents->isEmpty();
+        return view('livewire.manage-students', compact('noResults'))
+            ->extends('layouts.app')
+            ->section('content');
     }
 }

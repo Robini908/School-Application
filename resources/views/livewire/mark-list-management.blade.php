@@ -67,7 +67,7 @@
                     @endforeach
                     <td>
                         <button wire:click="fetchStudentDetails('{{ $mark['adm_no'] }}')"
-                            class="btn btn-info">Details</button>
+                            class="btn btn-info">Generate Report</button>
                     </td>
                 </tr>
                 @endforeach

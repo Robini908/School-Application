@@ -38,6 +38,8 @@ class ClassManagement extends Component
 
     // Students Data
     public $students = [];
+    public $stream;
+   
     public $selectedStreamEntries = []; // to store the entries data
     public $isLoadingAssign = false;
     public $isLoadingEdit = false;
@@ -93,6 +95,14 @@ class ClassManagement extends Component
 
         // Load teachers list
         $this->teachers = User::where('user_type', 'teacher')->get();
+    }
+
+    public function viewClassMater(){
+
+        // $this->classMaster = MyClass::find($this->classId);
+        // $this->viewStreamsMode = true;
+
+
     }
 
     public function assignStreamTeacher($streamId)
