@@ -54,6 +54,10 @@ class ClassManagement extends Component
     public $modalStudents = [];
     public $modalStudentsCount = 0;
     public $modalStreamName = '';
+    
+    public $assignedTeacher; // To hold the assigned teacher
+    public $assignedSession; // To hold the assigned session
+    public $viewClassMasterMode = false; // Toggle to show
 
     public $classMaster;
 
@@ -97,13 +101,7 @@ class ClassManagement extends Component
         $this->teachers = User::where('user_type', 'teacher')->get();
     }
 
-    public function viewClassMater(){
-
-        // $this->classMaster = MyClass::find($this->classId);
-        // $this->viewStreamsMode = true;
-
-
-    }
+    
 
     public function assignStreamTeacher($streamId)
     {
@@ -166,6 +164,17 @@ class ClassManagement extends Component
         $this->streamTeacher = null;
         $this->classMaster = null;
         $this->session = null; // Reset session
+    }
+
+    public function viewClassMater($classId)
+    {
+        // Retrieve the class and its assigned teacher/session
+        $this->selectedClass = MyClass::find($classId);
+        if ($this->selectedClass) {
+            $this->assignedTeacher = $this->selectedClass->teacher; // Assuming relationship
+            $this->assignedSession = $this->selectedClass->session; // Adjust as needed
+            $this->viewClassMasterMode = true; // Set to true to show class master information
+        }
     }
 
 

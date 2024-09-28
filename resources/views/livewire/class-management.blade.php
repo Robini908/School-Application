@@ -1,11 +1,7 @@
 <div>
     <div class="container mt-5">
         <!-- Flash Message -->
-        @if (session()->has('message'))
-        <div class="alert alert-success">
-            {{ session('message') }}
-        </div>
-        @endif
+        <x-flash-messages/>
 
         <!-- Add Class Button -->
         <button wire:click="toggleClassForm" class="btn btn-primary mb-3">
@@ -127,106 +123,100 @@
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-bordered table-hover">
-                        <thead class="table-light">
+                        <thead class="thead-light">
                             <tr>
-                                <td>S/N</td>
+                                <th>S/N</th>
                                 <th>Class Name</th>
-                                {{-- <th>Class Master</th> --}}
-                                <th>Actions</th>
+                                <th class="text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse($classes as $class)
-                            <tr>
-                                <td>
-                                    {{$loop->index + 1}}
-                                
-                                </td>
-                                <td>{{ $class->name }}</td>
-                                {{-- <td>{{ $class->master ? $class->master->name : 'Not Assigned' }}</td> --}}
-                                <td class="text-center">
-                                    <div class="btn-group dropleft">
-                                        <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle"
-                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            Actions
-                                        </button>
-                                        <div class="dropdown-menu">
-                                            <!-- Edit Button -->
-                                            <button wire:click="toggleClassForm({{ $class->id }})"
-                                                class="dropdown-item btn btn-warning btn-sm" data-toggle="tooltip"
-                                                title="Edit Class">
-                                                <i class="icon-pencil"></i> Edit
+                                <tr>
+                                    <td>{{ $loop->index + 1 }}</td>
+                                    <td>{{ $class->name }}</td>
+                                    <td class="text-center">
+                                        <div class="btn-group dropleft">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" 
+                                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                Actions
                                             </button>
-                                            <button wire:click="viewClassMater()"
-                                                class="dropdown-item btn btn-warning btn-sm" data-toggle="tooltip"
-                                                title="View Class Master">
-                                                <i class="icon-eye"></i> View Class Master
-                                            </button>
-                                            <!-- Assign Teacher Button -->
-                                            <button wire:click="toggleAssignTeacher({{ $class->id }})"
-                                                class="dropdown-item btn btn-info btn-sm" data-toggle="tooltip"
-                                                title="Assign Teacher">
-                                                <i class="icon-user-check"></i> Assign Teacher
-                                            </button>
-                                            <!-- Other Actions -->
-                                            <button wire:click="viewStreams({{ $class->id }})"
-                                                class="dropdown-item btn btn-info btn-sm" data-toggle="tooltip"
-                                                title="View Streams">
-                                                <i class="icon-eye"></i> View Streams
-                                            </button>
-                                            <button wire:click="viewEntries({{ $class->id }})"
-                                                class="dropdown-item btn btn-info btn-sm" data-toggle="tooltip"
-                                                title="View Entries">
-                                                <i class="icon-list2"></i> View Entries
-                                            </button>
-                                            <button wire:click="deleteClass({{ $class->id }})"
-                                                class="dropdown-item btn btn-danger btn-sm" data-toggle="tooltip"
-                                                title="Delete Class">
-                                                <i class="icon-trash"></i> Delete
-                                            </button>
+                                            <div class="dropdown-menu">
+                                                <!-- Edit Button -->
+                                                <button wire:click="toggleClassForm({{ $class->id }})"
+                                                        class="dropdown-item btn btn-warning btn-sm" data-toggle="tooltip"
+                                                        title="Edit Class">
+                                                    <i class="icon-pencil"></i> Edit
+                                                </button>
+                                                <button wire:click="viewClassMater()"
+                                                        class="dropdown-item btn btn-warning btn-sm" data-toggle="tooltip"
+                                                        title="View Class Master">
+                                                    <i class="icon-eye"></i> View Class Master
+                                                </button>
+                                                <!-- Assign Teacher Button -->
+                                                <button wire:click="toggleAssignTeacher({{ $class->id }})"
+                                                        class="dropdown-item btn btn-info btn-sm" data-toggle="tooltip"
+                                                        title="Assign Teacher">
+                                                    <i class="icon-user-check"></i> Assign Teacher
+                                                </button>
+                                                <!-- Other Actions -->
+                                                <button wire:click="viewStreams({{ $class->id }})"
+                                                        class="dropdown-item btn btn-info btn-sm" data-toggle="tooltip"
+                                                        title="View Streams">
+                                                    <i class="icon-eye"></i> View Streams
+                                                </button>
+                                                <button wire:click="viewEntries({{ $class->id }})"
+                                                        class="dropdown-item btn btn-info btn-sm" data-toggle="tooltip"
+                                                        title="View Entries">
+                                                    <i class="icon-list2"></i> View Entries
+                                                </button>
+                                                <button wire:click="deleteClass({{ $class->id }})"
+                                                        class="dropdown-item btn btn-danger btn-sm" data-toggle="tooltip"
+                                                        title="Delete Class">
+                                                    <i class="icon-trash"></i> Delete
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
-                                </td>
-                            </tr>
+                                    </td>
+                                </tr>
 
                             @if($showInlineForm && $class->id === $selectedClassForAssignment)
                             <tr>
                                 <td colspan="3">
                                     <form wire:submit.prevent="saveStreamTeacher">
-                                        <div class="row">
+                                        <div class="row align-items-end">  <!-- Align items to the bottom for better visual alignment -->
                                             <div class="col">
                                                 <select wire:model="streamTeacher" class="form-control" required>
                                                     <option value="">-- Select Teacher --</option>
                                                     @foreach($teachers as $teacher)
-                                                    <option value="{{ $teacher->id }}">{{ $teacher->name }}</option>
+                                                        <option value="{{ $teacher->id }}">{{ $teacher->name }}</option>
                                                     @endforeach
                                                 </select>
                                                 @error('streamTeacher')
-                                                <span class="text-danger">{{ $message }}</span>
+                                                    <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
-
+                                    
                                             <div class="col">
                                                 <label for="session">Session</label>
                                                 <select wire:model="session" id="session" class="form-control" required>
                                                     <option value="">Select a session</option>
                                                     @foreach(range(date('Y'), 1900) as $year)
-                                                    <option value="{{ $year }}">{{ $year }}</option>
+                                                        <option value="{{ $year }}">{{ $year }}</option>
                                                     @endforeach
                                                 </select>
                                                 @error('session')
-                                                <span class="text-danger">{{ $message }}</span>
+                                                    <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
-
+                                    
                                             <div class="col-auto">
                                                 <button type="submit" class="btn btn-success">Assign</button>
-                                                <button type="button" wire:click="closeInlineForm"
-                                                    class="btn btn-secondary">Cancel</button>
+                                                <button type="button" wire:click="closeInlineForm" class="btn btn-secondary">Cancel</button>
                                             </div>
                                         </div>
-
                                     </form>
+                                    
                                 </td>
                             </tr>
                             @endif
@@ -382,53 +372,52 @@
 
         <!-- Students Modal -->
         @if($showStudentsModal)
-        <div class="modal fade show d-block" tabindex="-1" role="dialog" style="background: rgba(0,0,0,0.5);">
-            <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Students in {{ $modalStreamName }}</h5>
-                        <button type="button" wire:click="$set('showStudentsModal', false)" class="close"
-                            aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body table-responsive">
-                        <p>Total Students: {{ $modalStudentsCount }}</p>
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Admission Number</th>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Gender</th>
-                                    <th>KCPE</th>
-                                    <th>Phone</th>
-                                    <th>Date of Birth</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($modalStudents as $student)
+    <!-- Modal backdrop -->
+    <div class="modal fade show d-block" tabindex="-1" role="dialog" style="background: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog modal-lg" role="document" style="max-width: 90%; margin-left: auto; margin-right: auto;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Students in {{ $modalStreamName }}</h5>
+                    <button type="button" wire:click="$set('showStudentsModal', false)" class="close" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body table-responsive" style="max-height: 60vh; overflow-y: auto;">
+                    <p>Total Students: {{ $modalStudentsCount }}</p>
+                    <table class="table table-striped table-bordered">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Admission Number</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Gender</th>
+                                <th>KCPE</th>
+                                <th>Phone</th>
+                                <th>Date of Birth</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($modalStudents as $student)
                                 <tr>
                                     <td>{{ $student->adm_no }}</td>
-                                    <td>{{ $student->first_name }} {{ $student->middle_name }} {{ $student->last_name }}
-                                    </td>
+                                    <td>{{ $student->first_name }} {{ $student->middle_name }} {{ $student->last_name }}</td>
                                     <td>{{ $student->email }}</td>
                                     <td>{{ ucfirst($student->gender) }}</td>
                                     <td>{{ $student->kcpe }}</td>
                                     <td>{{ $student->phone }}</td>
                                     <td>{{ \Carbon\Carbon::parse($student->dob)->format('d M, Y') }}</td>
                                 </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" wire:click="$set('showStudentsModal', false)"
-                            class="btn btn-secondary">Close</button>
-                    </div>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" wire:click="$set('showStudentsModal', false)" class="btn btn-secondary">Close</button>
                 </div>
             </div>
         </div>
-        @endif
+    </div>
+@endif
+
     </div>
 </div>

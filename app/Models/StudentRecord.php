@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class StudentRecord extends Model
 {
@@ -21,7 +22,6 @@ class StudentRecord extends Model
         'section_id',
         'dorm_id',
         'adm_no',
-
         'year_admitted',
         'kcpe',
         'first_name',
@@ -42,13 +42,17 @@ class StudentRecord extends Model
 
     public function parent_detail()
     {
+        // Corrected relationship to reference the foreign key
         return $this->belongsTo(ParentDetail::class, 'parent_id_no', 'parent_id_no');
     }
+
+
 
     /* public function my_parent()
     {
         return $this->belongsTo(UserType::class, 'my_parent_id');
     } */
+
 
     public function my_class()
     {
@@ -68,6 +72,8 @@ class StudentRecord extends Model
     {
         return $this->hasMany(ExamMarks::class);
     }
-
-    
+    public function marks(): HasMany
+    {
+        return $this->hasMany(ExamMarks::class, 'student_id');
+    }
 }

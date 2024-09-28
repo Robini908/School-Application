@@ -6,23 +6,7 @@
     @if($isCreating || $isEditing || $isAssigningTeacher || $sectionDetails)
     <div class="card">
         <div class="card-body">
-            @if(session()->has('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
-            </div>
-            @endif
-
-            @if(session()->has('error'))
-            <div class="alert alert-danger">
-                {{ session('error') }}
-            </div>
-            @endif
-
-            @if(session()->has('warning'))
-            <div class="alert alert-warning">
-                {{ session('warning') }}
-            </div>
-            @endif
+            <x-flash-messages />
 
             @if($isCreating)
             <h5>Create New Stream</h5>
@@ -58,9 +42,7 @@
                 therefore change or assign a Class
                 teacher of this stream.<br><br> Consider adding more teachers</div>
             @else
-            <div class="alert alert-warning">You cannot assign a class teacher to this section.<br><br> Consider adding
-                more
-                teachers to your system.</div>
+            <div class=""></div>
             @endif
             @elseif($sectionDetails)
 

@@ -1,7 +1,5 @@
 <div>
-    @if (session()->has('message'))
-        <div class="alert alert-success">{{ session('message') }}</div>
-    @endif
+    <x-flash-messages />
 
     <div class="mb-4">
         <input type="text" wire:model="search" placeholder="Search classes..." class="form-control">

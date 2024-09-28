@@ -2,14 +2,15 @@
 
 namespace App\Http\Livewire;
 
-use App\Models\MyClass;
 use App\Models\Exam;
-use App\Models\Subject;
+use App\Models\MyClass;
 use App\Models\Section;
-use App\Models\StudentRecord;
-use App\Models\ExamMarks;
+use App\Models\Subject;
 use Livewire\Component;
+use App\Models\ExamMarks;
 use Livewire\WithPagination;
+use App\Models\StudentRecord;
+use Illuminate\Support\Facades\DB;
 
 class AssignExamsSubjectwise extends Component
 {
@@ -72,7 +73,7 @@ class AssignExamsSubjectwise extends Component
         $this->reset(['selectedSubject', 'selectedSection', 'marks', 'students']);
         $this->selectedExamName = Exam::find($examId)->name ?? null;
     }
-  
+
     public function updatedSelectedSubject($subjectId)
     {
         $this->reset(['selectedSection', 'marks', 'students', 'assignedMarks']);
@@ -104,41 +105,86 @@ class AssignExamsSubjectwise extends Component
 
     public function assignMarks()
     {
-        // Ensure students is a collection
-        $this->students = collect($this->students); // Convert to collection if it's not already
+        try {
+            // Validate the required fields
+            $this->validate([
+                'selectedExam' => 'required|exists:exams,id',
+                'selectedSubject' => 'required|exists:subjects,id',
+                'selectedSection' => 'required|exists:sections,id',
+                'marks' => 'required|array',
+                'marks.*' => 'nullable|numeric|min:0|max:100',
+            ]);
 
-        // Assign marks to each student in the selected section
-        foreach ($this->students as $student) {
-            ExamMarks::updateOrCreate(
-                [
-                    'student_id' => $student->id,
-                    'exam_id' => $this->selectedExam,
-                    'subject_id' => $this->selectedSubject,
-                ],
-                ['marks' => $this->marks[$student->id] ?? 0] // Default to 0 if no marks are provided
-            );
+            $updatedCount = 0;
+            $insertedCount = 0;
+            $skippedCount = 0;
+            $errorCount = 0;
+
+            DB::beginTransaction();
+
+            foreach ($this->marks as $studentId => $mark) {
+                if (is_null($mark)) {
+                    $skippedCount++;
+                    continue;
+                }
+
+                if (!is_numeric($mark) || $mark < 0 || $mark > 100) {
+                    $errorCount++;
+                    continue;
+                }
+
+                try {
+                    $examMark = ExamMarks::updateOrCreate(
+                        [
+                            'student_id' => $studentId,
+                            'exam_id' => $this->selectedExam,
+                            'subject_id' => $this->selectedSubject,
+                        ],
+                        ['marks' => $mark]
+                    );
+
+                    if ($examMark->wasRecentlyCreated) {
+                        $insertedCount++;
+                    } else {
+                        $updatedCount++;
+                    }
+                } catch (\Exception $e) {
+                    $errorCount++;
+                    \Log::error("Error assigning marks for student ID {$studentId}: " . $e->getMessage());
+                }
+            }
+
+            DB::commit();
+
+            // Set messages based on the results
+            if ($insertedCount > 0 || $updatedCount > 0) {
+                session()->flash('success', "Marks assigned successfully! ");
+            }
+
+            if ($skippedCount > 0) {
+                session()->flash('warning', "{$skippedCount} students were skipped due to null marks.");
+            }
+
+            if ($errorCount > 0) {
+                session()->flash('error', "{$errorCount} errors occurred while assigning marks. Please check the logs for details.");
+            }
+
+            if ($insertedCount == 0 && $updatedCount == 0 && $skippedCount == 0 && $errorCount == 0) {
+                session()->flash('info', "No changes were made. All marks remained the same.");
+            }
+
+            // Refresh the assigned marks
+            $this->refreshAssignedMarks();
+
+            // Reset only the marks array, keeping other selections intact
+            $this->marks = [];
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            session()->flash('error', 'Validation failed: ' . implode(', ', $e->errors()));
+        } catch (\Exception $e) {
+            DB::rollBack();
+            session()->flash('error', 'An unexpected error occurred: ' . $e->getMessage());
+            \Log::error("Error in assignMarks: " . $e->getMessage());
         }
-
-        // Check if all students in the selected section have been assigned marks
-        $studentsWithoutMarks = $this->students->filter(function ($student) {
-            return !ExamMarks::where([
-                'student_id' => $student->id,
-                'exam_id' => $this->selectedExam,
-                'subject_id' => $this->selectedSubject,
-            ])->exists();
-        });
-
-        if ($studentsWithoutMarks->isEmpty()) {
-            // If all students have been assigned marks, set a success message
-            $this->marksMessage = 'All students in this section have been assigned marks for ' . $this->selectedSubjectName . '!';
-        } else {
-            // If some students still need marks, show a general success message
-            $this->marksMessage = 'Marks assigned successfully!';
-        }
-
-        // Reset fields after the assignment
-        $this->reset(['selectedClass', 'selectedExam', 'selectedSubject', 'selectedSection', 'marks', 'students']);
-        $this->refreshAssignedMarks(); // Refresh assigned marks to reflect updates
     }
 
 

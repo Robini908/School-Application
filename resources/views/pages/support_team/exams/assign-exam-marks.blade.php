@@ -23,7 +23,8 @@
                 <p>Please ensure that you follow the guidelines:</p>
                 <ul class="mb-0">
                     <li>Ensure all subjects are assigned marks for each student in each class to prevent the
-                        <strong>missing marks problems.</strong></li><br>
+                        <strong>missing marks problems.</strong>
+                    </li><br>
                     <li>Double-check the marks for accuracy.</li>
                     <li>Consult with subject teachers if needed when assigning marks in bulk.</li>
                 </ul>
@@ -44,6 +45,9 @@
             <li class="nav-item">
                 <a href="#mark-list-management" class="nav-link" data-toggle="tab">Manage Marks List</a>
             </li>
+            <li class="nav-item">
+                <a href="#exam-analysis" class="nav-link" data-toggle="tab">Exam Analysis</a>
+            </li>
         </ul>
 
         <div class="tab-content">
@@ -61,9 +65,15 @@
             <div class="tab-pane fade p-1" id="mark-list-management">
                 <livewire:mark-list-management />
             </div>
+
+            <!-- Exam Analysis Tab -->
+            <div class="tab-pane fade p-1" id="exam-analysis">
+                @livewire('combination-formula') 
+            </div>
         </div>
     </div>
 </div>
+
 
 
 @endsection

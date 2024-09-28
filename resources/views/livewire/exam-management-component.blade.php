@@ -1,42 +1,7 @@
 <div class="card">
-    {{-- <style>
-        .custom-badge {
-            font-size: 0.9rem;
-            /* Adjust the font size */
-            padding: 0.4rem 0.6rem;
-            /* Smaller padding */
-            border-radius: 0.5rem;
-            /* Adjust border radius if needed */
-        }
-
-        .custom-badge input {
-            margin-right: 0.5rem;
-            /* Space between checkbox and badge text */
-            transform: scale(1.2);
-            /* Slightly larger checkbox */
-        }
-    </style> --}}
-
     <div class="card-body">
-        <!-- Flash Message -->
-        @if (session()->has('error'))
-        <div class="alert alert-danger">
-            {{ session('error') }}
-        </div>
-        @endif
-
-        @if (session()->has('message'))
-        <div class="alert alert-success">
-            {{ session('message') }}
-        </div>
-        @endif
-
-        <!-- Error messages for validation -->
-        @foreach ($errors->all() as $error)
-        <div class="alert alert-danger">{{ $error }}</div>
-        @endforeach
-
-
+        <!-- Flash Message for Error -->
+        <x-flash-messages />
         <!-- Toggle Between Forms and List -->
         @if ($isCreating || $isEditing || $showGradingSystemForm || $showGradingSystemDetails)
         <!-- Show Form -->
@@ -308,81 +273,84 @@
 </div>
 @else
 <!-- Show List -->
-<div class="card">
+<div>
+    <button wire:click="create" class="btn btn-primary">Add Exam</button>
+    {{-- <a href="{{ route('exams.assignExamMarks') }}" class="btn btn-info ml-2">Assign Marks</a> --}}
+</div>
 
-    <div class="mb-4">
-        <div class="form-row mt-4 mx-2">
-            <div class="col-md-3 mb-2">
-                <label for="filterName">Filter by Name</label>
-                <input type="text" id="filterName" wire:model.live="filterName" class="form-control"
-                    placeholder="Search by name" />
-            </div>
-            <div class="col-md-3 mb-2">
-                <label for="filterYear">Filter by Year</label>
-                <select id="filterYear" wire:model="filterYear" class="form-control select2">
-                    <option value="">Select Year</option>
-                    @foreach (range(2000, date('Y')) as $year)
-                    <option value="{{ $year }}">{{ $year }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-md-3 mb-2">
-                <label for="filterTerm">Filter by Term</label>
-                <select id="filterTerm" wire:model="filterTerm" class="form-control select2">
-                    <option value="">Select Term</option>
-                    @foreach ($terms as $value => $label)
-                    <option value="{{ $value }}">{{ $label }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-md-3 mb-2">
-                <label for="filterGradingSystem">Filter by Grading System</label>
-                <select id="filterGradingSystem" wire:model="filterGradingSystem" class="form-control select2">
-                    <option value="">Select Grading System</option>
-                    @foreach ($gradingSystems as $gradingSystem)
-                    <option value="{{ $gradingSystem->id }}">{{ $gradingSystem->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-        </div>
-        <!-- Display applied filters with "x" icon for individual reset -->
-        <div class="mt-3">
-            @if($filterName)
-            <span class="badge badge-info">
-                Name: {{ $filterName }}
-                <button wire:click="resetFilter('filterName')" class="btn btn-sm btn-light">x</button>
-            </span>
-            @endif
-            @if($filterYear)
-            <span class="badge badge-info">
-                Year: {{ $filterYear }}
-                <button wire:click="resetFilter('filterYear')" class="btn btn-sm btn-light">x</button>
-            </span>
-            @endif
-            @if($filterTerm)
-            <span class="badge badge-info">
-                Term: {{ $terms[$filterTerm] }}
-                <button wire:click="resetFilter('filterTerm')" class="btn btn-sm btn-light">x</button>
-            </span>
-            @endif
-            @if($filterGradingSystem)
-            <span class="badge badge-info">
-                Grading System: {{ $gradingSystems->find($filterGradingSystem)->name ?? '' }}
-                <button wire:click="resetFilter('filterGradingSystem')" class="btn btn-sm btn-light">x</button>
-            </span>
-            @endif
-            @if($filterName || $filterYear || $filterTerm || $filterGradingSystem)
-            <button wire:click="resetAllFilters" class="btn btn-secondary mt-2">Clear All Filters</button>
-            @endif
-        </div>
-    </div>
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">Exam List</h5>
-        <div>
-            <button wire:click="create" class="btn btn-primary">Add Exam</button>
-            {{-- <a href="{{ route('exams.assignExamMarks') }}" class="btn btn-info ml-2">Assign Marks</a> --}}
-        </div>
+        
+      
     </div>
+    <div class="card">
+
+        <div class="mb-4">
+            <div class="form-row mt-4 mx-2">
+                <div class="col-md-3 mb-2">
+                    <label for="filterName">Filter by Name</label>
+                    <input type="text" id="filterName" wire:model.live="filterName" class="form-control"
+                        placeholder="Search by name" />
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label for="filterYear">Filter by Year</label>
+                    <select id="filterYear" wire:model="filterYear" class="form-control select2">
+                        <option value="">Select Year</option>
+                        @foreach (range(2000, date('Y')) as $year)
+                        <option value="{{ $year }}">{{ $year }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label for="filterTerm">Filter by Term</label>
+                    <select id="filterTerm" wire:model="filterTerm" class="form-control select2">
+                        <option value="">Select Term</option>
+                        @foreach ($terms as $value => $label)
+                        <option value="{{ $value }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label for="filterGradingSystem">Filter by Grading System</label>
+                    <select id="filterGradingSystem" wire:model="filterGradingSystem" class="form-control select2">
+                        <option value="">Select Grading System</option>
+                        @foreach ($gradingSystems as $gradingSystem)
+                        <option value="{{ $gradingSystem->id }}">{{ $gradingSystem->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+            <!-- Display applied filters with "x" icon for individual reset -->
+            <div class="mt-3">
+                @if($filterName)
+                <span class="badge badge-info">
+                    Name: {{ $filterName }}
+                    <button wire:click="resetFilter('filterName')" class="btn btn-sm btn-light">x</button>
+                </span>
+                @endif
+                @if($filterYear)
+                <span class="badge badge-info">
+                    Year: {{ $filterYear }}
+                    <button wire:click="resetFilter('filterYear')" class="btn btn-sm btn-light">x</button>
+                </span>
+                @endif
+                @if($filterTerm)
+                <span class="badge badge-info">
+                    Term: {{ $terms[$filterTerm] }}
+                    <button wire:click="resetFilter('filterTerm')" class="btn btn-sm btn-light">x</button>
+                </span>
+                @endif
+                @if($filterGradingSystem)
+                <span class="badge badge-info">
+                    Grading System: {{ $gradingSystems->find($filterGradingSystem)->name ?? '' }}
+                    <button wire:click="resetFilter('filterGradingSystem')" class="btn btn-sm btn-light">x</button>
+                </span>
+                @endif
+                @if($filterName || $filterYear || $filterTerm || $filterGradingSystem)
+                <button wire:click="resetAllFilters" class="btn btn-secondary mt-2">Clear All Filters</button>
+                @endif
+            </div>
+        </div>
 
     <div class="card-body">
         <table class="table table-responsive datatable-button-html5-columns">

@@ -1,5 +1,6 @@
 <div class="tab-pane fade show active container-fluid" id="manage-students">
     <div class="card-body">
+        <x-flash-messages />
         <div class="card container-fluid m-2 px-4 pt-0.5" style="width:98%;">
             <div class="row g-3 align-items-center m-1">
                 <div class="col-auto">
@@ -92,105 +93,134 @@
     </div>
 
     <!-- Data Table -->
-    <table id="studentTable" class="table table-responsive table-hover table-bordered">
-        <thead class="table-light">
-            <tr>
-                <th>Admission</th>
-                <th>Student Photo</th>
-                <th>Name</th>
-                <th>Gender</th>
-                <th>Class</th>
-                <th>Section</th>
-                <th>Status</th>
-                <th>Parent Name</th>
-                <th>Parent Contact</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if($noResults)
-            <tr>
-                <td colspan="10" class="text-center">No students found for the selected filters.</td>
-            </tr>
-            @else
-            @foreach($this->mystudents as $student)
-
-
-            <tr>
-                <td>{{ $student->adm_no }}</td>
-                <td>
-                    @if ($student->photo)
-                    <img src="{{ asset($student->photo) }}" alt="Student Photo" class="img-thumbnail"
-                        style="width: 50px; height: 50px;">
-                    @else
-                    <span class="text-muted">No Image</span>
-                    @endif
-                </td>
-                <td>
-                    <a href="{{ route('student.info', ['id' => $student->id]) }}">
-                        {{ $student->first_name }} {{ $student->last_name }}
-                    </a>
-                </td>
-                <td>{{ $student->gender }}</td>
-                <td>{{ $student->classname }}</td>
-                <td>{{ $student->sectionname }}</td>
-                <td>
-                    <span class="badge bg-{{ $student->status == 'Active' ? 'success' : 'warning' }}">
-                        {{ $student->status }}
-                    </span>
-                </td>
-                <td>{{ $student->parent_first_name }} {{ $student->parent_last_name }}</td>
-                <td>{{ $student->parent_phone_number }}</td>
-                <td class="column-responsive">
-                    <div class="list-icons">
-                        <div class="dropdown">
-                            <a href="#" class="list-icons-item" data-toggle="dropdown">
-                                <i class="icon-menu9"></i>
-                            </a>
-
-                            <div class="dropdown-menu dropdown-menu-left">
-                                {{-- Edit Button --}}
-                                <button wire:click="editStudent({{ $student->id }})" class="dropdown-item">
-                                    <i class="icon-pencil"></i> Edit
+    <div class="table-responsive">
+        <table id="studentTable" class="table table-hover table-bordered datatable-button-html5-columns">
+            <thead class="thead-light">
+                <tr>
+                    <th>Admission</th>
+                    <th>Student Photo</th>
+                    <th>Name</th>
+                    <th>Gender</th>
+                    <th>Class</th>
+                    <th>Section</th>
+                    <th>Status</th>
+                    <th>Parent Name</th>
+                    <th>Parent Contact</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if($noResults)
+                <tr>
+                    <td colspan="10" class="text-center">No students found for the selected filters.</td>
+                </tr>
+                @else
+                @foreach($this->mystudents as $student)
+                <tr>
+                    <td>{{ $student->adm_no }}</td>
+                    <td>
+                        @if ($student->photo)
+                        <img src="{{ asset($student->photo) }}" alt="Student Photo" class="img-thumbnail" style="width: 50px; height: 50px;">
+                        @else
+                        <span class="text-muted">No Image</span>
+                        @endif
+                    </td>
+                    <td>
+                        <a href="{{ route('student.info', ['id' => $student->id]) }}">
+                            {{ $student->first_name }} {{ $student->last_name }}
+                        </a>
+                    </td>
+                    <td>{{ $student->gender }}</td>
+                    <td>{{ $student->my_class->name ?? 'N/A' }}</td>
+                    <td>{{ $student->section->name ?? 'N/A' }}</td>
+                    <td>
+                        <span class="badge {{ $student->status == 'Active' ? 'badge-success' : 'badge-warning' }}">
+                            {{ $student->status }}
+                        </span>
+                    </td>
+                    <td>{{ $student->parent_detail->parent_first_name ?? 'N/A' }} {{ $student->parent_detail->parent_last_name ?? 'N/A' }}</td>
+                    <td>{{ $student->parent_detail->parent_phone_number ?? 'N/A' }}</td>
+                    <td class="text-center">
+                        <div class="list-icons">
+                            <div class="dropdown">
+                                <button type="button" class="btn btn-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                    <i class="icon-menu9"></i> <!-- Only this icon will be displayed -->
                                 </button>
-
-                                {{-- Delete Button (with modal trigger) --}}
-                                <button wire:click="confirmDelete({{ $student->id }})" class="dropdown-item"
-                                    data-toggle="modal" data-target="#deleteStudentModal">
-                                    <i class="icon-trash"></i> Delete
-                                </button>
-
-                                {{-- View Details Button --}}
-                                <button wire:click="viewStudent({{ $student->id }})" class="dropdown-item">
-                                    <i class="icon-info3"></i> View Details
-                                </button>
-
-                                {{-- Favorite Button --}}
-                                <button wire:click="favoriteStudent({{ $student->id }})" class="dropdown-item">
-                                    <i class="icon-star"></i> Favorite
-                                </button>
-
-                                {{-- Approve Button --}}
-                                <button wire:click="approveStudent({{ $student->id }})" class="dropdown-item">
-                                    <i class="icon-checkmark"></i> Approve
-                                </button>
-
-                                {{-- Reject Button --}}
-                                <button wire:click="rejectStudent({{ $student->id }})" class="dropdown-item">
-                                    <i class="icon-cross"></i> Reject
-                                </button>
+                                <ul class="dropdown-menu dropdown-menu-right">
+                                    <li>
+                                        <button wire:click="editStudent({{ $student->id }})" class="dropdown-item">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button wire:click="deleteRecord({{ $student->id }})" class="dropdown-item">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button wire:click="viewStudent({{ $student->id }})" class="dropdown-item">
+                                            <i class="bi bi-eye"></i> View Details
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button wire:click="studentExpulsion({{ $student->id }})" class="dropdown-item">
+                                            <i class="bi bi-exclamation-triangle"></i> Expulsion
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button wire:click="suspendStudent({{ $student->id }})" class="dropdown-item">
+                                            <i class="bi bi-pause"></i> Suspension
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button wire:click="favoriteStudent({{ $student->id }})" class="dropdown-item">
+                                            <i class="bi bi-star"></i> Student History
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button wire:click="approveStudent({{ $student->id }})" class="dropdown-item">
+                                            <i class="bi bi-check"></i> Approve
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button wire:click="rejectStudent({{ $student->id }})" class="dropdown-item">
+                                            <i class="bi bi-x"></i> Reject
+                                        </button>
+                                    </li>
+                                </ul>
                             </div>
                         </div>
-                    </div>
-                </td>
+                    </td>
+                </tr>
+                @endforeach
+                @endif
+            </tbody>
+        </table>
+    </div>
+    
 
-
-
-                </td>
-            </tr>
-            @endforeach
-            @endif
-        </tbody>
-    </table>
+    @if ($showDeleteModal)
+    <div class="modal" tabindex="-1" role="dialog" wire:ignore.self>
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="close" wire:click="cancelDelete">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this student?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" wire:click="cancelDelete">Cancel</button>
+                    <button type="button" class="btn btn-danger" wire:click="confirmDelete">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 </div>
+
+
 </div>

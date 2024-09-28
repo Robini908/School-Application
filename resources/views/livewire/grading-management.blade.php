@@ -1,4 +1,5 @@
 <div>
+    <x-flash-messages />
     @if($isCreating || $isEditing)
     <form wire:submit.prevent="{{ $isEditing ? 'update' : 'store' }}" class="mt-4 row g-3">
         <!-- Left Column: Grading System Fields -->

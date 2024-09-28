@@ -10,8 +10,9 @@ use Livewire\Component;
 use App\Models\ExamMarks;
 use App\Models\GradingRange;
 use Livewire\WithPagination;
-use App\Models\StudentRecord;
 use App\Models\GradingSystem;
+use App\Models\StudentRecord;
+use Illuminate\Support\Facades\DB;
 
 class MarkListManagement extends Component
 {
@@ -87,123 +88,200 @@ class MarkListManagement extends Component
     }
 
     public function fetchStudentDetails($admNo)
-{
-    // Fetch the student by admission number
-    $student = StudentRecord::with('my_class', 'section')->where('adm_no', $admNo)->first();
+    {
+        // Fetch the student by admission number
+        $student = StudentRecord::with('my_class', 'section')->where('adm_no', $admNo)->first();
 
-    if ($student) {
-        // Get the latest exam the student participated in
-        $exam = Exam::whereHas('examMarks', function ($query) use ($student) {
-            $query->where('student_id', $student->id);
-        })->orderBy('created_at', 'desc')->first();
+        if ($student) {
+            // Get the latest exam the student participated in
+            $exam = Exam::whereHas('examMarks', function ($query) use ($student) {
+                $query->where('student_id', $student->id);
+            })->orderBy('created_at', 'desc')->first();
 
-        // Initialize $marks as an empty array to avoid uninitialized variable issues
-        $marks = [];
+            // Initialize $marks as an empty array to avoid uninitialized variable issues
+            $marks = [];
 
-        // Check if an exam was found
-        if ($exam) {
-            // Get the grading system associated with the exam
-            $gradingSystem = $exam->gradingSystem;
+            // Check if an exam was found
+            if ($exam) {
+                // Get the grading system associated with the exam
+                $gradingSystem = $exam->gradingSystem;
 
-            // Check if the grading system exists
-            if ($gradingSystem) {
-                // Get all subjects for which the student has marks in this exam
-                $marks = ExamMarks::with('subject')
-                    ->where('student_id', $student->id)
-                    ->where('exam_id', $exam->id)
-                    ->get()
-                    ->keyBy('subject_id') // Key marks by subject ID for easier access
-                    ->toArray();
+                // Check if the grading system exists
+                if ($gradingSystem) {
+                    // Get all subjects for which the student has marks in this exam
+                    $marks = ExamMarks::with('subject')
+                        ->where('student_id', $student->id)
+                        ->where('exam_id', $exam->id)
+                        ->get()
+                        ->keyBy('subject_id') // Key marks by subject ID for easier access
+                        ->toArray();
 
-                // Prepare student details with subjects, marks, grades, remarks, and GPA
-                $this->studentDetails = [];
+                    // Get the subjects associated with the grading system
+                    $gradingSystemSubjects = DB::table('grading_system_subject')
+                        ->where('grading_system_id', $gradingSystem->id)
+                        ->pluck('subject_id')
+                        ->toArray();
 
-                foreach ($marks as $mark) {
-                    $subjectId = $mark['subject_id'];
-                    $subjectName = $mark['subject']['subject_name'];
-                    $subjectMarks = $mark['marks'];
+                    // Initialize an array to track missing subjects
+                    $missingSubjects = [];
 
-                    // Fetch the grading range for this subject based on the marks and grading system
-                    $gradingRange = GradingRange::where('grading_system_id', $gradingSystem->id)
-                        ->where('subject_id', $subjectId)
-                        ->where('range_from', '<=', $subjectMarks)
-                        ->where('range_to', '>=', $subjectMarks)
-                        ->first();
-
-                    // Populate grade, remark, and GPA if the grading range exists
-                    if ($gradingRange) {
-                        $grade = $gradingRange->grade;
-                        $remark = $gradingRange->remark;
-                        $gpa = $gradingRange->gpa;
-                    } else {
-                        $grade = 'N/A';
-                        $remark = 'N/A';
-                        $gpa = 'N/A';
+                    // Check for each mark if the subject is part of the grading system
+                    foreach ($marks as $mark) {
+                        if (!in_array($mark['subject_id'], $gradingSystemSubjects)) {
+                            $missingSubjects[] = $mark['subject']['subject_name'] ?? 'Unknown Subject';
+                        }
                     }
 
-                    // Add the subject, marks, grade, remark, and GPA to the student details array
-                    $this->studentDetails[] = [
-                        'subject_name' => $subjectName,
-                        'marks' => $subjectMarks,
-                        'grade' => $grade,
-                        'remark' => $remark,
-                        'gpa' => $gpa,
+                    // If there are any missing subjects, flash a message
+                    if (!empty($missingSubjects)) {
+                        session()->flash('warning', 'The following subjects are not part of the grading system: ' . implode(', ', $missingSubjects));
+                    }
+
+                    // Prepare student details with subjects, marks, grades, remarks, and GPA
+                    $this->studentDetails = [];
+
+                    foreach ($gradingSystemSubjects as $subjectId) {
+                        // Check if the student has marks for the subject in the current exam
+                        $subjectMarks = $marks[$subjectId] ?? null;
+
+                        // Fetch the subject name, marks, grade, remark, and GPA
+                        if ($subjectMarks) {
+                            $subjectName = $subjectMarks['subject']['subject_name'];
+                            $subjectMarksValue = $subjectMarks['marks'];
+
+                            // Fetch the grading range for this subject based on the marks and grading system
+                            $gradingRange = GradingRange::where('grading_system_id', $gradingSystem->id)
+                                ->where('subject_id', $subjectId)
+                                ->where('range_from', '<=', $subjectMarksValue)
+                                ->where('range_to', '>=', $subjectMarksValue)
+                                ->first();
+
+                            // Populate grade, remark, and GPA if the grading range exists
+                            if ($gradingRange) {
+                                $grade = $gradingRange->grade;
+                                $remark = $gradingRange->remark;
+                                $gpa = $gradingRange->gpa;
+                            } else {
+                                $grade = 'N/A';
+                                $remark = 'N/A';
+                                $gpa = 'N/A';
+                            }
+
+                            // Add the subject, marks, grade, remark, and GPA to the student details array
+                            $this->studentDetails[] = [
+                                'subject_name' => $subjectName,
+                                'marks' => $subjectMarksValue,
+                                'grade' => $grade,
+                                'remark' => $remark,
+                                'gpa' => $gpa,
+                            ];
+                        } else {
+                            // Subject not present in the marks
+                            $subject = DB::table('subjects')->where('id', $subjectId)->first();
+                            $this->studentDetails[] = [
+                                'subject_name' => $subject->subject_name ?? 'Unknown Subject',
+                                'marks' => 'N/A',
+                                'grade' => 'N/A',
+                                'remark' => 'N/A',
+                                'gpa' => 'N/A',
+                            ];
+                        }
+                    }
+
+                    // Add the grading system name and description to student details
+                    $this->gradingSystemDetails = [
+                        'name' => $gradingSystem->name,
+                        'description' => $gradingSystem->description,
+                        'effective_date' => $gradingSystem->effective_date,
                     ];
+                } else {
+                    // If no grading system found, set student details to display subjects but without grades, remarks, or GPA
+                    foreach ($marks as $mark) {
+                        $this->studentDetails[] = [
+                            'subject_name' => $mark['subject']['subject_name'] ?? 'N/A',
+                            'marks' => $mark['marks'] ?? 'N/A',
+                            'grade' => 'N/A',
+                            'remark' => 'N/A',
+                            'gpa' => 'N/A',
+                        ];
+                    }
+                    $this->gradingSystemDetails = ['name' => 'N/A', 'description' => 'N/A', 'effective_date' => 'N/A'];
                 }
 
-                // Add the grading system name and description to student details
-                $this->gradingSystemDetails = [
-                    'name' => $gradingSystem->name,
-                    'description' => $gradingSystem->description,
-                    'effective_date' => $gradingSystem->effective_date,
+                // Fetch class and section names using their relationships
+                $className = $student->my_class ? $student->my_class->name : 'N/A';
+                $sectionName = $student->section ? $student->section->name : 'N/A';
+
+                // Add additional student details
+                $this->studentAdditionalDetails = [
+                    'class_name' => $className,
+                    'section_name' => $sectionName,
+                    'photo' => $student->photo,
+                    'gender' => $student->gender,
+                    'first_name' => $student->first_name,
+                    'middle_name' => $student->middle_name,
+                    'last_name' => $student->last_name,
                 ];
 
+                // Set the selected admission number and pass exam name
+                $this->selectedAdmNo = $admNo;
+                $this->examName = $exam->name; // Exam name
+                $this->showingDetails = true;
             } else {
-                // If no grading system found, set student details to display subjects but without grades, remarks, or GPA
-                foreach ($marks as $mark) {
-                    $this->studentDetails[] = [
-                        'subject_name' => $mark['subject']['subject_name'] ?? 'N/A',
-                        'marks' => $mark['marks'] ?? 'N/A',
-                        'grade' => 'N/A',
-                        'remark' => 'N/A',
-                        'gpa' => 'N/A',
-                    ];
-                }
-                $this->gradingSystemDetails = ['name' => 'N/A', 'description' => 'N/A', 'effective_date' => 'N/A'];
+                // Reset if no exam found
+                $this->studentDetails = [];
+                $this->studentAdditionalDetails = [];
+                $this->gradingSystemDetails = [];
             }
-
-            // Fetch class and section names using their relationships
-            $className = $student->my_class ? $student->my_class->name : 'N/A'; 
-            $sectionName = $student->section ? $student->section->name : 'N/A'; 
-
-            // Add additional student details
-            $this->studentAdditionalDetails = [
-                'class_name' => $className,
-                'section_name' => $sectionName,
-                'photo' => $student->photo,
-                'gender' => $student->gender,
-                'first_name' => $student->first_name,
-                'middle_name' => $student->middle_name,
-                'last_name' => $student->last_name,
-            ];
-
-            // Set the selected admission number and pass exam name
-            $this->selectedAdmNo = $admNo;
-            $this->examName = $exam->name; // Exam name
-            $this->showingDetails = true;
         } else {
-            // Reset if no exam found
+            // Reset if no student found
             $this->studentDetails = [];
             $this->studentAdditionalDetails = [];
             $this->gradingSystemDetails = [];
         }
-    } else {
-        // Reset if no student found
-        $this->studentDetails = [];
-        $this->studentAdditionalDetails = [];
-        $this->gradingSystemDetails = [];
     }
-}
+
+
+    protected function getClassPosition($student, $exam)
+    {
+        $allStudents = ExamMarks::select('student_id', DB::raw('SUM(marks) as total_marks'))
+            ->where('exam_id', $exam->id)
+            ->whereHas('student', function ($query) use ($student) {
+                $query->where('my_class_id', $student->my_class_id);
+            })
+            ->groupBy('student_id')
+            ->orderBy('total_marks', 'desc')
+            ->get();
+
+        // Find the position of the current student
+        foreach ($allStudents as $index => $result) {
+            if ($result->student_id == $student->id) {
+                return $index + 1;
+            }
+        }
+
+        return 'N/A';
+    }
+
+    protected function getStreamPosition($student, $exam)
+    {
+        $allStudents = ExamMarks::select('student_id', DB::raw('SUM(marks) as total_marks'))
+            ->where('exam_id', $exam->id)
+            ->groupBy('student_id')
+            ->orderBy('total_marks', 'desc')
+            ->get();
+
+        // Find the position of the current student
+        foreach ($allStudents as $index => $result) {
+            if ($result->student_id == $student->id) {
+                return $index + 1;
+            }
+        }
+
+        return 'N/A';
+    }
+
+
 
 
 

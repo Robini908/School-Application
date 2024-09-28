@@ -1,12 +1,10 @@
 <div class="container mt-4">
-    @if (session()->has('message'))
-    <div class="alert alert-success mb-4">{{ session('message') }}</div>
-    @endif
-
-    {{-- Global Loading Indicator --}}
-    <div wire:loading>
+    
+    <x-flash-messages />
+    
+    {{-- <div wire:loading>
         <div class="alert alert-info mb-4">Loading... Please wait.</div>
-    </div>
+    </div> --}}
 
     {{-- Assigned Marks Card --}}
     <div class="card mb-4">

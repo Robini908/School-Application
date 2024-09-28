@@ -1,6 +1,6 @@
 <div class="container p-4 bg-white rounded shadow">
     <h2 class="h4 mb-4">Mark List Management</h2>
-
+    <x-flash-messages />
     <!-- Show selection UI only if not showing details -->
     @if (!$showingDetails)
     <div class="mb-3">
@@ -66,8 +66,8 @@
                     <td>{{ $mark['marks'][$subjectName] ?? 'N/A' }}</td>
                     @endforeach
                     <td>
-                        <button wire:click="fetchStudentDetails('{{ $mark['adm_no'] }}')"
-                            class="btn btn-info">Generate Report</button>
+                        <button wire:click="fetchStudentDetails('{{ $mark['adm_no'] }}')" class="btn btn-info">Generate
+                            Report</button>
                     </td>
                 </tr>
                 @endforeach
@@ -149,7 +149,30 @@
                     </tr>
                     @endforeach
                 </tbody>
+
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h6>Overall Performance</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Total Marks:</strong> {{ $totalMarks ?? 'N/A' }}</p>
+                                <p><strong>Mean Grade:</strong> {{ $meanGrade ?? 'N/A' }}</p>
+                                <p><strong>Mean Score:</strong> {{ $meanScore ?? 'N/A' }}</p>
+                                <p><strong>Total Points:</strong> {{ $totalPoints ?? 'N/A' }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Position in Class:</strong> {{ $classPosition ?? 'N/A' }}</p>
+                                <p><strong>Position in Stream:</strong> {{ $streamPosition ?? 'N/A' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </table>
+
+
             @else
             <p class="text-muted text-center">No details found for this student.</p>
             @endif
