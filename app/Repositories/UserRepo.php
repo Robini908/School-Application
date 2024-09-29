@@ -7,9 +7,7 @@ use App\Models\StaffRecord;
 use App\Models\UserType;
 use App\User;
 
-
 class UserRepo {
-
 
     public function update($id, $data)
     {
@@ -31,12 +29,10 @@ class UserRepo {
         return User::where(['user_type' => $type])->orderBy('name', 'asc')->get();
     }
 
-    public function getTeacherIds(){
-
+    public function getTeacherIds()
+    {
         return User::where(['user_type' => 'teacher'])->pluck('id')->toArray();
     }
-
-
 
     public function getAllTypes()
     {
@@ -80,5 +76,9 @@ class UserRepo {
         return BloodGroup::orderBy('name')->get();
     }
 
-    //get teacher 
+    /********** COUNT STUDENTS ********/
+    public function countStudents()
+    {
+        return User::where('user_type', 'student')->count();
+    }
 }

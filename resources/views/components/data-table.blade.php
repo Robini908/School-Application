@@ -1,19 +1,17 @@
-<div class="data-table" id="{{ $id }}">
-    <h2>{{ $title }}</h2>
-    <p>{{ $message }}</p>
-    <table class="table table-hover table-bordered">
-        <thead>
-            <tr>
-                @foreach ($header as $column)
-                    <th>{{ $column }}</th>
-                @endforeach
-            </tr>
-        </thead>
-        <tbody>
-            {{ $slot }} <!-- This allows you to inject rows from the parent component -->
-        </tbody>
-    </table>
-</div>
+
+
+<table id="{{ $id }}" class="table table-bordered table-striped">
+    <thead class="thead-light">
+        <tr>
+            @foreach($columns as $column)
+                <th>{{ $column }}</th>
+            @endforeach
+        </tr>
+    </thead>
+    <tbody>
+        {{ $slot }}
+    </tbody>
+</table>
 
 @push('scripts')
 <script>
@@ -25,14 +23,14 @@
             ordering: true,
             lengthChange: true,
             pageLength: 10,
-            processing: true,
+            processing: true, // Show processing indicator
             serverSide: false,
             responsive: true,
             lengthMenu: [[5, 10, 25, 50, 100, -1], [5, 10, 25, 50, 100, "All"]],
             buttons: [
                 {
                     extend: 'csv',
-                    text: 'CSV',
+                    text: 'Export CSV',
                     exportOptions: {
                         columns: ':visible:not(:last-child)',
                         modifier: {
@@ -45,7 +43,7 @@
                 },
                 {
                     extend: 'excel',
-                    text: 'Excel',
+                    text: 'Export Excel',
                     exportOptions: {
                         columns: ':visible:not(:last-child)',
                         modifier: {
@@ -58,7 +56,7 @@
                 },
                 {
                     extend: 'pdf',
-                    text: 'PDF',
+                    text: 'Export PDF',
                     exportOptions: {
                         columns: ':visible:not(:last-child)',
                         modifier: {
@@ -111,4 +109,4 @@
         });
     });
 </script>
-@endpush
+@endpush  

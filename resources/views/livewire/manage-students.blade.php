@@ -110,98 +110,95 @@
 
     <!-- Data Table -->
     <div class="table-responsive">
-        <x-data-table 
-            id="studentTable" 
-            title="Student List" 
-            message="List of all students in the system." 
-            :header="['Admission', 'Student Photo', 'Name', 'Gender', 'Class', 'Section', 'Status', 'Parent Name', 'Parent Contact', 'Actions']">
-            
+        <x-data-table id="studentTable" title="Student List" message="List of registered students" 
+            :columns="['Admission', 'Student Photo', 'Name', 'Gender', 'Class', 'Section', 'Status', 'Parent Name', 'Parent Contact', 'Actions']">
             @if($noResults)
-                <tr>
-                    <td colspan="10" class="text-center">No students found for the selected filters.</td>
-                </tr>
+            <tr>
+                <td colspan="10" class="text-center">No students found for the selected filters.</td>
+            </tr>
             @else
-                @foreach($this->mystudents as $student)
-                <tr>
-                    <td>{{ $student->adm_no }}</td>
-                    <td>
-                        @if ($student->photo)
-                        <img src="{{ asset($student->photo) }}" alt="Student Photo" class="img-thumbnail" style="width: 50px; height: 50px;">
-                        @else
-                        <span class="text-muted">No Image</span>
-                        @endif
-                    </td>
-                    <td>
-                        <a href="{{ route('student.info', ['id' => $student->id]) }}">
-                            {{ $student->first_name }} {{ $student->last_name }}
-                        </a>
-                    </td>
-                    <td>{{ $student->gender }}</td>
-                    <td>{{ $student->my_class->name ?? 'N/A' }}</td>
-                    <td>{{ $student->section->name ?? 'N/A' }}</td>
-                    <td>
-                        <span class="badge {{ $student->status == 'Active' ? 'badge-success' : 'badge-warning' }}">
-                            {{ $student->status }}
-                        </span>
-                    </td>
-                    <td>{{ $student->parent_detail->parent_first_name ?? 'N/A' }} {{ $student->parent_detail->parent_last_name ?? 'N/A' }}</td>
-                    <td>{{ $student->parent_detail->parent_phone_number ?? 'N/A' }}</td>
-                    <td class="text-center">
-                        <div class="list-icons">
-                            <div class="dropdown">
-                                <button type="button" class="btn btn-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                                    <i class="icon-menu9"></i> <!-- Only this icon will be displayed -->
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-right">
-                                    <li>
-                                        <button wire:click="editStudent({{ $student->id }})" class="dropdown-item">
-                                            <i class="bi bi-pencil"></i> Edit
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button wire:click="deleteRecord({{ $student->id }})" class="dropdown-item">
-                                            <i class="bi bi-trash"></i> Delete
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button wire:click="viewStudent({{ $student->id }})" class="dropdown-item">
-                                            <i class="bi bi-eye"></i> View Details
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button wire:click="studentExpulsion({{ $student->id }})" class="dropdown-item">
-                                            <i class="bi bi-exclamation-triangle"></i> Expulsion
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button wire:click="suspendStudent({{ $student->id }})" class="dropdown-item">
-                                            <i class="bi bi-pause"></i> Suspension
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button wire:click="favoriteStudent({{ $student->id }})" class="dropdown-item">
-                                            <i class="bi bi-star"></i> Student History
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button wire:click="approveStudent({{ $student->id }})" class="dropdown-item">
-                                            <i class="bi bi-check"></i> Approve
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button wire:click="rejectStudent({{ $student->id }})" class="dropdown-item">
-                                            <i class="bi bi-x"></i> Reject
-                                        </button>
-                                    </li>
-                                </ul>
-                            </div>
+            @foreach($this->mystudents as $student)
+            <tr>
+                <td>{{ $student->adm_no }}</td>
+                <td>
+                    @if ($student->photo)
+                    <img src="{{ asset($student->photo) }}" alt="Student Photo" class="img-thumbnail" style="width: 50px; height: 50px;">
+                    @else
+                    <span class="text-muted">No Image</span>
+                    @endif
+                </td>
+                <td>
+                    <a href="{{ route('student.info', ['id' => $student->id]) }}">
+                        {{ $student->first_name }} {{ $student->last_name }}
+                    </a>
+                </td>
+                <td>{{ $student->gender }}</td>
+                <td>{{ $student->my_class->name ?? 'N/A' }}</td>
+                <td>{{ $student->section->name ?? 'N/A' }}</td>
+                <td>
+                    <span class="badge {{ $student->status == 'Active' ? 'badge-success' : 'badge-warning' }}">
+                        {{ $student->status }}
+                    </span>
+                </td>
+                <td>{{ $student->parent_detail->parent_first_name ?? 'N/A' }} {{ $student->parent_detail->parent_last_name ?? 'N/A' }}</td>
+                <td>{{ $student->parent_detail->parent_phone_number ?? 'N/A' }}</td>
+                <td class="text-center">
+                    <div class="list-icons">
+                        <div class="dropdown">
+                            <button type="button" class="btn btn-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                <i class="icon-menu9"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-right">
+                                <li>
+                                    <button wire:click="editStudent({{ $student->id }})" class="dropdown-item">
+                                        <i class="bi bi-pencil"></i> Edit
+                                    </button>
+                                </li>
+                                <li>
+                                    <button wire:click="deleteRecord({{ $student->id }})" class="dropdown-item">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </button>
+                                </li>
+                                <li>
+                                    <button wire:click="viewStudent({{ $student->id }})" class="dropdown-item">
+                                        <i class="bi bi-eye"></i> View Details
+                                    </button>
+                                </li>
+                                <li>
+                                    <button wire:click="studentExpulsion({{ $student->id }})" class="dropdown-item">
+                                        <i class="bi bi-exclamation-triangle"></i> Expulsion
+                                    </button>
+                                </li>
+                                <li>
+                                    <button wire:click="suspendStudent({{ $student->id }})" class="dropdown-item">
+                                        <i class="bi bi-pause"></i> Suspension
+                                    </button>
+                                </li>
+                                <li>
+                                    <button wire:click="favoriteStudent({{ $student->id }})" class="dropdown-item">
+                                        <i class="bi bi-star"></i> Student History
+                                    </button>
+                                </li>
+                                <li>
+                                    <button wire:click="approveStudent({{ $student->id }})" class="dropdown-item">
+                                        <i class="bi bi-check"></i> Approve
+                                    </button>
+                                </li>
+                                <li>
+                                    <button wire:click="rejectStudent({{ $student->id }})" class="dropdown-item">
+                                        <i class="bi bi-x"></i> Reject
+                                    </button>
+                                </li>
+                            </ul>
                         </div>
-                    </td>
-                </tr>
-                @endforeach
+                    </div>
+                </td>
+            </tr>
+            @endforeach
             @endif
         </x-data-table>
     </div>
+    
     
 
     @if ($showDeleteModal)

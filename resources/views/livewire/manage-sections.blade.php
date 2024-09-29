@@ -160,24 +160,29 @@
             @if($subjects->isEmpty())
             <div class="alert alert-danger">No subjects are available in the system.</div>
             @else
-            <table class="table  table-responsive">
-                <thead class="thead-light">
-                    <tr>
-                        <th>Name</th>
-                        <th>Code</th>
-                        <th>Abbreviation</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($subjects as $subject)
-                    <tr>
-                        <td>{{ $subject->subject_name }}</td>
-                        <td>{{ $subject->subject_code }}</td>
-                        <td>{{ $subject->abbreviation }}</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+            
+            <div class="table-responsive">
+                <x-data-table 
+                    id="subjectTable" 
+                    title="Subject List" 
+                    message="List of available subjects" 
+                    :columns="['Name', 'Code', 'Abbreviation']">
+                    @if($subjects->count() === 0)
+                        <tr>
+                            <td colspan="3" class="text-center">No subjects found.</td>
+                        </tr>
+                    @else
+                        @foreach($subjects as $subject)
+                        <tr>
+                            <td>{{ $subject->subject_name }}</td>
+                            <td>{{ $subject->subject_code }}</td>
+                            <td>{{ $subject->abbreviation }}</td>
+                        </tr>
+                        @endforeach
+                    @endif
+                </x-data-table>
+            </div>
+            
             @endif
 
             <div class="mt-4">

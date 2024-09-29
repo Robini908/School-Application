@@ -9,29 +9,18 @@ class DataTable extends Component
     public $id;
     public $title;
     public $message;
-    public $header; // Header property
+    public $columns;
+    public $data;
 
-    /**
-     * Create a new component instance.
-     *
-     * @param string $id
-     * @param string $title
-     * @param string $message
-     * @param array $header
-     */
-    public function __construct($id, $title, $message, $header = [])
+    public function __construct($id, $title = '', $message = '', $columns = [], $data = null)
     {
         $this->id = $id;
         $this->title = $title;
         $this->message = $message;
-        $this->header = $header; // Assign header
+        $this->columns = $columns;
+        $this->data = $data;
     }
 
-    /**
-     * Get the view / contents that represent the component.
-     *
-     * @return \Illuminate\Contracts\View\View|\Closure|string
-     */
     public function render()
     {
         return view('components.data-table');
