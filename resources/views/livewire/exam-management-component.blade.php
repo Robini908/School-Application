@@ -322,34 +322,68 @@
             </div>
             <!-- Display applied filters with "x" icon for individual reset -->
             <div class="mt-3">
-                @if($filterName)
-                <span class="badge badge-info">
-                    Name: {{ $filterName }}
-                    <button wire:click="resetFilter('filterName')" class="btn btn-sm btn-light">x</button>
-                </span>
-                @endif
-                @if($filterYear)
-                <span class="badge badge-info">
-                    Year: {{ $filterYear }}
-                    <button wire:click="resetFilter('filterYear')" class="btn btn-sm btn-light">x</button>
-                </span>
-                @endif
-                @if($filterTerm)
-                <span class="badge badge-info">
-                    Term: {{ $terms[$filterTerm] }}
-                    <button wire:click="resetFilter('filterTerm')" class="btn btn-sm btn-light">x</button>
-                </span>
-                @endif
-                @if($filterGradingSystem)
-                <span class="badge badge-info">
-                    Grading System: {{ $gradingSystems->find($filterGradingSystem)->name ?? '' }}
-                    <button wire:click="resetFilter('filterGradingSystem')" class="btn btn-sm btn-light">x</button>
-                </span>
-                @endif
-                @if($filterName || $filterYear || $filterTerm || $filterGradingSystem)
-                <button wire:click="resetAllFilters" class="btn btn-secondary mt-2">Clear All Filters</button>
-                @endif
+                <div class="d-flex flex-wrap">
+                    {{-- Filter for Name --}}
+                    @if($filterName)
+                    <span class="badge badge-info badge-pill d-flex align-items-center me-1 mb-1">
+                        Name: {{ $filterName }}
+                        <button wire:click="resetFilter('filterName')" class="btn btn-sm btn-light btn-close ms-2 p-0" aria-label="Close">x</button>
+                        <!-- Spinner for Name Filter -->
+                        <div wire:loading wire:target="resetFilter('filterName')" class="spinner-border spinner-border-sm text-light ms-2" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </span>
+                    @endif
+            
+                    {{-- Filter for Year --}}
+                    @if($filterYear)
+                    <span class="badge badge-info badge-pill d-flex align-items-center me-1 mb-1">
+                        Year: {{ $filterYear }}
+                        <button wire:click="resetFilter('filterYear')" class="btn btn-sm btn-light btn-close ms-2 p-0" aria-label="Close">x</button>
+                        <!-- Spinner for Year Filter -->
+                        <div wire:loading wire:target="resetFilter('filterYear')" class="spinner-border spinner-border-sm text-light ms-2" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </span>
+                    @endif
+            
+                    {{-- Filter for Term --}}
+                    @if($filterTerm)
+                    <span class="badge badge-info badge-pill d-flex align-items-center me-1 mb-1">
+                        Term: {{ $terms[$filterTerm] }}
+                        <button wire:click="resetFilter('filterTerm')" class="btn btn-sm btn-light btn-close ms-2 p-0" aria-label="Close">x</button>
+                        <!-- Spinner for Term Filter -->
+                        <div wire:loading wire:target="resetFilter('filterTerm')" class="spinner-border spinner-border-sm text-light ms-2" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </span>
+                    @endif
+            
+                    {{-- Filter for Grading System --}}
+                    @if($filterGradingSystem)
+                    <span class="badge badge-info badge-pill d-flex align-items-center me-1 mb-1">
+                        Grading System: {{ $gradingSystems->find($filterGradingSystem)->name ?? '' }}
+                        <button wire:click="resetFilter('filterGradingSystem')" class="btn btn-sm btn-light btn-close ms-2 p-0" aria-label="Close">x</button>
+                        <!-- Spinner for Grading System Filter -->
+                        <div wire:loading wire:target="resetFilter('filterGradingSystem')" class="spinner-border spinner-border-sm text-light ms-2" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </span>
+                    @endif
+            
+                    {{-- Reset All Filters Button --}}
+                    @if($filterName || $filterYear || $filterTerm || $filterGradingSystem)
+                    <button wire:click="resetAllFilters" class="btn btn-secondary btn-sm mt-2 d-flex align-items-center">
+                        Clear All Filters
+                        <!-- Spinner for Reset All Filters -->
+                        <div wire:loading wire:target="resetAllFilters" class="spinner-border spinner-border-sm text-light ms-2" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </button>
+                    @endif
+                </div>
             </div>
+            
         </div>
 
     <div class="card-body">

@@ -18,6 +18,10 @@
 <link rel="stylesheet" href="{{ asset('assets/css/bootstrap-datepicker.min.css') }}" type="text/css">
 <link href="{{ asset('assets/css/qs.css') }}" rel="stylesheet" type="text/css">
 <link href="{{ asset('assets/css/jquery-datatables.css') }}" rel="stylesheet" type="text/css">
+{{-- <link href="{{ asset('assets/css/handsontable.full.min.css') }}" rel="stylesheet" type="text/css"> --}}
+
+
+
 
 
 <!-- Core JS files -->
@@ -29,6 +33,7 @@
 <script src="{{ asset('global_assets/js/plugins/loaders/blockui.min.js') }}"></script>
 <script src="{{ asset('global_assets/js/main/select2.min.js') }}"></script>
 <script src="{{ asset('global_assets/js/main/swiper-bundle.min.js') }}"></script>
+{{-- <script src="{{ asset('global_assets/js/main/handsontable.full.min.js') }}"></script> --}}
 
 <!-- External JS files (Ensure jQuery is loaded first) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>

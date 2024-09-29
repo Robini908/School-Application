@@ -28,22 +28,34 @@
         <ul class="navbar-nav">
             <li class="nav-item dropdown dropdown-user">
                 <a href="#" class="navbar-nav-link dropdown-toggle" data-toggle="dropdown">
-                    <!-- Only display the username if the user is authenticated -->
-                    <span>Welcome - {{ Auth::check() ? Auth::user()->username : 'Guest' }}</span>
+                    <!-- Check if user is authenticated and display appropriate message -->
+                    @if(Auth::check())
+                        <span>Welcome - {{ Auth::user()->username }}</span>
+                    @else
+                        <span>Welcome - Guest</span>
+                    @endif
                 </a>
 
                 <div class="dropdown-menu dropdown-menu-right">
-                    <a href="{{ Qs::userIsStudent() ? route('students.show', Qs::hash(Qs::findStudentRecord(Auth::user()->id)->id)) : route('users.show', Qs::hash(Auth::user()->id)) }}" class="dropdown-item">
-                        <i class="icon-user-plus"></i> My profile
-                    </a>
-                    <div class="dropdown-divider"></div>
-                    <a href="{{ route('my_account') }}" class="dropdown-item"><i class="icon-cog5"></i> Account settings</a>
-                    <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="dropdown-item">
-                        <i class="icon-switch2"></i> Logout
-                    </a>
-                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                        @csrf
-                    </form>
+                    @if(Auth::check())
+                        @php
+                            // Safely fetch the student record ID if the user is authenticated and is a student
+                            $studentRecordId = Qs::userIsStudent() ? Qs::findStudentRecord(Auth::user()->id)->id : null;
+                        @endphp
+                        <a href="{{ Qs::userIsStudent() ? route('students.show', Qs::hash($studentRecordId)) : route('users.show', Qs::hash(Auth::user()->id)) }}" class="dropdown-item">
+                            <i class="icon-user-plus"></i> My profile
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="{{ route('my_account') }}" class="dropdown-item">
+                            <i class="icon-cog5"></i> Account settings
+                        </a>
+                        <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="dropdown-item">
+                            <i class="icon-switch2"></i> Logout
+                        </a>
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                            @csrf
+                        </form>
+                    @endif
                 </div>
             </li>
         </ul>

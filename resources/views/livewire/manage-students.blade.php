@@ -47,45 +47,61 @@
             <div class="m-2">
                 <h5>Applied Filters:</h5>
                 <div class="d-flex flex-wrap align-items-center">
+                    {{-- Form Filter --}}
                     @if($formFilter)
                     <div class="badge bg-primary me-1 d-flex align-items-center">
                         Form: {{ $formFilter }}
-                        <button class="btn btn-close btn-close-white ms-1" wire:click="removeFilter('formFilter')"
-                            aria-label="Close">
-                            <i class="icon-close"></i> <!-- Replace with the appropriate icon class -->
+                        <button class="btn btn-close btn-close-white ms-1" wire:click="removeFilter('formFilter')" aria-label="Close">
+                            <i class="icon-close"></i>
                         </button>
+                        <!-- Spinner for Form Filter -->
+                        <div wire:loading wire:target="removeFilter('formFilter')" class="spinner-border spinner-border-sm text-light ms-2" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
                     </div>
                     @endif
+            
+                    {{-- Section Filter --}}
                     @if($sectionFilter)
                     <div class="badge bg-secondary me-1 d-flex align-items-center">
                         Stream: {{ $sectionFilter }}
-                        <button class="btn btn-close btn-close-white ms-1" wire:click="removeFilter('sectionFilter')"
-                            aria-label="Close">
-                            <i class="icon-close"></i> <!-- Replace with the appropriate icon class -->
+                        <button class="btn btn-close btn-close-white ms-1" wire:click="removeFilter('sectionFilter')" aria-label="Close">
+                            <i class="icon-close"></i>
                         </button>
+                        <!-- Spinner for Section Filter -->
+                        <div wire:loading wire:target="removeFilter('sectionFilter')" class="spinner-border spinner-border-sm text-light ms-2" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
                     </div>
                     @endif
+            
+                    {{-- Status Filter --}}
                     @if($statusFilter)
                     <div class="badge bg-success me-1 d-flex align-items-center">
                         Status: {{ $statusFilter }}
-                        <button class="btn btn-close btn-close-white ms-1" wire:click="removeFilter('statusFilter')"
-                            aria-label="Close">
-                            <i class="icon-close"></i> <!-- Replace with the appropriate icon class -->
+                        <button class="btn btn-close btn-close-white ms-1" wire:click="removeFilter('statusFilter')" aria-label="Close">
+                            <i class="icon-close"></i>
                         </button>
+                        <!-- Spinner for Status Filter -->
+                        <div wire:loading wire:target="removeFilter('statusFilter')" class="spinner-border spinner-border-sm text-light ms-2" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
                     </div>
                     @endif
-
+            
                     {{-- Reset Filter Button --}}
-
                     @if($formFilter || $sectionFilter || $statusFilter)
                     <button class="btn btn-danger ms-2" wire:click="resetFilters">
-                        <i class="icon-reset"></i> <!-- Use an appropriate icon class for the reset action -->
-                        Reset Filters
+                        <i class="icon-reset"></i> Reset Filters
+                        <!-- Spinner for Reset Filters -->
+                        <div wire:loading wire:target="resetFilters" class="spinner-border spinner-border-sm text-light ms-2" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
                     </button>
                     @endif
                 </div>
             </div>
-
+            
         </div>
 
         <!-- Conditional Reset Button -->
@@ -94,27 +110,17 @@
 
     <!-- Data Table -->
     <div class="table-responsive">
-        <table id="studentTable" class="table table-hover table-bordered datatable-button-html5-columns">
-            <thead class="thead-light">
-                <tr>
-                    <th>Admission</th>
-                    <th>Student Photo</th>
-                    <th>Name</th>
-                    <th>Gender</th>
-                    <th>Class</th>
-                    <th>Section</th>
-                    <th>Status</th>
-                    <th>Parent Name</th>
-                    <th>Parent Contact</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if($noResults)
+        <x-data-table 
+            id="studentTable" 
+            title="Student List" 
+            message="List of all students in the system." 
+            :header="['Admission', 'Student Photo', 'Name', 'Gender', 'Class', 'Section', 'Status', 'Parent Name', 'Parent Contact', 'Actions']">
+            
+            @if($noResults)
                 <tr>
                     <td colspan="10" class="text-center">No students found for the selected filters.</td>
                 </tr>
-                @else
+            @else
                 @foreach($this->mystudents as $student)
                 <tr>
                     <td>{{ $student->adm_no }}</td>
@@ -193,9 +199,8 @@
                     </td>
                 </tr>
                 @endforeach
-                @endif
-            </tbody>
-        </table>
+            @endif
+        </x-data-table>
     </div>
     
 

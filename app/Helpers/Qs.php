@@ -158,38 +158,45 @@ class Qs
 
     public static function userIsAdministrative()
     {
-        return in_array(Auth::user()->user_type, self::getTeamAdministrative());
+        if (Auth::check()) {
+            return in_array(Auth::user()->user_type, self::getTeamAdministrative());
+        }
+        return false; // Return false if the user is not authenticated
     }
 
     public static function userIsAdmin()
     {
-        return Auth::user()->user_type == 'admin';
+        return Auth::check() && Auth::user()->user_type == 'admin';
     }
 
     public static function getUserType()
     {
-        return Auth::user()->user_type;
+        if (Auth::check()) {
+            return Auth::user()->user_type;
+        }
+        return null; // Return null if the user is not authenticated
     }
 
     public static function userIsSuperAdmin()
     {
-        return Auth::user()->user_type == 'super_admin';
+        return Auth::check() && Auth::user()->user_type == 'super_admin';
     }
 
     public static function userIsStudent()
     {
-        return Auth::user()->user_type == 'student';
+        return Auth::check() && Auth::user()->user_type == 'student';
     }
 
     public static function userIsTeacher()
     {
-        return Auth::user()->user_type == 'teacher';
+        return Auth::check() && Auth::user()->user_type == 'teacher';
     }
 
     public static function userIsParent()
     {
-        return Auth::user()->user_type == 'parent';
+        return Auth::check() && Auth::user()->user_type == 'parent';
     }
+
 
     public static function userIsStaff()
     {
@@ -281,6 +288,7 @@ class Qs
     {
         return Setting::where('type', $type)->first()->description;
     }
+
 
     public static function getCurrentSession()
     {

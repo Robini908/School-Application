@@ -6,12 +6,21 @@
     <!-- Class Selection -->
     <div class="form-group">
         <label for="class">Select Class:</label>
-        <select wire:model.lazy="selectedClass" class="form-control" id="class">
-            <option value="">-- Select Class --</option>
-            @foreach ($classes as $class)
-            <option value="{{ $class->id }}">{{ $class->name }}</option>
-            @endforeach
-        </select>
+        <div wire:loading wire:target="selectedClass">
+            <div class="d-flex justify-content-center my-3">
+                <div class="spinner-border" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+        </div>
+        <div wire:loading.remove>
+            <select wire:model.lazy="selectedClass" class="form-control" id="class">
+                <option value="">-- Select Class --</option>
+                @foreach ($classes as $class)
+                <option value="{{ $class->id }}">{{ $class->name }}</option>
+                @endforeach
+            </select>
+        </div>
     </div>
 
     <!-- Selected Class Information -->
@@ -26,19 +35,32 @@
     @if ($selectedClass)
     <div class="form-group mt-3">
         <label for="exam">Select Exam:</label>
-        <select wire:model.lazy="selectedExam" class="form-control" id="exam">
-            <option value="">-- Select Exam --</option>
-            @foreach ($exams as $exam)
-            <option value="{{ $exam->id }}">{{ $exam->name }}</option>
-            @endforeach
-        </select>
+        <div wire:loading wire:target="selectedExam">
+            <div class="d-flex justify-content-center my-3">
+                <div class="spinner-border" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+        </div>
+        <div wire:loading.remove>
+            <select wire:model.lazy="selectedExam" class="form-control" id="exam">
+                <option value="">-- Select Exam --</option>
+                @foreach ($exams as $exam)
+                <option value="{{ $exam->id }}">{{ $exam->name }}</option>
+                @endforeach
+            </select>
+        </div>
     </div>
     @endif
 
     <!-- Section Selection -->
     @if ($selectedExam)
     <div wire:loading wire:target="selectedSection">
-        <p>Loading students for selected section...</p>
+        <div class="d-flex justify-content-center my-3">
+            <div class="spinner-border" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
     </div>
 
     <div wire:loading.remove>
@@ -59,53 +81,65 @@
         <!-- Marks Assignment Form -->
         @if ($selectedSection)
         <div wire:loading wire:target="assignMarks">
-            <p>Loading student marks...</p>
+            <div class="d-flex justify-content-center my-3">
+                <div class="spinner-border" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
         </div>
-
+        <div class="mt-3">
+            <div class="alert alert-info">
+                <strong>Total Students in this Stream:</strong> {{ count($students) }}
+            </div>
+        </div>
+        
         <form wire:submit.prevent="assignMarks" class="mt-3">
             <div class="table-responsive">
                 <table class="table table-bordered table-striped">
                     <thead>
                         <tr>
-                            <th>Student Name</th>
-                            <th>Admission No</th>
+                            <th style="position: sticky; left: 0; background-color: white; z-index: 1; width: 50px; border-right: none; padding: 0;">S/N</th>
+                            <th style="position: sticky; left: 50px; background-color: white; z-index: 1; width: 150px; border-left: none; border-right: none; padding: 0;">Student Name</th>
+                            <th style="position: sticky; left: 200px; background-color: white; z-index: 1; width: 100px; border-left: none; padding: 0;">Admission No</th>
                             @foreach ($subjects as $subject)
-                            <th>{{ $subject->subject_name }}</th>
+                                <th style="width: 120px; padding: 0;">{{ $subject->subject_name }}</th>
                             @endforeach
                         </tr>
                     </thead>
                     <tbody>
                         @if ($students->isEmpty())
-                        <tr>
-                            <td colspan="{{ count($subjects) + 2 }}" class="text-danger text-center">
-                                No students available for this section.
-                            </td>
-                        </tr>
+                            <tr>
+                                <td colspan="{{ count($subjects) + 3 }}" class="text-danger text-center">
+                                    No students available for this section.
+                                </td>
+                            </tr>
                         @else
-                        @foreach ($students as $student)
-                        <tr>
-                            <td>{{ $student->first_name }} {{ $student->last_name }}</td>
-                            <td>{{ $student->adm_no }}</td>
-                            @foreach ($subjects as $subject)
-                            <td>
-                                <input type="number" class="form-control" style="width: 120px;"
-                                    wire:model.defer="marks.{{ $student->id }}.{{ $subject->id }}" min="0" max="100" />
-                                @error("marks.{$student->id}.{$subject->id}")
-                                <div class="text-danger">{{ $message }}</div>
-                                @enderror
-                            </td>
+                            @foreach ($students as $index => $student)
+                                <tr>
+                                    <td style="position: sticky; left: 0; background-color: white; width: 50px; border-right: none; padding: 0;">{{ $index + 1 }}</td>
+                                    <td style="position: sticky; left: 50px; background-color: white; width: 150px; border-left: none; border-right: none; padding: 0;">{{ $student->first_name }} {{ $student->last_name }}</td>
+                                    <td style="position: sticky; left: 200px; background-color: white; width: 100px; border-left: none; padding: 0;">{{ $student->adm_no }}</td>
+                                    @foreach ($subjects as $subject)
+                                        <td style="width: 120px; padding: 0;">
+                                            <input type="number" class="form-control" style="width: 100%;"
+                                                   wire:model.defer="marks.{{ $student->id }}.{{ $subject->id }}" min="0" max="100" />
+                                            @error("marks.{$student->id}.{$subject->id}")
+                                                <div class="text-danger">{{ $message }}</div>
+                                            @enderror
+                                        </td>
+                                    @endforeach
+                                </tr>
                             @endforeach
-                        </tr>
-                        @endforeach
                         @endif
                     </tbody>
                 </table>
             </div>
-
+        
             <button type="submit" class="btn btn-primary mt-3">
                 {{ $buttonText }}
             </button>
         </form>
+        
         @else
         <p class="text-danger mt-3">You have not selected any section. Please select a section to proceed.</p>
         @endif
@@ -160,8 +194,6 @@
                         <button wire:click="updateMarks({{ $student->id }})" class="btn btn-success btn-sm mt-1">
                             Update
                         </button>
-
-
                         @else
                         <button wire:click="editMarks({{ $student->id }})" class="btn btn-primary btn-sm mt-1">
                             Edit
