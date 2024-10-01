@@ -34,6 +34,9 @@ Route::get('/student-info/{id}', function ($id) {
 Route::get('/pages/support_team/exams/set', function () {
     return view('pages.support_team.exams.set');
 })->name('exams.set');
+Route::get('/pages/support_team/exams/grades', function () {
+    return view('pages.support_team.exams.grades');
+})->name('exams.grades');
 // Modify the route to accept the examId parameter
 Route::get('/pages/support_team/exams/assign-exam-marks', function () {
     // Pass the examId to the view

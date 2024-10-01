@@ -174,6 +174,12 @@
                                 <span> Marks Allocation</span>
                             </a>
                         </li>
+                        <li
+                            class="nav-item {{ in_array(Route::currentRouteName(), ['exams.grades']) ? 'nav-item-expanded nav-item-open' : '' }}">
+                            <a href="{{ route('exams.grades') }}" class="nav-link">
+                                <span> Grades Management</span>
+                            </a>
+                        </li>
 
 
 

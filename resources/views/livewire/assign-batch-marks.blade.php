@@ -94,15 +94,15 @@
         </div>
         
         <form wire:submit.prevent="assignMarks" class="mt-3">
-            <div class="table-responsive">
+            <div class="table-responsive" style="overflow-x: auto;">
                 <table class="table table-bordered table-striped">
                     <thead>
                         <tr>
-                            <th style="position: sticky; left: 0; background-color: white; z-index: 1; width: 50px; border-right: none; padding: 0;">S/N</th>
-                            <th style="position: sticky; left: 50px; background-color: white; z-index: 1; width: 150px; border-left: none; border-right: none; padding: 0;">Student Name</th>
-                            <th style="position: sticky; left: 200px; background-color: white; z-index: 1; width: 100px; border-left: none; padding: 0;">Admission No</th>
+                            <th style="width: 50px;">S/N</th>
+                            <th style="width: 200px;">Student Name</th>
+                            <th style="width: 150px;">Admission No</th>
                             @foreach ($subjects as $subject)
-                                <th style="width: 120px; padding: 0;">{{ $subject->subject_name }}</th>
+                                <th style="width: 150px;">{{ $subject->subject_name }}</th>
                             @endforeach
                         </tr>
                     </thead>
@@ -116,13 +116,19 @@
                         @else
                             @foreach ($students as $index => $student)
                                 <tr>
-                                    <td style="position: sticky; left: 0; background-color: white; width: 50px; border-right: none; padding: 0;">{{ $index + 1 }}</td>
-                                    <td style="position: sticky; left: 50px; background-color: white; width: 150px; border-left: none; border-right: none; padding: 0;">{{ $student->first_name }} {{ $student->last_name }}</td>
-                                    <td style="position: sticky; left: 200px; background-color: white; width: 100px; border-left: none; padding: 0;">{{ $student->adm_no }}</td>
+                                    <td>{{ $index + 1 }}</td>
+                                    <td>{{ $student->first_name }} {{ $student->last_name }}</td>
+                                    <td>{{ $student->adm_no }}</td>
                                     @foreach ($subjects as $subject)
-                                        <td style="width: 120px; padding: 0;">
-                                            <input type="number" class="form-control" style="width: 100%;"
-                                                   wire:model.defer="marks.{{ $student->id }}.{{ $subject->id }}" min="0" max="100" />
+                                        <td style="width: 150px;">
+                                            <input type="number" 
+                                                   class="form-control" 
+                                                   style="width: 150px;" 
+                                                   wire:model.defer="marks.{{ $student->id }}.{{ $subject->id }}" 
+                                                   min="0" max="100"
+                                                   data-bs-toggle="tooltip" 
+                                                   data-bs-placement="top" 
+                                                   title="{{ $student->first_name }} {{ $student->last_name }} ({{ $student->adm_no }})">
                                             @error("marks.{$student->id}.{$subject->id}")
                                                 <div class="text-danger">{{ $message }}</div>
                                             @enderror
@@ -139,6 +145,47 @@
                 {{ $buttonText }}
             </button>
         </form>
+        
+        @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                // Initialize Bootstrap tooltips
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+        
+                // Show tooltip on focus and input
+                tooltipTriggerList.forEach(function(tooltipTriggerEl) {
+                    tooltipTriggerEl.addEventListener('focus', function() {
+                        var tooltip = bootstrap.Tooltip.getInstance(tooltipTriggerEl);
+                        if (tooltip) {
+                            tooltip.show();
+                        }
+                    });
+        
+                    tooltipTriggerEl.addEventListener('blur', function() {
+                        var tooltip = bootstrap.Tooltip.getInstance(tooltipTriggerEl);
+                        if (tooltip) {
+                            tooltip.hide();
+                        }
+                    });
+        
+                    // Show tooltip on input
+                    tooltipTriggerEl.addEventListener('input', function() {
+                        var tooltip = bootstrap.Tooltip.getInstance(tooltipTriggerEl);
+                        if (tooltip) {
+                            tooltip.show();
+                        }
+                    });
+                });
+            });
+        </script>
+        @endpush
+        
+        
+       
+        
         
         @else
         <p class="text-danger mt-3">You have not selected any section. Please select a section to proceed.</p>
@@ -208,3 +255,21 @@
     @endif
 
 </div>
+
+{{-- @push('styles')
+<!-- Tooltip Styling and Script -->
+<style>
+    .custom-tooltip {
+        position: absolute;
+        background-color: #343a40;
+        color: #fff;
+        padding: 5px 10px;
+        border-radius: 5px;
+        display: none;
+        z-index: 9999;
+    }
+</style>
+
+@endpush --}}
+
+

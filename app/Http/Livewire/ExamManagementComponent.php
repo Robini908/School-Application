@@ -186,11 +186,7 @@ class ExamManagementComponent extends Component
         ]);
     }
 
-    public function goToAssignMarks()
-    {
-        // Redirect to the route without the examId
-        return redirect()->route('exams.assignExamMarks');
-    }
+  
 
 
     public function resetFilter($filter)

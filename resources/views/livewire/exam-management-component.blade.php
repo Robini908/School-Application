@@ -278,193 +278,185 @@
     {{-- <a href="{{ route('exams.assignExamMarks') }}" class="btn btn-info ml-2">Assign Marks</a> --}}
 </div>
 
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Exam List</h5>
-        
-      
-    </div>
-    <div class="card">
+<div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Exam List</h5>
 
-        <div class="mb-4">
-            <div class="form-row mt-4 mx-2">
-                <div class="col-md-3 mb-2">
-                    <label for="filterName">Filter by Name</label>
-                    <input type="text" id="filterName" wire:model.live="filterName" class="form-control"
-                        placeholder="Search by name" />
-                </div>
-                <div class="col-md-3 mb-2">
-                    <label for="filterYear">Filter by Year</label>
-                    <select id="filterYear" wire:model="filterYear" class="form-control select2">
-                        <option value="">Select Year</option>
-                        @foreach (range(2000, date('Y')) as $year)
-                        <option value="{{ $year }}">{{ $year }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-3 mb-2">
-                    <label for="filterTerm">Filter by Term</label>
-                    <select id="filterTerm" wire:model="filterTerm" class="form-control select2">
-                        <option value="">Select Term</option>
-                        @foreach ($terms as $value => $label)
-                        <option value="{{ $value }}">{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-3 mb-2">
-                    <label for="filterGradingSystem">Filter by Grading System</label>
-                    <select id="filterGradingSystem" wire:model="filterGradingSystem" class="form-control select2">
-                        <option value="">Select Grading System</option>
-                        @foreach ($gradingSystems as $gradingSystem)
-                        <option value="{{ $gradingSystem->id }}">{{ $gradingSystem->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
+
+</div>
+<div class="card">
+
+    <div class="mb-4">
+        <div class="form-row mt-4 mx-2">
+            <div class="col-md-3 mb-2">
+                <label for="filterName">Filter by Name</label>
+                <input type="text" id="filterName" wire:model.live="filterName" class="form-control"
+                    placeholder="Search by name" />
             </div>
-            <!-- Display applied filters with "x" icon for individual reset -->
-            <div class="mt-3">
-                <div class="d-flex flex-wrap">
-                    {{-- Filter for Name --}}
-                    @if($filterName)
-                    <span class="badge badge-info badge-pill d-flex align-items-center me-1 mb-1">
-                        Name: {{ $filterName }}
-                        <button wire:click="resetFilter('filterName')" class="btn btn-sm btn-light btn-close ms-2 p-0" aria-label="Close">x</button>
-                        <!-- Spinner for Name Filter -->
-                        <div wire:loading wire:target="resetFilter('filterName')" class="spinner-border spinner-border-sm text-light ms-2" role="status">
-                            <span class="sr-only">Loading...</span>
-                        </div>
-                    </span>
-                    @endif
-            
-                    {{-- Filter for Year --}}
-                    @if($filterYear)
-                    <span class="badge badge-info badge-pill d-flex align-items-center me-1 mb-1">
-                        Year: {{ $filterYear }}
-                        <button wire:click="resetFilter('filterYear')" class="btn btn-sm btn-light btn-close ms-2 p-0" aria-label="Close">x</button>
-                        <!-- Spinner for Year Filter -->
-                        <div wire:loading wire:target="resetFilter('filterYear')" class="spinner-border spinner-border-sm text-light ms-2" role="status">
-                            <span class="sr-only">Loading...</span>
-                        </div>
-                    </span>
-                    @endif
-            
-                    {{-- Filter for Term --}}
-                    @if($filterTerm)
-                    <span class="badge badge-info badge-pill d-flex align-items-center me-1 mb-1">
-                        Term: {{ $terms[$filterTerm] }}
-                        <button wire:click="resetFilter('filterTerm')" class="btn btn-sm btn-light btn-close ms-2 p-0" aria-label="Close">x</button>
-                        <!-- Spinner for Term Filter -->
-                        <div wire:loading wire:target="resetFilter('filterTerm')" class="spinner-border spinner-border-sm text-light ms-2" role="status">
-                            <span class="sr-only">Loading...</span>
-                        </div>
-                    </span>
-                    @endif
-            
-                    {{-- Filter for Grading System --}}
-                    @if($filterGradingSystem)
-                    <span class="badge badge-info badge-pill d-flex align-items-center me-1 mb-1">
-                        Grading System: {{ $gradingSystems->find($filterGradingSystem)->name ?? '' }}
-                        <button wire:click="resetFilter('filterGradingSystem')" class="btn btn-sm btn-light btn-close ms-2 p-0" aria-label="Close">x</button>
-                        <!-- Spinner for Grading System Filter -->
-                        <div wire:loading wire:target="resetFilter('filterGradingSystem')" class="spinner-border spinner-border-sm text-light ms-2" role="status">
-                            <span class="sr-only">Loading...</span>
-                        </div>
-                    </span>
-                    @endif
-            
-                    {{-- Reset All Filters Button --}}
-                    @if($filterName || $filterYear || $filterTerm || $filterGradingSystem)
-                    <button wire:click="resetAllFilters" class="btn btn-secondary btn-sm mt-2 d-flex align-items-center">
-                        Clear All Filters
-                        <!-- Spinner for Reset All Filters -->
-                        <div wire:loading wire:target="resetAllFilters" class="spinner-border spinner-border-sm text-light ms-2" role="status">
-                            <span class="sr-only">Loading...</span>
-                        </div>
-                    </button>
-                    @endif
-                </div>
+            <div class="col-md-3 mb-2">
+                <label for="filterYear">Filter by Year</label>
+                <select id="filterYear" wire:model="filterYear" class="form-control select2">
+                    <option value="">Select Year</option>
+                    @foreach (range(2000, date('Y')) as $year)
+                    <option value="{{ $year }}">{{ $year }}</option>
+                    @endforeach
+                </select>
             </div>
-            
+            <div class="col-md-3 mb-2">
+                <label for="filterTerm">Filter by Term</label>
+                <select id="filterTerm" wire:model="filterTerm" class="form-control select2">
+                    <option value="">Select Term</option>
+                    @foreach ($terms as $value => $label)
+                    <option value="{{ $value }}">{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-3 mb-2">
+                <label for="filterGradingSystem">Filter by Grading System</label>
+                <select id="filterGradingSystem" wire:model="filterGradingSystem" class="form-control select2">
+                    <option value="">Select Grading System</option>
+                    @foreach ($gradingSystems as $gradingSystem)
+                    <option value="{{ $gradingSystem->id }}">{{ $gradingSystem->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+        <!-- Display applied filters with "x" icon for individual reset -->
+        <div class="mt-3">
+            <div class="d-flex flex-wrap">
+                {{-- Filter for Name --}}
+                @if($filterName)
+                <span class="badge badge-info badge-pill d-flex align-items-center me-1 mb-1">
+                    Name: {{ $filterName }}
+                    <button wire:click="resetFilter('filterName')" class="btn btn-sm btn-light btn-close ms-2 p-0"
+                        aria-label="Close">x</button>
+                    <!-- Spinner for Name Filter -->
+                    <div wire:loading wire:target="resetFilter('filterName')"
+                        class="spinner-border spinner-border-sm text-light ms-2" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                </span>
+                @endif
+
+                {{-- Filter for Year --}}
+                @if($filterYear)
+                <span class="badge badge-info badge-pill d-flex align-items-center me-1 mb-1">
+                    Year: {{ $filterYear }}
+                    <button wire:click="resetFilter('filterYear')" class="btn btn-sm btn-light btn-close ms-2 p-0"
+                        aria-label="Close">x</button>
+                    <!-- Spinner for Year Filter -->
+                    <div wire:loading wire:target="resetFilter('filterYear')"
+                        class="spinner-border spinner-border-sm text-light ms-2" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                </span>
+                @endif
+
+                {{-- Filter for Term --}}
+                @if($filterTerm)
+                <span class="badge badge-info badge-pill d-flex align-items-center me-1 mb-1">
+                    Term: {{ $terms[$filterTerm] }}
+                    <button wire:click="resetFilter('filterTerm')" class="btn btn-sm btn-light btn-close ms-2 p-0"
+                        aria-label="Close">x</button>
+                    <!-- Spinner for Term Filter -->
+                    <div wire:loading wire:target="resetFilter('filterTerm')"
+                        class="spinner-border spinner-border-sm text-light ms-2" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                </span>
+                @endif
+
+                {{-- Filter for Grading System --}}
+                @if($filterGradingSystem)
+                <span class="badge badge-info badge-pill d-flex align-items-center me-1 mb-1">
+                    Grading System: {{ $gradingSystems->find($filterGradingSystem)->name ?? '' }}
+                    <button wire:click="resetFilter('filterGradingSystem')"
+                        class="btn btn-sm btn-light btn-close ms-2 p-0" aria-label="Close">x</button>
+                    <!-- Spinner for Grading System Filter -->
+                    <div wire:loading wire:target="resetFilter('filterGradingSystem')"
+                        class="spinner-border spinner-border-sm text-light ms-2" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                </span>
+                @endif
+
+                {{-- Reset All Filters Button --}}
+                @if($filterName || $filterYear || $filterTerm || $filterGradingSystem)
+                <button wire:click="resetAllFilters" class="btn btn-secondary btn-sm mt-2 d-flex align-items-center">
+                    Clear All Filters
+                    <!-- Spinner for Reset All Filters -->
+                    <div wire:loading wire:target="resetAllFilters"
+                        class="spinner-border spinner-border-sm text-light ms-2" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                </button>
+                @endif
+            </div>
         </div>
 
+    </div>
+
     <div class="card-body">
-        <table class="table table-responsive datatable-button-html5-columns">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Term</th>
-                    <th>Year</th>
-                    <th>Grading System</th>
-                    <th>Classes</th>
-                    <th>Stream</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($exams as $exam)
-                <tr>
-                    <td>{{ $exam->name }}</td>
-                    <td>{{ $terms[$exam->term] ?? 'N/A' }}</td>
-                    <td>{{ $exam->year }}</td>
-                    <td>{{ $exam->gradingSystem->name ?? 'N/A' }}</td>
-                    <td>
-                        @if ($exam->classes && $exam->classes->isNotEmpty())
-                        {{ $exam->classes->pluck('name')->implode(', ') }}
-                        @else
-                        N/A
-                        @endif
-                    </td>
-                    <td>
-                        @if ($exam->classes && $exam->classes->isNotEmpty())
-                        @foreach ($exam->classes as $class)
-                        @if ($class->sections && $class->sections->isNotEmpty())
-                        {{ $class->sections->pluck('name')->implode(', ') }}@if (!$loop->last), @endif
-                        @else
-                        N/A
-                        @endif
-                        @endforeach
-                        @else
-                        N/A
-                        @endif
-                    </td>
-                    <td class="column-responsive">
-                        <div class="list-icons">
-                            <div class="dropdown">
-                                <a href="#" class="list-icons-item" data-toggle="dropdown">
-                                    <i class="icon-menu9"></i>
-                                </a>
-
-                                <div class="dropdown-menu dropdown-menu-left">
-                                    {{-- Edit Button --}}
-                                    <button wire:click="edit({{ $exam->id }})"
-                                        class="dropdown-item btn btn-warning btn-sm">
-                                        <i class="icon-pencil"></i> Edit
-                                    </button>
-
-                                    {{-- Delete Button (with modal trigger) --}}
-                                    <button wire:click="confirmDelete({{ $exam->id }})"
-                                        class="dropdown-item btn btn-danger btn-sm" data-toggle="modal"
-                                        data-target="#deleteExamModal">
-                                        <i class="icon-trash"></i> Delete
-                                    </button>
-
-                                    {{-- Show Details Button --}}
-                                    <button wire:click="showDetails({{ $exam->id }})"
-                                        class="dropdown-item btn btn-info btn-sm">
-                                        <i class="icon-info3"></i> Details
-                                    </button>
+        <div class="table-responsive">
+            <x-data-table id="examsTable" title="Registered Examinations"
+                message="List of registered Examinations in this school"
+                :columns="['Name','Term','Year','Grading System','Classes','Streams','Actions']">
+                
+                @if($exams->count() === 0)
+                    <tr>
+                        <td colspan="7" class="text-center">No exams found.</td>
+                    </tr>
+                @else
+                    @foreach($exams as $exam)
+                    <tr>
+                        <td>{{ $exam->name }}</td>
+                        <td>{{ $terms[$exam->term] ?? 'N/A' }}</td>
+                        <td>{{ $exam->year }}</td>
+                        <td>{{ $exam->gradingSystem->name ?? 'N/A' }}</td>
+                        <td>
+                            @if ($exam->classes && $exam->classes->isNotEmpty())
+                                {{ $exam->classes->pluck('name')->implode(', ') }}
+                            @else
+                                N/A
+                            @endif
+                        </td>
+                        <td>
+                            @if ($exam->classes && $exam->classes->isNotEmpty())
+                                {{ $exam->classes->flatMap->sections->pluck('name')->implode(', ') ?? 'N/A' }}
+                            @else
+                                N/A
+                            @endif
+                        </td>
+                        <td class="column-responsive">
+                            <div class="list-icons">
+                                <div class="dropdown">
+                                    <a href="#" class="list-icons-item" data-toggle="dropdown">
+                                        <i class="icon-menu9"></i>
+                                    </a>
+                                    <div class="dropdown-menu dropdown-menu-left">
+                                        <button wire:click="edit({{ $exam->id }})"
+                                            class="dropdown-item btn btn-warning btn-sm">
+                                            <i class="icon-pencil"></i> Edit
+                                        </button>
+                                        <button wire:click="confirmDelete({{ $exam->id }})"
+                                            class="dropdown-item btn btn-danger btn-sm" data-toggle="modal"
+                                            data-target="#deleteExamModal">
+                                            <i class="icon-trash"></i> Delete
+                                        </button>
+                                        <button wire:click="showDetails({{ $exam->id }})"
+                                            class="dropdown-item btn btn-info btn-sm">
+                                            <i class="icon-info3"></i> Details
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </td>
+                        </td>
+                    </tr>
+                    @endforeach
+                @endif
+            </x-data-table>
+        </div>
+        
 
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="7" class="text-center">No exams found.</td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
     </div>
 </div>
 @endif
@@ -491,9 +483,6 @@
                 <button type="button" class="btn btn-secondary" wire:click="$set('examDetails', [])">Close</button>
                 @if(isset($examDetails['id']))
                 <!-- Button to assign marks -->
-
-
-
                 @endif
             </div>
         </div>

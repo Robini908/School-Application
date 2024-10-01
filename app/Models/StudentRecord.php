@@ -70,8 +70,10 @@ class StudentRecord extends Model
     }
     public function examMarks()
     {
-        return $this->hasMany(ExamMarks::class);
+        // Ensure the foreign key is correctly defined
+        return $this->hasMany(ExamMarks::class, 'student_id'); // student_id should be the foreign key
     }
+    
     public function marks(): HasMany
     {
         return $this->hasMany(ExamMarks::class, 'student_id');

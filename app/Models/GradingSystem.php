@@ -27,4 +27,10 @@ class GradingSystem extends Model
     {
         return $this->hasMany(GradingRange::class);
     }
+
+    // Add the relationship to GradingGrade
+    public function grades(): HasMany
+    {
+        return $this->hasMany(GradingGrade::class);
+    }
 }

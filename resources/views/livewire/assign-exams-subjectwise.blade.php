@@ -1,63 +1,7 @@
 <div class="container mt-4">
-    
     <x-flash-messages />
-    
-    {{-- <div wire:loading>
-        <div class="alert alert-info mb-4">Loading... Please wait.</div>
-    </div> --}}
 
-    {{-- Assigned Marks Card --}}
-    <div class="card mb-4">
-        <div class="card-body">
-            <h3 class="h5 font-weight-bold">Assigned Exam Marks</h3>
 
-            @if ($selectedClass && $selectedExam && $selectedSubject)
-            @if (collect($assignedMarks)->isNotEmpty())
-            <table class="table table-bordered mt-3">
-                <thead>
-                    <tr>
-                        <th>Subject</th>
-                        <th>Student (Admission No)</th>
-                        <th>Assigned Marks</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($assignedMarks as $mark)
-                    <tr>
-                        <td>{{ $selectedSubjectName }}</td>
-                        <td>{{ $mark->student->first_name }} {{ $mark->student->last_name }} ({{ $mark->student->adm_no
-                            }})</td>
-                        <td>
-                            @if($editingMarkId === $mark->id)
-                            <input type="number" wire:model.defer="marks.{{ $mark->student_id }}"
-                                class="form-control" />
-                            @else
-                            {{ $mark->marks }}
-                            @endif
-                        </td>
-                        <td>
-                            @if($editingMarkId === $mark->id)
-                            <button wire:click="updateMark({{ $mark->id }})"
-                                class="btn btn-success btn-sm">Save</button>
-                            <button wire:click="$set('editingMarkId', null)"
-                                class="btn btn-secondary btn-sm">Cancel</button>
-                            @else
-                            <button wire:click="editMark({{ $mark->id }})" class="btn btn-warning btn-sm">Edit</button>
-                            @endif
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-            @else
-            <p class="mt-4 text-info">No marks have been assigned for {{ $selectedSubjectName }}.</p>
-            @endif
-            @else
-            <p class="mt-4 text-warning">Please select a class, exam, and subject to view the assigned marks.</p>
-            @endif
-        </div>
-    </div>
 
     {{-- Filter Selection --}}
     <div class="card">
@@ -120,15 +64,12 @@
                 </div>
             </div>
 
-            @if ($selectedSection && $students->isNotEmpty())
+            @if ($selectedSection)
+            @if (collect($assignedMarksForTable)->count() > 0)
             <h5 class="h6 font-weight-bold">Students in {{ $selectedSubjectName }}:</h5>
 
-            @if ($assignedMarks->count() === $students->count())
-            <div class="alert alert-info mb-4">
-                All students have been assigned marks for {{ $selectedSubjectName }} in the {{ $selectedExamName }}
-                exam.
-            </div>
-            @else
+            @if (collect($assignedMarks)->count() === 0)
+            <div class="alert alert-warning">No marks have been assigned yet. Please enter the marks below:</div>
             <table class="table table-bordered">
                 <thead>
                     <tr>
@@ -138,23 +79,64 @@
                 </thead>
                 <tbody>
                     @foreach($students as $student)
-                    @if(!$assignedMarks->contains('student_id', $student->id))
                     <tr>
                         <td>{{ $student->first_name }} {{ $student->last_name }} ({{ $student->adm_no }})</td>
                         <td><input type="number" wire:model="marks.{{ $student->id }}" class="form-control"
                                 placeholder="Enter marks" min="0"></td>
                     </tr>
-                    @endif
                     @endforeach
+                </tbody>
+            </table>
+            <button wire:click="assignMarks" class="btn btn-primary mt-3">Assign Marks</button>
+            @else
+            <h5 class="h6 font-weight-bold">Marks Assignment for {{ $selectedSubjectName }}:</h5>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Student (Admission No)</th>
+                        <th>Marks</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($students as $student)
+                    <tr>
+                        <td>{{ $student->first_name }} {{ $student->last_name }} ({{ $student->adm_no }})</td>
+                        @if (collect($assignedMarks)->contains('student_id', $student->id))
+                            <td>
+                                @if($editingMarkId === $student->id)
+                                    <input type="number" wire:model.defer="marks.{{ $student->id }}" class="form-control" min="0" max="100" />
+                                @else
+                                    {{ collect($assignedMarks)->where('student_id', $student->id)->first()->marks ?? 'N/A' }}
+                                @endif
+                            </td>
+                            <td>
+                                @if($editingMarkId === $student->id)
+                                    <button wire:click="updateMark({{ $student->id }})" class="btn btn-success btn-sm">Save</button>
+                                    <button wire:click="$set('editingMarkId', null)" class="btn btn-secondary btn-sm">Cancel</button>
+                                @else
+                                    <button wire:click="editMark({{ $student->id }})" class="btn btn-warning btn-sm">Edit</button>
+                                @endif
+                            </td>
+                        @else
+                            <td><input type="number" wire:model.defer="marks.{{ $student->id }}" class="form-control" placeholder="Enter marks" min="0" max="100"></td>
+                            <td></td>
+                        @endif
+                    </tr>
+                @endforeach
+                
                 </tbody>
             </table>
             <button wire:click="assignMarks" class="btn btn-primary mt-3">Assign Marks</button>
             @endif
             @else
-            <p class="mt-4 text-info">No students available in the selected stream for {{ $selectedSubjectName }}.</p>
+            <p class="mt-4 text-info">No students found in the selected stream for {{ $selectedSubjectName }}.</p>
             @endif
-
+            @else
+            <p class="mt-4 text-warning">Please select a stream to view the students.</p>
+            @endif
         </div>
     </div>
     @endif
+
 </div>

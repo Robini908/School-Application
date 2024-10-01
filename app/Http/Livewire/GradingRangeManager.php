@@ -48,7 +48,7 @@ class GradingRangeManager extends Component
         }
 
         // Fetch the subject names for better messaging
-        $reuseSubject = Subject::find($this->reuseSubjectId);
+        $reuseSubject = Subject::whereHas('gradingRanges')->find($this->reuseSubjectId);
         $currentSubject = Subject::find($this->subjectId);
 
         if (!$reuseSubject || !$currentSubject) {
@@ -63,6 +63,17 @@ class GradingRangeManager extends Component
 
         if ($alreadyExistingRanges) {
             session()->flash('error', 'Cannot reuse grading ranges from "' . $reuseSubject->subject_name . '" to "' . $currentSubject->subject_name . '" as the current subject already has existing ranges.');
+            return;
+        }
+
+        // Fetch grading systems that already have grading ranges for the selected subject
+        $existingGradingSystemsWithRanges = GradingRange::where('subject_id', $this->reuseSubjectId)
+            ->pluck('grading_system_id')
+            ->unique();
+
+        // Check if the selected grading system has existing ranges
+        if (!$existingGradingSystemsWithRanges->contains($this->selectedGradingSystem)) {
+            session()->flash('error', 'The selected grading system does not have any existing grading ranges for reuse.');
             return;
         }
 
@@ -94,6 +105,7 @@ class GradingRangeManager extends Component
         // Notify success for the completion of the process
         session()->flash('success', 'Grading ranges successfully loaded for reuse from "' . $reuseSubject->subject_name . '"!');
     }
+
 
 
 
