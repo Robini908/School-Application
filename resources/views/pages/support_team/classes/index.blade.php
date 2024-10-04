@@ -8,9 +8,9 @@
         {!! Qs::getPanelOptions() !!}
     </div>
 
-    <div class="card-body">
+    
 @livewire('class-management')
-    </div>
+   
 </div>
 
 {{--Class List Ends--}}

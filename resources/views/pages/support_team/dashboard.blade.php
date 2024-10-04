@@ -109,7 +109,7 @@
 
 {{-- Recent Students Panel Begins --}}
 <div class="card">
-    @livewire('manage-students')
+    {{-- @livewire('manage-students') --}}
 </div>
 
 @endsection

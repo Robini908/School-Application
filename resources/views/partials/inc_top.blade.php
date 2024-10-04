@@ -17,6 +17,7 @@
 <link href="{{ asset('assets/css/datatable.css') }}" rel="stylesheet" type="text/css">
 <link rel="stylesheet" href="{{ asset('assets/css/bootstrap-datepicker.min.css') }}" type="text/css">
 <link href="{{ asset('assets/css/qs.css') }}" rel="stylesheet" type="text/css">
+<link href="{{ asset('assets/css/trix.css') }}" rel="stylesheet" type="text/css">
 <link href="{{ asset('assets/css/jquery-datatables.css') }}" rel="stylesheet" type="text/css">
 {{-- <link href="{{ asset('assets/css/handsontable.full.min.css') }}" rel="stylesheet" type="text/css"> --}}
 
@@ -32,6 +33,7 @@
 <script src="{{ asset('global_assets/js/main/bootstrap.bundle.min.js') }}"></script> <!-- bundle includes popper -->
 <script src="{{ asset('global_assets/js/plugins/loaders/blockui.min.js') }}"></script>
 <script src="{{ asset('global_assets/js/main/select2.min.js') }}"></script>
+<script src="{{ asset('global_assets/js/main/trix.js') }}"></script>
 <script src="{{ asset('global_assets/js/main/swiper-bundle.min.js') }}"></script>
 {{-- <script src="{{ asset('global_assets/js/main/handsontable.full.min.js') }}"></script> --}}
 

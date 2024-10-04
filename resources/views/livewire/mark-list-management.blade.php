@@ -158,7 +158,6 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <p><strong>Total Marks:</strong> {{ $totalMarks ?? 'N/A' }}</p>
-                                <p><strong>Mean Grade:</strong> {{ $meanGrade ?? 'N/A' }}</p>
                                 <p><strong>Mean Score:</strong> {{ $meanScore ?? 'N/A' }}</p>
                                 <p><strong>Total Points:</strong> {{ $totalPoints ?? 'N/A' }}</p>
                             </div>
@@ -166,6 +165,7 @@
                                 <p><strong>Position in Class:</strong> {{ $classPosition ?? 'N/A' }}</p>
                                 <p><strong>Position in Stream:</strong> {{ $streamPosition ?? 'N/A' }}</p>
                             </div>
+                            
                         </div>
                     </div>
                 </div>

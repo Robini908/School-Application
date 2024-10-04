@@ -16,12 +16,11 @@ class StudentRecord extends Model
     public $incrementing = true;
     protected $keyType = 'int';
     protected $fillable = [
-        'id',
-        'parent_id',
+        'parent_id_no',
         'my_class_id',
         'section_id',
-        'dorm_id',
         'adm_no',
+        'dorm_id',
         'year_admitted',
         'kcpe',
         'first_name',
@@ -33,27 +32,28 @@ class StudentRecord extends Model
         'dob',
         'nal_id',
         'state_id',
+        'lga_id',
         'town',
         'bg_id',
         'photo',
         'status',
-        'student_password'
+        'student_password',
+        'is_expelled',
+        'expulsion_reason',
+        'expelled_by',
+        'notification_content', // Added missing field
+        'expulsion_date',
+        'expulsion_type',
+        'expulsion_end_date',
+        'disapproval_reason' // Added missing field
     ];
+    
 
     public function parent_detail()
     {
         // Corrected relationship to reference the foreign key
         return $this->belongsTo(ParentDetail::class, 'parent_id_no', 'parent_id_no');
     }
-
-
-
-    /* public function my_parent()
-    {
-        return $this->belongsTo(UserType::class, 'my_parent_id');
-    } */
-
-
     public function my_class()
     {
         return $this->belongsTo(MyClass::class);
@@ -73,9 +73,13 @@ class StudentRecord extends Model
         // Ensure the foreign key is correctly defined
         return $this->hasMany(ExamMarks::class, 'student_id'); // student_id should be the foreign key
     }
-    
+
     public function marks(): HasMany
     {
         return $this->hasMany(ExamMarks::class, 'student_id');
     }
+
+    // Check if the student is expelled
+
+    
 }

@@ -7,6 +7,8 @@
 
         
         <livewire:manage-grades lazy />
+        {{-- <livewire:subject-analysis/> --}}
+        
   
 
 @endsection

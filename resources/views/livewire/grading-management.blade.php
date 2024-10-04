@@ -33,7 +33,7 @@
 
                     <div class="form-group mb-3">
                         <label for="rules" class="form-label">Rules</label>
-                        <textarea id="rules" wire:model="rules" class="form-control @error('rules') is-invalid @enderror" rows="5" required></textarea>
+                        <textarea id="rules" wire:model="rules" class="form-control @error('rules') is-invalid @enderror" rows="5" required></textarea>        
                         @error('rules')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror

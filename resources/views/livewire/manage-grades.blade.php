@@ -1,6 +1,6 @@
 <div class="container py-6">
     {{-- Display Flash Message --}}
-    
+
     <x-flash-messages />
 
     {{-- Add Grade Button at the Top --}}
@@ -29,6 +29,8 @@
                             <th>Remark</th>
                             <th>GPA</th>
                             <th>Description</th>
+                            <th>Range From</th> <!-- Updated range column -->
+                            <th>Range To</th> <!-- Updated range column -->
                             <th>Additional Info</th>
                             <th>Actions</th>
                         </tr>
@@ -76,6 +78,28 @@
                             <td>
                                 @if ($isEditing[$gradingSystem->id] && $editedGradeIndex === $index && $gradingSystemId
                                 === $gradingSystem->id)
+                                <input
+                                    wire:model.defer="grades.{{ $gradingSystem->id }}.{{ $editedGradeIndex }}.range_from"
+                                    type="number" class="form-control" />
+                                @else
+                                {{ $grade->range_from }}
+                                <!-- Display range_from data -->
+                                @endif
+                            </td>
+                            <td>
+                                @if ($isEditing[$gradingSystem->id] && $editedGradeIndex === $index && $gradingSystemId
+                                === $gradingSystem->id)
+                                <input
+                                    wire:model.defer="grades.{{ $gradingSystem->id }}.{{ $editedGradeIndex }}.range_to"
+                                    type="number" class="form-control" />
+                                @else
+                                {{ $grade->range_to }}
+                                <!-- Display range_to data -->
+                                @endif
+                            </td>
+                            <td>
+                                @if ($isEditing[$gradingSystem->id] && $editedGradeIndex === $index && $gradingSystemId
+                                === $gradingSystem->id)
                                 <textarea
                                     wire:model.defer="grades.{{ $gradingSystem->id }}.{{ $editedGradeIndex }}.additional_info"
                                     class="form-control"></textarea>
@@ -99,22 +123,21 @@
                                     data-target="#deleteConfirmationModal">
                                     Delete
                                 </button>
-
                                 @endif
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="text-center">No grades available for this system.</td>
+                            <td colspan="8" class="text-center">No grades available for this system.</td>
                         </tr>
                         @endforelse
                     </tbody>
                 </table>
-
             </div>
         </div>
         @endforeach
     </div>
+
     <div>
         {{-- Form to Add New Grades (Visible Only When $showForm is True) --}}
         @if ($showForm)
@@ -155,24 +178,6 @@
                         </h5>
                         <p class="text-muted">You can add one or more grades to this grading system.</p>
 
-                        <!-- Dropdown to select a grading system to reuse grades -->
-                        <div class="form-group mb-3">
-                            <label for="grading-system-select" class="form-label">Select Grading System to Reuse
-                                Grades</label>
-                            <div class="input-group">
-                                <select id="grading-system-select" wire:model="selectedGradingSystemForReuse"
-                                    class="form-control">
-                                    <option value="">Select Grading System</option>
-                                    @foreach($gradingSystemsWithGrades as $gradingSystem)
-                                    <option value="{{ $gradingSystem->id }}">{{ $gradingSystem->name }}</option>
-                                    @endforeach
-                                </select>
-                                <button type="button" wire:click="reuseGrades" class="btn btn-info">
-                                    <i class="fa fa-refresh"></i> Reuse Grades
-                                </button>
-                            </div>
-                        </div>
-
                         <!-- Add Grade Input Section -->
                         <div class="form-group mb-3">
                             <label for="newGrade" class="form-label">Grade</label>
@@ -182,7 +187,6 @@
                             @error('newGrade') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
 
-                        <!-- Remark Input -->
                         <div class="form-group mb-3">
                             <label for="newRemark" class="form-label">Remark</label>
                             <input id="newRemark" type="text" wire:model="newRemark" class="form-control"
@@ -191,7 +195,6 @@
                             @error('newRemark') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
 
-                        <!-- GPA Input -->
                         <div class="form-group mb-3">
                             <label for="newGpa" class="form-label">GPA</label>
                             <input id="newGpa" type="text" wire:model="newGpa" class="form-control"
@@ -199,7 +202,6 @@
                             @error('newGpa') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
 
-                        <!-- Description Input -->
                         <div class="form-group mb-3">
                             <label for="newDescription" class="form-label">Description</label>
                             <input id="newDescription" type="text" wire:model="newDescription" class="form-control"
@@ -207,12 +209,25 @@
                             @error('newDescription') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
 
-                        <!-- Additional Info Input -->
                         <div class="form-group mb-3">
                             <label for="newAdditionalInfo" class="form-label">Additional Info</label>
                             <input id="newAdditionalInfo" type="text" wire:model="newAdditionalInfo"
                                 class="form-control" placeholder="Enter Additional Info" />
                             @error('newAdditionalInfo') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- Range Input Section -->
+                        <div class="form-group mb-3">
+                            <label for="newRangeFrom" class="form-label">Range From</label>
+                            <input id="newRangeFrom" type="number" wire:model="newRangeFrom" class="form-control"
+                                placeholder="Enter Range From" />
+                            @error('newRangeFrom') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="newRangeTo" class="form-label">Range To</label>
+                            <input id="newRangeTo" type="number" wire:model="newRangeTo" class="form-control"
+                                placeholder="Enter Range To" />
+                            @error('newRangeTo') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
 
                         <!-- Add Grade Button -->
@@ -223,7 +238,7 @@
                         </div>
 
                         <!-- Display message if no grades are added -->
-                        @if(empty($grades))
+                        @if(empty($addedGrade))
                         <div class="alert alert-info mt-3">No grades added yet. Start by adding a grade for this grading
                             system.</div>
                         @else
@@ -232,33 +247,37 @@
                             @foreach($addedGrade as $index => $grade)
                             <li class="list-group-item">
                                 <div class="row">
-                                    <div class="col-md-3">
+                                    <div class="col-md-2">
                                         <input type="text" wire:model.lazy="addedGrade.{{ $index }}.grade"
                                             class="form-control" placeholder="Grade"
                                             oninput="this.value = this.value.toUpperCase().replace(/\d+/g, '')" />
                                     </div>
-                                    <div class="col-md-3">
+                                    <div class="col-md-2">
                                         <input type="text" wire:model.lazy="addedGrade.{{ $index }}.remark"
                                             class="form-control" placeholder="Remark"
                                             oninput="this.value = this.value.toUpperCase().replace(/\d+/g, '')" />
                                     </div>
-                                    <div class="col-md-3">
+                                    <div class="col-md-2">
                                         <input type="text" wire:model.lazy="addedGrade.{{ $index }}.description"
                                             class="form-control" placeholder="Description" />
                                     </div>
-                                    <div class="col-md-3">
+                                    <div class="col-md-2">
                                         <input type="text" wire:model.lazy="addedGrade.{{ $index }}.additional_info"
                                             class="form-control" placeholder="Additional Info" />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="number" wire:model.lazy="addedGrade.{{ $index }}.range_from"
+                                            class="form-control" placeholder="Range From" />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="number" wire:model.lazy="addedGrade.{{ $index }}.range_to"
+                                            class="form-control" placeholder="Range To" />
                                     </div>
                                 </div>
                                 <div class="mt-2 d-flex justify-content-end">
                                     <button type="button" wire:click="updateGrade({{ $index }})"
                                         class="btn btn-primary btn-sm">
-                                        <i class="fa fa-edit"></i> Update
-                                    </button>
-                                    <button type="button" wire:click="removeGrade({{ $index }})"
-                                        class="btn btn-danger btn-sm ms-2">
-                                        <i class="fa fa-trash"></i> Remove
+                                        <i class="fa fa-edit"></i> Update...
                                     </button>
                                 </div>
                             </li>
@@ -267,7 +286,6 @@
                         @endif
                     </div>
 
-
                     <!-- Save Button -->
                     <div class="mt-4">
                         <button type="submit" class="btn btn-success" wire:loading.attr="disabled">
@@ -275,36 +293,39 @@
                         </button>
                     </div>
                 </form>
-
             </div>
-
         </div>
         @endif
-        <!-- Modal -->
-        @if($isConfirmingDeleting)
-        <div class="modal fade show" id="deleteGradeModal" tabindex="-1" role="dialog"
-            aria-labelledby="deleteGradeModalLabel" aria-hidden="true" style="display: block;">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="deleteGradeModalLabel">Confirm Grade Deletion</h5>
-                        <button type="button" class="close" wire:click="cancelDelete" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        Are you sure you want to delete this grade? This action cannot be undone.
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" wire:click="cancelDelete">Cancel</button>
-                        <button type="button" wire:click="deleteGrade" class="btn btn-danger">Delete</button>
-                    </div>
+    </div>
+
+
+
+
+    <!-- Modal -->
+    @if($isConfirmingDeleting)
+    <div class="modal fade show" id="deleteGradeModal" tabindex="-1" role="dialog"
+        aria-labelledby="deleteGradeModalLabel" aria-hidden="true" style="display: block;">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteGradeModalLabel">Confirm Grade Deletion</h5>
+                    <button type="button" class="close" wire:click="cancelDelete" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this grade? This action cannot be undone.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" wire:click="cancelDelete">Cancel</button>
+                    <button type="button" wire:click="deleteGrade" class="btn btn-danger">Delete</button>
                 </div>
             </div>
         </div>
-        <div class="modal-backdrop fade show"></div>
-        @endif
-
-
-
     </div>
+    <div class="modal-backdrop fade show"></div>
+    @endif
+
+
+
+</div>

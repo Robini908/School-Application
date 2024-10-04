@@ -5,24 +5,59 @@ namespace App\Http\Livewire;
 use App\Models\MyClass;
 use App\Models\Section;
 use Livewire\Component;
+use App\Models\ParentDetail;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 use App\Models\StudentRecord;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\DisapprovalNotification;
+use App\Notifications\StudentExpelled;
+
 
 class ManageStudents extends Component
 {
     use WithPagination;
+    use WithFileUploads;
 
     public $selectedStudent;
-    protected $mystudents;
+    // protected $mystudents;
+    public $mystudents;
+
+    public $file; // For file upload
+    public $notificationContent; // For rich text editor content
+
+
+
     public $showDeleteModal = false;
     protected $mystudent; // Change to protected
+    protected $filePath; // Change to protected
     public $formFilter = '';
     public $sectionFilter = '';
     public $statusFilter = '';
+    public $classes = [];
+    public $expulsionReason = '';
+    public $expulsionType = '';
 
+    // Flags for different actions
+    public $isEditingStudent = false;
+    public $isViewingDetails = false;
+
+    public $isExpellingStudent = false;
+    public $currentStep = 1;
+
+    public $isRejectingStudent = false;
+    public $isSuspendingStudent = false;
+    public $isSendingStudentMail = false;
+    public $isViewingHistoryDetails = false;
+    public $isApproving = false;
+    public $expulsionDuration = null;
+    public $isDeleting = false;
+    public $isRejecting = false;
+    public $disapprovalReason = ''; // To hold the disapproval reason
 
     public $forms = [];
+    public $isDisapproving = false;
     public $sections = [];
     public $statuses = ['Active', 'Inactive'];
 
@@ -34,19 +69,98 @@ class ManageStudents extends Component
     public function mount()
     {
         $this->mystudents = collect(); // Initialize as empty collection
+
         $this->fetchStudents(); // Fetch students on mount
-        // Other methods can be called here as needed
+
+        $this->loadStudents();
         $this->loadFilterOptions(); // Load filter options if needed
     }
+
+    public function toggleDisapproval()
+    {
+        $this->isDisapproving = !$this->isDisapproving;
+    }
+
+    public function cancelExpel()
+    {
+        // Reset the necessary properties
+        $this->reset();
+
+        // Optionally, you can also use a session message to notify the user
+        session()->flash('info', 'Expulsion process cancelled.');
+    }
+
+    public function nextStep()
+    {
+        $this->validate();
+        $this->currentStep++;
+    }
+
+    public function previousStep()
+    {
+        $this->currentStep--;
+    }
+
+
+    public function sendStudentMail($studentId)
+    {
+        // Find the student based on the ID
+        $student = StudentRecord::findOrFail($studentId);
+
+        // Validate the uploaded file
+        $this->validate([
+            'file' => 'nullable|mimes:pdf,jpg,png|max:10240', // Allow specific file types up to 10MB
+        ]);
+
+        // Store the file if uploaded
+        $filePath = $this->file ? $this->file->store('email_attachments', 'public') : null;
+
+        // Prepare email data
+        $emailData = [
+            'studentName' => "{$student->first_name} {$student->last_name}",
+            'parentName'  => $student->parent_detail->parent_first_name ?? '',
+            'notificationContent' => $this->notificationContent,
+            'filePath' => $filePath,
+        ];
+
+        // Try sending the email
+        try {
+            Mail::send('emails.student-notification', $emailData, function ($message) use ($student, $filePath) {
+                $message->to($student->email)->subject('Important Notification for Student');
+                if ($student->parent_detail->parent_email) {
+                    $message->cc($student->parent_detail->parent_email)->subject('Important Notification for Parent');
+                }
+                if ($filePath) {
+                    $message->attach(storage_path("app/public/{$filePath}"));
+                }
+            });
+            $this->isSendingStudentMail = false;
+            // Notify the user of success
+            session()->flash('success', 'Email sent successfully with attachment.');
+        } catch (\Exception $e) {
+            // Handle any errors that occur during email sending
+            session()->flash('error', 'Failed to send email: ' . $e->getMessage());
+        }
+    }
+
+    public function isSendingStudentMail($studentId)
+    {
+        // View student details and set flags
+        $this->selectedStudent = StudentRecord::find($studentId);
+        $this->isSendingStudentMail = true;
+        $this->resetOtherFlags('isSendingStudentMail');
+    }
+
+
+
+
+
     public function fetchStudents()
     {
         $this->mystudents = StudentRecord::with(['my_class', 'section', 'parent_detail'])
             ->orderBy('id', 'desc')
             ->get();
     }
-
-
-
 
     public function loadStudents()
     {
@@ -72,8 +186,29 @@ class ManageStudents extends Component
         }
 
         // Execute the query and get the results
-        $this->mystudents = $query->get();
+        $this->mystudents = $query->get(['*']); // Fetch all student records
     }
+
+    public function getStudentsWithExpulsionInfo()
+    {
+        return $this->mystudents->map(function ($student) {
+            return [
+                'id' => $student->id,
+                'first_name' => $student->first_name,
+                'last_name' => $student->last_name,
+                'is_expelled' => (bool) $student->is_expelled, // or your own logic to determine this
+                'expulsion_type' => $student->is_expelled ? ($student->expulsion_type ?? 'N/A') : null,
+                'my_class' => $student->my_class,
+                'section' => $student->section,
+                'parent_detail' => $student->parent_detail,
+            ];
+        });
+    }
+
+
+
+
+
 
     public function loadFilterOptions()
     {
@@ -93,6 +228,210 @@ class ManageStudents extends Component
             $this->sections = []; // Reset sections if no form is selected
         }
     }
+
+    // View Student Details
+    public function viewStudent($studentId)
+    {
+        // Logic to view student details
+        $this->selectedStudent = StudentRecord::find($studentId);
+        $this->isViewingDetails = true;
+        // Reset other flags
+        $this->resetOtherFlags('isViewingDetails');
+    }
+
+    // Expel Student
+    public function studentExpulsion($studentId)
+    {
+        // Fetch the student data with related models
+        $this->selectedStudent = StudentRecord::with(['my_class', 'section', 'parent_detail'])->find($studentId);
+
+        // Check if student exists
+        if (!$this->selectedStudent) {
+            session()->flash('error', 'Student not found.'); // Set session error message
+            return;
+        }
+
+        // Set flags for expulsion process
+        $this->isExpellingStudent = true;
+
+        // Initialize the expulsion reason and type
+        $this->expulsionReason = ''; // Initialize reason variable
+        $this->expulsionType = ''; // Initialize expulsion type variable
+        $this->expulsionDuration = null; // Initialize expulsion duration variable
+    }
+
+    public function sendNotificationToGuardians($student)
+    {
+        // Fetch the parent associated with the student
+        $parent = ParentDetail::find($student->parent_id_no);
+
+        // Check if the parent exists
+        if ($parent) {
+            // Send notification to the parent
+            $parent->notify(new StudentExpelled($student));
+        }
+    }
+
+    public function expelStudent()
+    {
+        // Validate the input fields
+        $this->validate([
+            'expulsionReason' => 'required|string|max:255',
+            'expulsionType' => 'required|in:dismissal,withdrawal,permanent_exclusion',
+            'expulsionDuration' => 'nullable|numeric|min:0.1', // Duration in weeks for temporary expulsions
+        ]);
+
+        // Update the student's expulsion status
+        $this->selectedStudent->is_expelled = true; // Set to expelled
+        $this->selectedStudent->expulsion_reason = $this->expulsionReason; // Set expulsion reason
+        $this->selectedStudent->expelled_by = auth()->user()->id; // Get admin user ID
+        $this->selectedStudent->expulsion_date = now(); // Record the expulsion date
+        $this->selectedStudent->expulsion_type = $this->expulsionType; // Set expulsion type
+
+        // Calculate the end date for temporary expulsions
+        if ($this->expulsionType == 'dismissal' && $this->expulsionDuration) {
+            // Convert the duration in weeks to days for more precision
+            $days = $this->expulsionDuration * 7; // 7 days in a week
+            $this->selectedStudent->expulsion_end_date = now()->addDays($days); // Set end date
+        }
+
+        $this->selectedStudent->save(); // Save changes
+
+        // Notify the parent of the expelled student
+        $this->sendNotificationToGuardians($this->selectedStudent); // Call the notification method
+        $this->loadStudents();
+        // Reset flags and student data
+        $this->isRejectingStudent = false;
+
+
+        $this->resetExpulsion();
+
+        session()->flash('success', 'Student expelled successfully.'); // Set session success message
+    }
+
+
+    public function resetExpulsion()
+    {
+        $this->selectedStudent = null; // Clear selected student data
+        $this->isExpellingStudent = false; // Reset expulsion flag
+        $this->expulsionReason = ''; // Reset reason
+        $this->expulsionType = ''; // Reset expulsion type
+        $this->expulsionDuration = null; // Reset duration
+    }
+
+
+    // Suspend Student
+    public function suspendStudent($studentId)
+    {
+        // Logic to suspend student
+        $this->selectedStudent = StudentRecord::find($studentId);
+        $this->isSuspendingStudent = true;
+        // Reset other flags
+        $this->resetOtherFlags('isSuspendingStudent');
+    }
+
+    // View Student History
+    public function favoriteStudent($studentId)
+    {
+        // Logic to view student's history or favorite
+        $this->selectedStudent = StudentRecord::find($studentId);
+        $this->isViewingHistoryDetails = true;
+        // Reset other flags
+        $this->resetOtherFlags('isViewingHistoryDetails');
+    }
+
+    // Approve Student
+    public function approveStudent($studentId)
+    {
+        // Fetch the student data with related models
+        $this->selectedStudent = StudentRecord::with(['my_class', 'section', 'parent_detail'])->find($studentId);
+
+        // Check if student exists
+        if (!$this->selectedStudent) {
+            session()->flash('error', 'Student not found.'); // Set session error message
+            return;
+        }
+
+        // Set flags for approval process
+        $this->isApproving = true;
+
+        // Verify student information (you can customize these checks as needed)
+        if (empty($this->selectedStudent->first_name) || empty($this->selectedStudent->last_name) || empty($this->selectedStudent->parent_id_no)) {
+            session()->flash('error', 'Please ensure all required student information is filled out.');
+            return;
+        }
+    }
+
+
+    public function confirmApproval()
+    {
+        if (!$this->selectedStudent) {
+            session()->flash('error', 'No student selected for approval.');
+            return;
+        }
+
+        // Proceed with approving the student
+        $this->selectedStudent->status = 'Approved';
+        $this->selectedStudent->save();
+
+        // Notify user of successful approval
+        session()->flash('message', 'Student approved successfully.');
+
+        // Refresh students list
+        $this->loadStudents();
+
+        // Reset approval flag
+        $this->isApproving = false;
+    }
+
+
+
+    // Method to cancel approval and record the reason
+    public function cancelApproval()
+    {
+        // Ensure a selected student exists
+        if (!$this->selectedStudent) {
+            session()->flash('error', 'No student selected for disapproval.');
+            return;
+        }
+
+        // Ensure that the reason is provided
+        if (empty($this->disapprovalReason)) {
+            session()->flash('error', 'Please provide a reason for disapproval.');
+            return;
+        }
+
+        // Update student status and reason for disapproval
+        $this->selectedStudent->status = 'Disapproved';
+        $this->selectedStudent->disapproval_reason = $this->disapprovalReason; // Assuming there's a `disapproval_reason` column in the DB
+        $this->selectedStudent->save();
+
+        // Send email notification
+        $this->sendDisapprovalNotification($this->selectedStudent);
+
+        // Reset flags and input fields
+        $this->disapprovalReason = '';
+        $this->isApproving = false;
+
+        // Notify the user
+        session()->flash('message', 'Student disapproved successfully.');
+
+        // Refresh student list
+        $this->loadStudents();
+    }
+
+    // Method to send an email notification to the student or parent
+    public function sendDisapprovalNotification($student)
+    {
+        $email = $student->email ?? $student->parent_detail->email; // Assuming parent_detail has an email
+        if ($email) {
+            \Mail::to($email)->send(new DisapprovalNotification($student, $this->disapprovalReason));
+        }
+    }
+
+
+
+    // Reject Student
 
 
 
@@ -114,6 +453,21 @@ class ManageStudents extends Component
         $this->loadFilterOptions();
     }
 
+    public function closeAction()
+    {
+        // Reset all flags to false to return to the default student table
+        $this->isEditingStudent = false;
+        $this->isViewingDetails = false;
+        $this->isDeleting = false;
+        $this->isExpellingStudent = false;
+        $this->isSuspendingStudent = false;
+        $this->isViewingHistoryDetails = false;
+        $this->isApproving = false;
+        $this->isRejectingStudent = false;
+        $this->isSendingStudentMail = false;
+    }
+
+
     public function removeFilter($filterName)
     {
         if ($filterName === 'formFilter') {
@@ -127,59 +481,89 @@ class ManageStudents extends Component
         $this->resetPage(); // Reset pagination if using it
     }
 
+    public function editStudent($studentId)
+    {
+        $this->selectedStudent = StudentRecord::findOrFail($studentId); // Retrieve the student record
+        $this->isEditingStudent = true; // Set editing flag
+        $this->resetOtherFlags('isEditingStudent'); // Reset any other flags if necessary
+    }
+
+    public function saveStudent()
+    {
+        $this->validate([
+            'selectedStudent.parent_id_no' => 'nullable|string|max:255',
+            'selectedStudent.my_class_id' => 'required|integer|exists:my_classes,id', // Assuming my_classes table exists
+            'selectedStudent.section_id' => 'required|integer|exists:sections,id', // Assuming sections table exists
+            'selectedStudent.adm_no' => 'nullable|string|max:30|unique:student_records,adm_no,' . $this->selectedStudent->id,
+            'selectedStudent.dorm_id' => 'nullable|integer|exists:dorms,id', // Assuming dorms table exists
+            'selectedStudent.year_admitted' => 'nullable|string|max:4',
+            'selectedStudent.kcpe' => 'required|string',
+            'selectedStudent.first_name' => 'required|string|max:255',
+            'selectedStudent.middle_name' => 'nullable|string|max:255',
+            'selectedStudent.last_name' => 'required|string|max:255',
+            'selectedStudent.email' => 'nullable|email|max:255',
+            'selectedStudent.gender' => 'required|string|in:male,female,other', // Specify allowed genders
+            'selectedStudent.phone' => 'nullable|string|max:15',
+            'selectedStudent.dob' => 'nullable|date',
+            'selectedStudent.nal_id' => 'nullable|integer',
+            'selectedStudent.state_id' => 'nullable|integer',
+            'selectedStudent.lga_id' => 'nullable|integer',
+            'selectedStudent.town' => 'nullable|string|max:255',
+            'selectedStudent.bg_id' => 'nullable|integer',
+            'selectedStudent.photo' => 'nullable|string|max:255',
+            'selectedStudent.status' => 'nullable|string|max:255',
+            'selectedStudent.student_password' => 'nullable|string|max:255',
+        ]);
+
+        // Save the changes
+        $this->selectedStudent->save();
+
+        // Optionally reset the editing flag
+        $this->isEditingStudent = false;
+
+        // Flash a success message
+        session()->flash('message', 'Student record updated successfully!');
+    }
+
 
     public function deleteRecord($studentId)
     {
+        // Logic to delete student
         $this->selectedStudent = StudentRecord::find($studentId);
-        $this->showDeleteModal = true; // Show delete confirmation modal
+        $this->showDeleteModal = true;
+        // Reset other flags
+        $this->resetOtherFlags('showDeleteModal');
     }
 
-    public function confirmDelete()
-    {
-        if ($this->selectedStudent) {
-            // Attempt to delete the selected student record
-            try {
-                $this->selectedStudent->delete();
-                session()->flash('success', 'Student deleted successfully.'); // Success message
-            } catch (\Exception $e) {
-                session()->flash('error', 'Failed to delete the student: ' . $e->getMessage()); // Error message
-            }
-
-            // Refresh the students list after deletion
-            $this->fetchStudents();
-
-            // Reset the selected student and hide the modal
-            $this->selectedStudent = null;
-            $this->showDeleteModal = false;
-        }
-    }
-
-
-    public function cancelDelete()
-    {
-        $this->showDeleteModal = false; // Cancel deletion and close the modal
-    }
-
-
-
-    public function studentExpulsion($studentId)
-    {
-        // Logic to expel student
-        $this->selectedStudent = StudentRecord::find($studentId);
-        // Perform expulsion logic here
-    }
-
-    public function suspendStudent($studentId)
-    {
-        // Logic to suspend student
-        $this->selectedStudent = StudentRecord::find($studentId);
-        // Perform suspension logic here
-    }
+    // Add other action methods like viewStudent, studentExpulsion, suspendStudent, etc.
 
     public function render()
     {
         return view('livewire.manage-students', [
             'noResults' => $this->mystudents->isEmpty(),
+            'students' => $this->mystudents,
         ]);
+    }
+
+    // Helper method to reset all flags except the current one
+    protected function resetOtherFlags($currentFlag)
+    {
+        $flags = [
+            'isEditingStudent',
+            'isViewingDetails',
+            'isExpellingStudent',
+            'isSuspendingStudent',
+            'isViewingHistoryDetails',
+            'isApproving',
+            'isRejecting',
+            'showDeleteModal',
+            // Add more flags as needed for other actions
+        ];
+
+        foreach ($flags as $flag) {
+            if ($flag !== $currentFlag) {
+                $this->$flag = false;
+            }
+        }
     }
 }

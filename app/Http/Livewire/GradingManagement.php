@@ -195,9 +195,5 @@ class GradingManagement extends Component
         ]);
     }
 
-    public function assignMarks($gradingSystemId)
-    {
-        // Logic for assigning marks to the grading system
-        // This can include redirecting to a dedicated component or modal.
-    }
+    // 
 }

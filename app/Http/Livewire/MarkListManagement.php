@@ -21,6 +21,13 @@ class MarkListManagement extends Component
     public $classId;
     public $examName;
     public $gradingSystemRanges = []; // Initialize as an empty array
+    public $totalMarks;
+    public $meanScore;
+    public $totalPoints;
+    public $meanGrade;
+    public $classPosition;
+    public $streamPosition;
+
 
     public $examId;
     public $sectionId;
@@ -86,7 +93,6 @@ class MarkListManagement extends Component
         $this->marks = collect();
         $this->fetchMarks();
     }
-
     public function fetchStudentDetails($admNo)
     {
         // Fetch the student by admission number
@@ -98,76 +104,63 @@ class MarkListManagement extends Component
                 $query->where('student_id', $student->id);
             })->orderBy('created_at', 'desc')->first();
 
-            // Initialize $marks as an empty array to avoid uninitialized variable issues
+            // Initialize variables
             $marks = [];
+            $totalMarks = 0;
+            $totalPoints = 0;
+            $meanScore = 0;
 
             // Check if an exam was found
             if ($exam) {
                 // Get the grading system associated with the exam
                 $gradingSystem = $exam->gradingSystem;
 
-                // Check if the grading system exists
                 if ($gradingSystem) {
-                    // Get all subjects for which the student has marks in this exam
+                    // Fetch the student's marks for the subjects in the exam
                     $marks = ExamMarks::with('subject')
                         ->where('student_id', $student->id)
                         ->where('exam_id', $exam->id)
                         ->get()
-                        ->keyBy('subject_id') // Key marks by subject ID for easier access
+                        ->keyBy('subject_id')
                         ->toArray();
 
-                    // Get the subjects associated with the grading system
                     $gradingSystemSubjects = DB::table('grading_system_subject')
                         ->where('grading_system_id', $gradingSystem->id)
                         ->pluck('subject_id')
                         ->toArray();
 
-                    // Initialize an array to track missing subjects
                     $missingSubjects = [];
 
-                    // Check for each mark if the subject is part of the grading system
                     foreach ($marks as $mark) {
                         if (!in_array($mark['subject_id'], $gradingSystemSubjects)) {
                             $missingSubjects[] = $mark['subject']['subject_name'] ?? 'Unknown Subject';
                         }
                     }
 
-                    // If there are any missing subjects, flash a message
                     if (!empty($missingSubjects)) {
                         session()->flash('warning', 'The following subjects are not part of the grading system: ' . implode(', ', $missingSubjects));
                     }
 
-                    // Prepare student details with subjects, marks, grades, remarks, and GPA
                     $this->studentDetails = [];
+                    $subjectCount = count($gradingSystemSubjects);
 
                     foreach ($gradingSystemSubjects as $subjectId) {
-                        // Check if the student has marks for the subject in the current exam
                         $subjectMarks = $marks[$subjectId] ?? null;
 
-                        // Fetch the subject name, marks, grade, remark, and GPA
                         if ($subjectMarks) {
                             $subjectName = $subjectMarks['subject']['subject_name'];
                             $subjectMarksValue = $subjectMarks['marks'];
 
-                            // Fetch the grading range for this subject based on the marks and grading system
                             $gradingRange = GradingRange::where('grading_system_id', $gradingSystem->id)
                                 ->where('subject_id', $subjectId)
                                 ->where('range_from', '<=', $subjectMarksValue)
                                 ->where('range_to', '>=', $subjectMarksValue)
                                 ->first();
 
-                            // Populate grade, remark, and GPA if the grading range exists
-                            if ($gradingRange) {
-                                $grade = $gradingRange->grade;
-                                $remark = $gradingRange->remark;
-                                $gpa = $gradingRange->gpa;
-                            } else {
-                                $grade = 'N/A';
-                                $remark = 'N/A';
-                                $gpa = 'N/A';
-                            }
+                            $grade = $gradingRange->grade ?? 'N/A';
+                            $remark = $gradingRange->remark ?? 'N/A';
+                            $gpa = $gradingRange->gpa ?? 'N/A';
 
-                            // Add the subject, marks, grade, remark, and GPA to the student details array
                             $this->studentDetails[] = [
                                 'subject_name' => $subjectName,
                                 'marks' => $subjectMarksValue,
@@ -175,8 +168,10 @@ class MarkListManagement extends Component
                                 'remark' => $remark,
                                 'gpa' => $gpa,
                             ];
+
+                            $totalMarks += $subjectMarksValue;
+                            $totalPoints += $gpa;
                         } else {
-                            // Subject not present in the marks
                             $subject = DB::table('subjects')->where('id', $subjectId)->first();
                             $this->studentDetails[] = [
                                 'subject_name' => $subject->subject_name ?? 'Unknown Subject',
@@ -188,14 +183,14 @@ class MarkListManagement extends Component
                         }
                     }
 
-                    // Add the grading system name and description to student details
+                    $meanScore = $subjectCount > 0 ? $totalMarks / $subjectCount : 'N/A';
+
                     $this->gradingSystemDetails = [
                         'name' => $gradingSystem->name,
                         'description' => $gradingSystem->description,
                         'effective_date' => $gradingSystem->effective_date,
                     ];
                 } else {
-                    // If no grading system found, set student details to display subjects but without grades, remarks, or GPA
                     foreach ($marks as $mark) {
                         $this->studentDetails[] = [
                             'subject_name' => $mark['subject']['subject_name'] ?? 'N/A',
@@ -208,11 +203,15 @@ class MarkListManagement extends Component
                     $this->gradingSystemDetails = ['name' => 'N/A', 'description' => 'N/A', 'effective_date' => 'N/A'];
                 }
 
-                // Fetch class and section names using their relationships
+                // Fetch class and section names
                 $className = $student->my_class ? $student->my_class->name : 'N/A';
                 $sectionName = $student->section ? $student->section->name : 'N/A';
 
-                // Add additional student details
+                // Calculate class and stream positions using the respective functions
+                $classPosition = $this->calculateClassPosition($student, $exam);
+                $streamPosition = $this->calculateStreamPosition($student, $exam);
+
+                // Additional student details
                 $this->studentAdditionalDetails = [
                     'class_name' => $className,
                     'section_name' => $sectionName,
@@ -223,39 +222,87 @@ class MarkListManagement extends Component
                     'last_name' => $student->last_name,
                 ];
 
-                // Set the selected admission number and pass exam name
+                // Set values for displaying in the UI
                 $this->selectedAdmNo = $admNo;
-                $this->examName = $exam->name; // Exam name
+                $this->examName = $exam->name;
+                $this->totalMarks = $totalMarks;
+                $this->meanScore = $meanScore;
+                $this->totalPoints = $totalPoints;
+                $this->classPosition = $classPosition;
+                $this->streamPosition = $streamPosition;
                 $this->showingDetails = true;
             } else {
-                // Reset if no exam found
-                $this->studentDetails = [];
-                $this->studentAdditionalDetails = [];
-                $this->gradingSystemDetails = [];
+                $this->resetStudentDetails();
             }
         } else {
-            // Reset if no student found
-            $this->studentDetails = [];
-            $this->studentAdditionalDetails = [];
-            $this->gradingSystemDetails = [];
+            $this->resetStudentDetails();
         }
     }
 
 
-    protected function getClassPosition($student, $exam)
-    {
-        $allStudents = ExamMarks::select('student_id', DB::raw('SUM(marks) as total_marks'))
-            ->where('exam_id', $exam->id)
-            ->whereHas('student', function ($query) use ($student) {
-                $query->where('my_class_id', $student->my_class_id);
-            })
-            ->groupBy('student_id')
-            ->orderBy('total_marks', 'desc')
-            ->get();
 
-        // Find the position of the current student
-        foreach ($allStudents as $index => $result) {
-            if ($result->student_id == $student->id) {
+    private function resetDetails()
+    {
+        $this->studentDetails = [];
+        $this->studentAdditionalDetails = [];
+        $this->gradingSystemDetails = [];
+        $this->totalMarks = 'N/A';
+        $this->meanScore = 'N/A';
+        $this->totalPoints = 'N/A';
+        $this->classPosition = 'N/A';
+        $this->streamPosition = 'N/A';
+    }
+    // Calculate class position based on total marks
+    private function calculateClassPosition($student, $exam)
+    {
+        $students = StudentRecord::where('my_class_id', $student->my_class_id)->get();
+        $studentScores = [];
+
+        foreach ($students as $studentRecord) {
+            $totalMarks = ExamMarks::where('student_id', $studentRecord->id)
+                ->where('exam_id', $exam->id)
+                ->sum('marks');
+
+            $studentScores[] = ['student_id' => $studentRecord->id, 'total_marks' => $totalMarks];
+        }
+
+        // Sort students by total marks in descending order
+        usort($studentScores, function ($a, $b) {
+            return $b['total_marks'] <=> $a['total_marks'];
+        });
+
+        // Find position of the current student
+        foreach ($studentScores as $index => $studentScore) {
+            if ($studentScore['student_id'] == $student->id) {
+                return $index + 1; // Return position
+            }
+        }
+
+        return 'N/A';
+    }
+
+    // Calculate stream position based on total marks
+    private function calculateStreamPosition($student, $exam)
+    {
+        $students = StudentRecord::where('section_id', $student->section_id)->get();
+        $studentScores = [];
+
+        foreach ($students as $studentRecord) {
+            $totalMarks = ExamMarks::where('student_id', $studentRecord->id)
+                ->where('exam_id', $exam->id)
+                ->sum('marks');
+
+            $studentScores[] = ['student_id' => $studentRecord->id, 'total_marks' => $totalMarks];
+        }
+
+        // Sort students by total marks in descending order
+        usort($studentScores, function ($a, $b) {
+            return $b['total_marks'] <=> $a['total_marks'];
+        });
+
+        // Find position of the current student
+        foreach ($studentScores as $index => $studentScore) {
+            if ($studentScore['student_id'] == $student->id) {
                 return $index + 1;
             }
         }
@@ -263,23 +310,9 @@ class MarkListManagement extends Component
         return 'N/A';
     }
 
-    protected function getStreamPosition($student, $exam)
-    {
-        $allStudents = ExamMarks::select('student_id', DB::raw('SUM(marks) as total_marks'))
-            ->where('exam_id', $exam->id)
-            ->groupBy('student_id')
-            ->orderBy('total_marks', 'desc')
-            ->get();
 
-        // Find the position of the current student
-        foreach ($allStudents as $index => $result) {
-            if ($result->student_id == $student->id) {
-                return $index + 1;
-            }
-        }
 
-        return 'N/A';
-    }
+
 
 
 

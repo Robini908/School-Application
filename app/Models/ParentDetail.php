@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Notifications\Notifiable;
 
 class ParentDetail extends Model
 {
     use HasFactory;
+    use Notifiable;
 
     protected $primaryKey = 'parent_id_no'; // Specify the primary key
     protected $fillable = [

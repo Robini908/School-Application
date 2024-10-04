@@ -230,7 +230,7 @@ class ManageSections extends Component
             $this->my_class_id = $section->my_class_id;
 
             $this->checkAllTeachersAssigned();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             session()->flash('error', 'Failed to load teacher change form. ' . $e->getMessage());
         }
     }
@@ -247,7 +247,7 @@ class ManageSections extends Component
             $section = Section::findOrFail($sectionId);
             $this->name = $section->name;
             $this->my_class_id = $section->my_class_id;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             session()->flash('error', 'Failed to load teacher assignment form. ' . $e->getMessage());
         }
     }

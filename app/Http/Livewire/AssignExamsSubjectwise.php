@@ -90,43 +90,23 @@ class AssignExamsSubjectwise extends Component
         }
     }
 
-    
+    // Compute total number of students
+    // public function getTotalStudentsCountProperty()
+    // {
+    //     return $this->students->count(); // Count the number of students in the Collection
+    // }
 
-    public function getTotalStudentsCountProperty()
-    {
-        return $this->students ? $this->students->count() : 0;
-    }
+    // // Compute number of assigned marks
+    // public function getAssignedMarksCountProperty()
+    // {
+    //     return $this->assignedMarks->count(); // Count the number of assigned marks
+    // }
 
-    public function getAssignedMarksCountProperty()
-    {
-        if ($this->selectedExam && $this->selectedSubject) {
-            return ExamMarks::where('exam_id', $this->selectedExam)
-                ->where('subject_id', $this->selectedSubject)
-                ->distinct('student_id')
-                ->count('student_id');
-        }
-        return 0; // Return 0 if no exam or subject is selected
-    }
-
-    public function getUnassignedMarksCountProperty()
-    {
-        return max(0, $this->totalStudentsCount - $this->assignedMarksCount);
-    }
-
-    protected function calculateAssignedMarks()
-    {
-        if ($this->selectedExam && $this->selectedSubject) {
-            $this->assignedMarks = ExamMarks::where('exam_id', $this->selectedExam)
-                ->where('subject_id', $this->selectedSubject)
-                ->get();
-        } else {
-            $this->assignedMarks = collect(); // Reset if no exam or subject selected
-        }
-    }
-
-
-    // Count total number of students in the selected section
-
+    // // Compute number of unassigned marks
+    // public function getUnassignedMarksCountProperty()
+    // {
+    //     return $this->totalStudentsCount - $this->assignedMarksCount; // Calculate unassigned marks
+    // }
 
     // public function render()
     // {
@@ -163,8 +143,6 @@ class AssignExamsSubjectwise extends Component
         return $this->assignedMarks;
     }
 
-    
-
     public function updatedSelectedClass($classId)
     {
         $this->reset(['selectedExam', 'selectedSubject', 'selectedSection', 'marks', 'students', 'assignedMarks']);
@@ -174,13 +152,11 @@ class AssignExamsSubjectwise extends Component
     {
         $this->reset(['selectedSubject', 'selectedSection', 'marks', 'students']);
         $this->selectedExamName = Exam::find($examId)->name ?? null;
-        $this->calculateAssignedMarks();
     }
 
     public function updatedSelectedSubject($subjectId)
     {
         $this->reset(['selectedSection', 'marks', 'students', 'assignedMarks']);
-        $this->calculateAssignedMarks();
     }
 
     // public function updatedSelectedSection($sectionId)
@@ -300,7 +276,7 @@ class AssignExamsSubjectwise extends Component
         }
     }
 
-
+   
 
     public function editMark($studentId)
     {

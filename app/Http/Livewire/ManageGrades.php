@@ -12,7 +12,6 @@ class ManageGrades extends Component
     public $gradingSystemId;
     public $grades = [];
     public $newGrade = [];
-
     public $gradingSystems = []; // To store grading systems
     public $selectedGradingSystem; // To store the selected grading system
     public $isEditing = []; // Track editing state for each grading system
@@ -26,19 +25,21 @@ class ManageGrades extends Component
     public $newRemark;
     public $newGpa;
     public $newDescription;
-    public $newAdditionalInfo;
+    public $newAdditionalInfo; // New property to store additional info for a grade
     public $selectedGradingSystemForReuse; // For selecting a system to reuse grades from
     public $gradingSystemsWithGrades = []; // To hold grading systems with grades
-
-
     public $loading = false;
     public $addedGrade = []; // Initialize the array for grades
-
-
     public $editingIndex = null; // Track which grade is being edited
     public $deleteGradeId = null;
     public $deleteGradingSystemId = null;
     public $isConfirmingDeleting = false;
+    public $newRange; // To store the range value for each grade
+    public $newRangeTo; // To store the range value for each grade
+    public $newRangeFrom; // To store the range value for each grade
+
+
+
 
 
     public function confirmDelete($gradingSystemId, $gradeId)
@@ -131,13 +132,15 @@ class ManageGrades extends Component
 
     public function addGrade()
     {
-        // Validate inputs
+        // Validate inputs, including the new 'range_from' and 'range_to' fields
         $this->validate([
             'newGrade' => 'required|string|max:255',
             'newRemark' => 'nullable|string|max:255',
             'newGpa' => 'nullable|numeric',
             'newDescription' => 'nullable|string|max:255',
             'newAdditionalInfo' => 'nullable|string|max:255',
+            'newRangeFrom' => 'nullable|integer',  // Validation for range_from
+            'newRangeTo' => 'nullable|integer',    // Validation for range_to
         ]);
 
         // Create a new grade array
@@ -147,20 +150,37 @@ class ManageGrades extends Component
             'gpa' => $this->newGpa,
             'description' => $this->newDescription,
             'additional_info' => $this->newAdditionalInfo,
+            'range_from' => $this->newRangeFrom,  // New range_from value
+            'range_to' => $this->newRangeTo,      // New range_to value
         ];
 
         // Push the new grade data to the addedGrade array
         $this->addedGrade[] = $newGradeData;
 
         // Clear the input fields after adding
+        $this->resetFields();
+
+        // Reset confirmation dialog
+        $this->isConfirmingDeleting = false;
+
+        // Fetch grading systems if needed
+        $this->fetchGradingSystems();
+    }
+
+    protected function resetFields()
+    {
+        // Reset all input fields
         $this->newGrade = '';
         $this->newRemark = '';
         $this->newGpa = '';
         $this->newDescription = '';
         $this->newAdditionalInfo = '';
-        $this->isConfirmingDeleting = false;
-        $this->fetchGradingSystems();
+        $this->newRangeFrom = '';  // Clear range_from field
+        $this->newRangeTo = '';    // Clear range_to field
     }
+
+
+
 
     // Method to remove a grade
     public function removeGrade($index)
@@ -177,41 +197,43 @@ class ManageGrades extends Component
         $this->loading = true;
 
         try {
+            // Check if there are grades to save
+            if (empty($this->addedGrade)) {
+                $this->addError('addedGrade', 'You must add at least one grade before saving.');
+                $this->loading = false;
+                return;
+            }
+
             // Loop through added grades and save each one to the database
             foreach ($this->addedGrade as $gradeData) {
                 GradingGrade::create([
                     'grading_system_id' => $this->selectedGradingSystem,
                     'grade' => $gradeData['grade'],
-                    'remark' => $gradeData['remark'],
+                    'remark' => $gradeData['remark'] ?? null,
                     'gpa' => $gradeData['gpa'] ?? null,
                     'description' => $gradeData['description'] ?? null,
                     'additional_info' => $gradeData['additional_info'] ?? null,
+                    'range_from' => $gradeData['range_from'] ?? null,  // New range_from field
+                    'range_to' => $gradeData['range_to'] ?? null,      // New range_to field
                 ]);
             }
 
-            $this->loading = false;
-
             // Reset after saving
             $this->addedGrade = [];
-            $this->selectedGradingSystem = '';
-            $this->newGrade = '';
-            $this->newRemark = '';
-            $this->newGpa = '';
-            $this->newDescription = '';
-            $this->newAdditionalInfo = '';
-
-            // Flash success message
+            $this->loading = false;
             session()->flash('message', 'Grades saved successfully!');
+
+            // Fetch grading systems after saving
+            $this->fetchGradingSystems();
         } catch (\Exception $e) {
             $this->loading = false;
 
             // Flash error message
             session()->flash('error', 'Failed to save grades. Please try again.');
         }
-
-        // Fetch grading systems after saving
-        $this->fetchGradingSystems();
     }
+
+
     public function updateGrade($index)
     {
         // Ensure the grade data exists
@@ -225,19 +247,23 @@ class ManageGrades extends Component
                     'addedGrade.' . $index . '.remark' => 'nullable|string|max:255',
                     'addedGrade.' . $index . '.description' => 'nullable|string|max:255',
                     'addedGrade.' . $index . '.additional_info' => 'nullable|string|max:255',
+                    'addedGrade.' . $index . '.range_from' => 'nullable|integer',  // Validation for range_from
+                    'addedGrade.' . $index . '.range_to' => 'nullable|integer',  // Validation for range_to
                 ]);
 
                 // Update or create the grade record in the database
                 GradingGrade::updateOrCreate(
                     [
                         'grading_system_id' => $this->selectedGradingSystem,
-                        'grade' => $gradeData['grade'], // This will be the unique identifier for the grade
+                        'grade' => $gradeData['grade'],  // Unique identifier for the grade
                     ],
                     [
                         'remark' => $gradeData['remark'],
-                        'gpa' => $gradeData['gpa'] ?? null, // Set GPA as null if not provided
+                        'gpa' => $gradeData['gpa'] ?? null,  // Set GPA as null if not provided
                         'description' => $gradeData['description'],
                         'additional_info' => $gradeData['additional_info'],
+                        'range_from' => $gradeData['range_from'] ?? null,  // Update or set range_from
+                        'range_to' => $gradeData['range_to'] ?? null,  // Update or set range_to
                     ]
                 );
 
@@ -256,6 +282,8 @@ class ManageGrades extends Component
 
 
 
+
+
     public function saveEditedGrades($gradingSystemId)
     {
         try {
@@ -268,6 +296,8 @@ class ManageGrades extends Component
                 'gpa' => $editedGrade['gpa'],
                 'description' => $editedGrade['description'],
                 'additional_info' => $editedGrade['additional_info'],
+                'range_from' => $editedGrade['range_from'],  // Updated range_from field
+                'range_to' => $editedGrade['range_to'],  // Updated range_to field
             ]);
 
             // Reset editing state and fetch updated grading systems
