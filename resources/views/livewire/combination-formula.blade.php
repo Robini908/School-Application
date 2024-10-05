@@ -139,25 +139,35 @@
 
 
                 <!-- Students Table -->
+
                 <div>
                     @if ($selectedClass && $selectedExam)
                     <div class="mt-4">
-                        <h3 class="text-lg font-semibold">
-                            Students and Marks for Exam: {{ $exams->find($selectedExam)->name ?? 'N/A' }}
-                        </h3>
-
-                        <h4 class="text-md font-medium">
-                            Class: {{ $classes->firstWhere('id', $selectedClass)->name ?? 'N/A' }}
-                        </h4>
+                        <div class="mb-2 text-center">
+                            <h3 class="text-2xl font-semibold">
+                                <strong>{{ $exams->find($selectedExam)->name ?? 'N/A' }}</strong> analysis for
+                                <strong>{{ $classes->firstWhere('id', $selectedClass)->name ?? 'N/A' }}</strong>
+                            </h3>
+                            <h5 class="text-muted text-semibold mb-2">
+                                Grading System used on this Exam is {{
+                                $exams->find($selectedExam) ? optional($exams->find($selectedExam)->gradingSystem)->name
+                                : 'N/A'
+                                }}
+                            </h5>
+                        </div>
 
                         <!-- Total Students in Selected Class -->
                         <div class="mt-2">
                             <div class="alert alert-info">
-                                <!-- Class Name and Total Entries -->
-                                <strong>{{ $classes->firstWhere('id', $selectedClass)->name ?? 'N/A' }}</strong> Streams
-                                <span>- Total Entries: {{ count($marks) }}</span>
+                                <h5 class="text-center">
+                                    The total number of students who sat for the <strong>{{
+                                        $exams->find($selectedExam)->name ?? 'N/A' }}</strong> exam in
+                                    <strong>{{ $classes->firstWhere('id', $selectedClass)->name ?? 'N/A' }}</strong> is
+                                    <strong>{{ count($marks) }}</strong>.
+                                </h5>
 
                                 <!-- Stream Counts based on Class Selection -->
+                                <h6 class="text-center mt-2">Stream distribution:</h6>
                                 <div class="row mt-2" wire:loading.remove>
                                     @foreach ($sections as $section)
                                     @php
@@ -179,11 +189,44 @@
                             </div>
                         </div>
 
-                        <!-- Table for Marks -->
+                        @php
+                        $naCountThreshold = 2; // Threshold for N/A counts
+                        $hasCaution = false; // Flag for caution message
+                        $naCount = 0; // N/A count initialization
 
-                        <body>
-                            <div class="table-responsive">
-                                <table  class="table table-bordered">
+                        // Check for N/A values in marks
+                        foreach ($marks as $mark) {
+                        foreach ($subjects as $subject) {
+                        $subjectMark = $mark['marks'][$subject->id] ?? 'N/A';
+                        $grade = $this->getGrade($subjectMark, $exam->gradingSystem->id, $subject->id);
+                        if ($subjectMark === 'N/A' || $grade === 'N/A') {
+                        $naCount++;
+                        }
+                        }
+                        }
+
+                        // Set caution flag if N/A values exceed threshold
+                        if ($naCount >= $naCountThreshold) {
+                        $hasCaution = true;
+                        }
+                        @endphp
+
+                        @if ($hasCaution)
+                        <!-- Caution message -->
+                        <div class="alert alert-danger position-sticky"
+                            style="top: 0; z-index: 999; padding: 15px; text-align: left; border-radius: 5px;">
+                            <strong>Important:</strong> We have noticed the grading system '<strong>{{
+                                optional($exams->find($selectedExam)->gradingSystem)->name ?? 'N/A' }}</strong>' has no
+                            ranges defined for the subjects. Please ensure the ranges are carefully and fully defined
+                            for enhanced exam analysis.
+                        </div>
+
+
+
+                        <div class="position-relative" style="pointer-events: none;">
+                            <!-- Table behind caution -->
+                            <div class="table-responsive" style="opacity: 0.4;">
+                                <table class="table table-bordered">
                                     <thead>
                                         <tr class="table-primary">
                                             <th rowspan="2" class="align-middle">Student Name</th>
@@ -203,19 +246,17 @@
                                     </thead>
                                     <tbody>
                                         @forelse ($marks as $mark)
-                                        <tr key="{{ $mark['student_id'] }}">
+                                        <tr>
                                             <td class="align-middle">{{ $mark['student_name'] ?? 'N/A' }}</td>
                                             <td class="align-middle">{{ $mark['stream'] ?? 'N/A' }}</td>
                                             @foreach ($subjects as $subject)
                                             @php
-                                            // Get the mark for the current subject
                                             $subjectMark = $mark['marks'][$subject->id] ?? 'N/A';
-                                            // Determine the grade for the mark
                                             $grade = $this->getGrade($subjectMark, $exam->gradingSystem->id,
                                             $subject->id);
                                             @endphp
                                             <td class="align-middle">
-                                                {{ $subjectMark !== 'N/A' ? "{$subjectMark} {$grade}" : 'N/A' }}
+                                                {{ $subjectMark !== 'N/A' ? "{$subjectMark} ({$grade})" : 'N/A' }}
                                             </td>
                                             @endforeach
                                             <td class="align-middle text-center">{{ $mark['total_marks'] ?? 'N/A' }}
@@ -242,35 +283,81 @@
                                     </tbody>
                                 </table>
                             </div>
+                        </div>
+                        @else
+                        <!-- Table without caution -->
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr class="table-primary">
+                                        <th rowspan="2" class="align-middle">Student Name</th>
+                                        <th rowspan="2" class="align-middle">Stream</th>
+                                        <th colspan="{{ count($subjects) }}" class="text-center">Subjects</th>
+                                        <th rowspan="2" class="align-middle text-center">Total Marks</th>
+                                        <th rowspan="2" class="align-middle text-center">Total Points</th>
+                                        <th rowspan="2" class="align-middle text-center">Class Position</th>
+                                        <th rowspan="2" class="align-middle text-center">Stream Position</th>
+                                        <th rowspan="2" class="align-middle text-center">Mean Score</th>
+                                    </tr>
+                                    <tr class="table-secondary">
+                                        @foreach ($subjects as $subject)
+                                        <th class="text-center">{{ $subject->subject_name }}</th>
+                                        @endforeach
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse ($marks as $mark)
+                                    <tr>
+                                        <td class="align-middle">{{ $mark['student_name'] ?? 'N/A' }}</td>
+                                        <td class="align-middle">{{ $mark['stream'] ?? 'N/A' }}</td>
+                                        @foreach ($subjects as $subject)
+                                        @php
+                                        $subjectMark = $mark['marks'][$subject->id] ?? 'N/A';
+                                        $grade = $this->getGrade($subjectMark, $exam->gradingSystem->id, $subject->id);
+                                        @endphp
+                                        <td class="align-middle">
+                                            {{ $subjectMark !== 'N/A' ? "{$subjectMark} ({$grade})" : 'N/A' }}
+                                        </td>
+                                        @endforeach
+                                        <td class="align-middle text-center">{{ $mark['total_marks'] ?? 'N/A' }}</td>
+                                        <td class="align-middle text-center">{{ $mark['total_points'] ?? 'N/A' }}</td>
+                                        <td class="align-middle text-center">{{ $mark['position'] ?? 'N/A' }}</td>
+                                        <td class="align-middle text-center">{{ $mark['stream_position'] ?? 'N/A' }}
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            @if (count($subjects) > 0)
+                                            {{ number_format($mark['total_marks'] / count($subjects), 2) }}
+                                            @else
+                                            N/A
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    @empty
+                                    <tr>
+                                        <td colspan="{{ count($subjects) + 8 }}" class="text-center">No marks available
+                                            for this exam.</td>
+                                    </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                        @endif
 
-                            {{-- <script>
-                                $(document).ready(function() {
-                                    $('#marksTable').DataTable({
-                                        dom: 'Bfrtip',
-                                        buttons: [
-                                            'copy', 'excel', 'pdf', 'print'
-                                        ]
-                                    });
-                                });
-                            </script> --}}
-                            @elseif ($selectedClass && !$selectedExam)
-                            <div class="alert alert-warning mt-4">
-                                Please select an exam to view student marks.
-                            </div>
-                            @endif
+                        @elseif ($selectedClass && !$selectedExam)
+                        <div class="alert alert-warning mt-4">
+                            Please select an exam to view student marks.
+                        </div>
+                        @endif
 
-                            @if (!$selectedClass)
-                            <div class="alert alert-warning mt-4">
-                                Please select a class and an exam to view streams and student marks.
-                            </div>
-                            @endif
+                        @if (!$selectedClass)
+                        <div class="alert alert-warning mt-4">
+                            Please select a class and an exam to view streams and student marks.
+                        </div>
+                        @endif
                     </div>
-
-
-
-
-
                 </div>
+
+
             </div>
         </div>
     </div>

@@ -37,22 +37,24 @@ class AssignExamsSubjectwise extends Component
     public function mount()
     {
         $this->students = collect(); // Initialize as an empty Collection
-        $this->assignedMarks = collect();
+        $this->assignedMarks = collect(); // Initialize as an empty Collection
+        $this->marks = []; // Initialize marks as an empty array
+        $this->editingMarkId = null; // Initialize editing state
     }
-
+    
     public function render()
     {
         $classes = MyClass::all();
         $exams = $this->selectedClass ? Exam::where('class_id', $this->selectedClass)->get() : collect();
         $subjects = Subject::all();
         $sections = $this->selectedClass ? Section::where('my_class_id', $this->selectedClass)->get() : collect();
-
+    
         // Fetch students based on the selected section
         $this->students = $this->selectedSection ? StudentRecord::where('section_id', $this->selectedSection)->get() : collect();
-
+    
         // Set the selected subject name based on the selected subject ID
         $this->selectedSubjectName = $this->selectedSubject ? Subject::find($this->selectedSubject)->subject_name : null;
-
+    
         // Fetch assigned marks based on selected class, exam, and subject
         if ($this->selectedExam && $this->selectedSubject) {
             $this->assignedMarks = ExamMarks::where('exam_id', $this->selectedExam)
@@ -60,126 +62,57 @@ class AssignExamsSubjectwise extends Component
                 ->with('student')
                 ->get();
         } else {
-            $this->assignedMarks = collect(); // Use an empty Collection
+            $this->assignedMarks = collect(); // Reset to empty collection if no exam or subject is selected
         }
-
-        // Filter assigned marks for the table view
-        $assignedMarksForTable = $this->filterAssignedMarks(); // This will return a Collection
-
-        return view('livewire.assign-exams-subjectwise', compact('classes', 'exams', 'subjects', 'sections', 'assignedMarksForTable'));
+    
+        // Populate marks array for rendering in the view
+        $this->populateMarksArray();
+    
+        return view('livewire.assign-exams-subjectwise', [
+            'classes' => $classes,
+            'exams' => $exams,
+            'subjects' => $subjects,
+            'sections' => $sections,
+            'assignedMarksForTable' => $this->assignedMarks,
+        ]);
     }
-
+    
+    public function populateMarksArray()
+    {
+        // Prepare marks for students, checking if they already have assigned marks
+        foreach ($this->students as $student) {
+            $assignedMark = $this->assignedMarks->firstWhere('student_id', $student->id);
+            $this->marks[$student->id] = $assignedMark ? $assignedMark->marks : null; // Assign existing marks or null if not found
+        }
+    }
+    
     public function updatedSelectedSection($sectionId)
     {
-        $this->reset('marks');
-
         // Fetch all students based on the selected section
-        $allStudents = StudentRecord::where('section_id', $this->selectedSection)->get();
-
-        // Filter out students who already have marks assigned for the selected exam and subject
-        $this->students = $allStudents->filter(function ($student) {
-            return !ExamMarks::where('student_id', $student->id)
-                ->where('exam_id', $this->selectedExam)
-                ->where('subject_id', $this->selectedSubject)
-                ->exists();
-        });
-
-        // Initialize marks for students who haven't been assigned yet
-        foreach ($this->students as $student) {
-            $this->marks[$student->id] = null; // No marks yet for these students
-        }
+        $this->students = StudentRecord::where('section_id', $this->selectedSection)->get();
+        
+        // Initialize marks for students
+        $this->populateMarksArray();
     }
-
-    // Compute total number of students
-    // public function getTotalStudentsCountProperty()
-    // {
-    //     return $this->students->count(); // Count the number of students in the Collection
-    // }
-
-    // // Compute number of assigned marks
-    // public function getAssignedMarksCountProperty()
-    // {
-    //     return $this->assignedMarks->count(); // Count the number of assigned marks
-    // }
-
-    // // Compute number of unassigned marks
-    // public function getUnassignedMarksCountProperty()
-    // {
-    //     return $this->totalStudentsCount - $this->assignedMarksCount; // Calculate unassigned marks
-    // }
-
-    // public function render()
-    // {
-    //     $classes = MyClass::all();
-    //     $exams = $this->selectedClass ? Exam::where('class_id', $this->selectedClass)->get() : collect();
-    //     $subjects = Subject::all();
-    //     $sections = $this->selectedClass ? Section::where('my_class_id', $this->selectedClass)->get() : collect();
-
-    //     // Fetch students based on the selected section
-    //     $this->students = $this->selectedSection ? StudentRecord::where('section_id', $this->selectedSection)->get() : collect();
-
-    //     // Set the selected subject name based on the selected subject ID
-    //     $this->selectedSubjectName = $this->selectedSubject ? Subject::find($this->selectedSubject)->subject_name : null;
-
-    //     // Fetch assigned marks based on selected class, exam, and subject
-    //     if ($this->selectedExam && $this->selectedSubject) {
-    //         $this->assignedMarks = ExamMarks::where('exam_id', $this->selectedExam)
-    //             ->where('subject_id', $this->selectedSubject)
-    //             ->with('student')
-    //             ->get();
-    //     } else {
-    //         $this->assignedMarks = collect(); // Use an empty Collection
-    //     }
-
-    //     // Filter assigned marks for the table view
-    //     $assignedMarksForTable = $this->filterAssignedMarks(); // This will return a Collection
-
-    //     return view('livewire.assign-exams-subjectwise', compact('classes', 'exams', 'subjects', 'sections', 'assignedMarksForTable'));
-    // }
-
-    public function filterAssignedMarks()
-    {
-        // Return the assigned marks directly as a Collection
-        return $this->assignedMarks;
-    }
-
+    
     public function updatedSelectedClass($classId)
     {
-        $this->reset(['selectedExam', 'selectedSubject', 'selectedSection', 'marks', 'students', 'assignedMarks']);
+        // Reset other selections but keep marks
+        $this->reset(['selectedExam', 'selectedSubject', 'selectedSection', 'students', 'assignedMarks']);
     }
-
+    
     public function updatedSelectedExam($examId)
     {
-        $this->reset(['selectedSubject', 'selectedSection', 'marks', 'students']);
-        $this->selectedExamName = Exam::find($examId)->name ?? null;
+        // Reset subject and section but keep marks
+        $this->reset(['selectedSubject', 'selectedSection', 'students']);
     }
-
+    
     public function updatedSelectedSubject($subjectId)
     {
-        $this->reset(['selectedSection', 'marks', 'students', 'assignedMarks']);
+        // Reset section but keep marks
+        $this->reset(['selectedSection', 'students']);
     }
-
-    // public function updatedSelectedSection($sectionId)
-    // {
-    //     $this->reset('marks');
-
-    //     // Fetch all students based on the selected section
-    //     $allStudents = StudentRecord::where('section_id', $this->selectedSection)->get();
-
-    //     // Filter out students who already have marks assigned for the selected exam and subject
-    //     $this->students = $allStudents->filter(function ($student) {
-    //         return !ExamMarks::where('student_id', $student->id)
-    //             ->where('exam_id', $this->selectedExam)
-    //             ->where('subject_id', $this->selectedSubject)
-    //             ->exists();
-    //     });
-
-    //     // Initialize marks for students who haven't been assigned yet
-    //     foreach ($this->students as $student) {
-    //         $this->marks[$student->id] = null; // No marks yet for these students
-    //     }
-    // }
-
+    
     public function assignMarks()
     {
         try {
@@ -191,25 +124,21 @@ class AssignExamsSubjectwise extends Component
                 'marks' => 'required|array',
                 'marks.*' => 'nullable|numeric|min:0|max:100',
             ]);
-
-            $updatedCount = 0;
-            $insertedCount = 0;
-            $skippedCount = 0;
-            $errorCount = 0;
-
+    
             DB::beginTransaction();
-
+            $updatedCount = $insertedCount = $skippedCount = $errorCount = 0;
+    
             foreach ($this->marks as $studentId => $mark) {
                 if (is_null($mark)) {
                     $skippedCount++;
                     continue;
                 }
-
+    
                 if (!is_numeric($mark) || $mark < 0 || $mark > 100) {
                     $errorCount++;
                     continue;
                 }
-
+    
                 try {
                     $examMark = ExamMarks::updateOrCreate(
                         [
@@ -219,7 +148,7 @@ class AssignExamsSubjectwise extends Component
                         ],
                         ['marks' => $mark]
                     );
-
+    
                     if ($examMark->wasRecentlyCreated) {
                         $insertedCount++;
                     } else {
@@ -230,29 +159,29 @@ class AssignExamsSubjectwise extends Component
                     \Log::error("Error assigning marks for student ID {$studentId}: " . $e->getMessage());
                 }
             }
-
+    
             DB::commit();
-
+            
             // Set messages based on the results
             if ($insertedCount > 0 || $updatedCount > 0) {
                 session()->flash('success', "Marks assigned successfully! ");
             }
-
+    
             if ($skippedCount > 0) {
                 session()->flash('warning', "{$skippedCount} students were skipped due to null marks.");
             }
-
+    
             if ($errorCount > 0) {
                 session()->flash('error', "{$errorCount} errors occurred while assigning marks. Please check the logs for details.");
             }
-
+    
             if ($insertedCount == 0 && $updatedCount == 0 && $skippedCount == 0 && $errorCount == 0) {
                 session()->flash('info', "No changes were made. All marks remained the same.");
             }
-
+    
             // Refresh the assigned marks
             $this->refreshAssignedMarks();
-
+    
             // Reset only the marks array, keeping other selections intact
             $this->marks = [];
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -263,7 +192,7 @@ class AssignExamsSubjectwise extends Component
             \Log::error("Error in assignMarks: " . $e->getMessage());
         }
     }
-
+    
     public function refreshAssignedMarks()
     {
         if ($this->selectedExam && $this->selectedSubject) {
@@ -275,8 +204,8 @@ class AssignExamsSubjectwise extends Component
             $this->assignedMarks = collect(); // Reset to empty collection if no exam or subject is selected
         }
     }
+    
 
-   
 
     public function editMark($studentId)
     {

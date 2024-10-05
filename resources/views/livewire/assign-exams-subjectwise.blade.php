@@ -65,10 +65,10 @@
             </div>
 
             @if ($selectedSection)
-            @if (collect($assignedMarksForTable)->count() > 0)
+            @if (collect($assignedMarksForTable)->isNotEmpty() || collect($students)->isNotEmpty())
             <h5 class="h6 font-weight-bold">Students in {{ $selectedSubjectName }}:</h5>
 
-            @if (collect($assignedMarks)->count() === 0)
+            @if (collect($assignedMarks)->isEmpty())
             <div class="alert alert-warning">No marks have been assigned yet. Please enter the marks below:</div>
             <table class="table table-bordered">
                 <thead>
@@ -81,8 +81,10 @@
                     @foreach($students as $student)
                     <tr>
                         <td>{{ $student->first_name }} {{ $student->last_name }} ({{ $student->adm_no }})</td>
-                        <td><input type="number" wire:model="marks.{{ $student->id }}" class="form-control"
-                                placeholder="Enter marks" min="0"></td>
+                        <td><input type="number" wire:model.defer="marks.{{ $student->id }}" class="form-control" placeholder="Enter marks" min="0" max="100"></td>
+                        @error("marks.{$student->id}")
+                        <div class="text-danger">{{ $message }}</div>
+                        @enderror
                     </tr>
                     @endforeach
                 </tbody>
@@ -103,28 +105,32 @@
                     <tr>
                         <td>{{ $student->first_name }} {{ $student->last_name }} ({{ $student->adm_no }})</td>
                         @if (collect($assignedMarks)->contains('student_id', $student->id))
-                            <td>
-                                @if($editingMarkId === $student->id)
-                                    <input type="number" wire:model.defer="marks.{{ $student->id }}" class="form-control" min="0" max="100" />
-                                @else
-                                    {{ collect($assignedMarks)->where('student_id', $student->id)->first()->marks ?? 'N/A' }}
-                                @endif
-                            </td>
-                            <td>
-                                @if($editingMarkId === $student->id)
-                                    <button wire:click="updateMark({{ $student->id }})" class="btn btn-success btn-sm">Save</button>
-                                    <button wire:click="$set('editingMarkId', null)" class="btn btn-secondary btn-sm">Cancel</button>
-                                @else
-                                    <button wire:click="editMark({{ $student->id }})" class="btn btn-warning btn-sm">Edit</button>
-                                @endif
-                            </td>
+                        <td>
+                            @if($editingMarkId === $student->id)
+                            <input type="number" wire:model.defer="marks.{{ $student->id }}" class="form-control"
+                                min="0" max="100" />
+                            @else
+                            {{ collect($assignedMarks)->where('student_id', $student->id)->first()->marks ?? 'N/A' }}
+                            @endif
+                        </td>
+                        <td>
+                            @if($editingMarkId === $student->id)
+                            <button wire:click="updateMark({{ $student->id }})"
+                                class="btn btn-success btn-sm">Save</button>
+                            <button wire:click="$set('editingMarkId', null)"
+                                class="btn btn-secondary btn-sm">Cancel</button>
+                            @else
+                            <button wire:click="editMark({{ $student->id }})"
+                                class="btn btn-warning btn-sm">Edit</button>
+                            @endif
+                        </td>
                         @else
-                            <td><input type="number" wire:model.defer="marks.{{ $student->id }}" class="form-control" placeholder="Enter marks" min="0" max="100"></td>
-                            <td></td>
+                        <td><input type="number" wire:model.defer="marks.{{ $student->id }}" class="form-control"
+                                placeholder="Enter marks" min="0" max="100"></td>
+                        <td></td>
                         @endif
                     </tr>
-                @endforeach
-                
+                    @endforeach
                 </tbody>
             </table>
             <button wire:click="assignMarks" class="btn btn-primary mt-3">Assign Marks</button>

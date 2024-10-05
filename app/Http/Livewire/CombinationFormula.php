@@ -49,6 +49,7 @@ class CombinationFormula extends Component
 
 
 
+
     public function updatedSelectedClass($classId)
     {
         $this->loading = true;
@@ -90,22 +91,6 @@ class CombinationFormula extends Component
         $this->loading = false;
     }
 
-    // public function getStudentCounts()
-    // {
-    //     // Load sections with their related student records
-    //     return collect($this->sections)->map(function ($section) {
-    //         // Use the relationship to get the count of student records
-    //         $studentCount = $section->studentRecords()->count(); // Count the number of students in the section
-
-    //         return [
-    //             'section' => $section,
-    //             'student_count' => $studentCount,
-    //         ];
-    //     });
-    // }
-
-
-
     public function updatedSelectedExam($examId)
     {
         $this->loading = true;
@@ -144,7 +129,6 @@ class CombinationFormula extends Component
     }
 
     // Prepare student data for calculation
-    // Prepare student data for calculation
     private function prepareStudentData($exam)
     {
         $studentData = [];
@@ -156,7 +140,10 @@ class CombinationFormula extends Component
 
             foreach ($this->subjects as $subject) {
                 $marksValue = $this->getStudentMarks($student, $subject);
+                $grade = $this->getGrade($marksValue, $exam->gradingSystem->id, $subject->id); // Fetch grade
                 $studentMarks[$subject->id] = $marksValue;
+
+                // Aggregate total marks and points based on the marks and grading system
                 $totalMarks += $marksValue;
                 $totalPoints += $this->getTotalPoints($marksValue, $subject, $exam);
             }
@@ -172,12 +159,12 @@ class CombinationFormula extends Component
                 'total_points' => $totalPoints,
                 'mean_score' => $meanScore, // Initialize mean score
                 'stream' => $student->section->name ?? 'N/A',
+                'grades' => $studentMarks // Store grades for later usage
             ];
         }
 
         return $studentData;
     }
-
 
     // Get student marks for a specific subject
     private function getStudentMarks($student, $subject)
@@ -199,7 +186,6 @@ class CombinationFormula extends Component
     }
 
     // Calculate positions and sort the student data with tie-breaking logic
-    // Calculate positions with tie-breaking logic
     private function calculatePositions($studentData)
     {
         try {
@@ -236,7 +222,6 @@ class CombinationFormula extends Component
         return $studentData;
     }
 
-
     // Calculate stream positions without tie-breaking
     private function calculateStreamPositions(&$studentData)
     {
@@ -271,15 +256,7 @@ class CombinationFormula extends Component
         }
     }
 
-
-
-
-
-
-
-
-
-
+    // Fetch the grade based on marks, grading system ID, and subject ID
     public function getGrade($marksValue, $gradingSystemId, $subjectId)
     {
         if ($marksValue === 'N/A' || $marksValue === null) {
@@ -295,9 +272,6 @@ class CombinationFormula extends Component
 
         return $gradingRange ? $gradingRange->grade : 'N/A'; // Assuming 'grade' is the column with grade (A, B, etc.)
     }
-
-
-
 
     public function filterStudents()
     {
@@ -379,6 +353,8 @@ class CombinationFormula extends Component
         $this->selectedSection = null;
         $this->exams = []; // Clear exams when class is reset
     }
+
+
 
 
     public function render()

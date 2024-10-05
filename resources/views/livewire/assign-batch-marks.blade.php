@@ -77,7 +77,6 @@
                 @endforeach
             </div>
         </div>
-
         <!-- Marks Assignment Form -->
         @if ($selectedSection)
         <div wire:loading wire:target="assignMarks">
@@ -92,8 +91,13 @@
                 <strong>Total Students in this Stream:</strong> {{ count($students) }}
             </div>
         </div>
-        
-        <form wire:submit.prevent="assignMarks" class="mt-3">
+
+        <!-- Success alert -->
+        <div id="success-alert" class="alert alert-success" style="display: none;">
+            All marks have been assigned successfully!
+        </div>
+
+        <form wire:submit.prevent="assignMarks" class="mt-3" id="marks-form">
             <div class="table-responsive" style="overflow-x: auto;">
                 <table class="table table-bordered table-striped">
                     <thead>
@@ -102,91 +106,46 @@
                             <th style="width: 200px;">Student Name</th>
                             <th style="width: 150px;">Admission No</th>
                             @foreach ($subjects as $subject)
-                                <th style="width: 150px;">{{ $subject->subject_name }}</th>
+                            <th style="width: 150px;">{{ $subject->subject_name }}</th>
                             @endforeach
                         </tr>
                     </thead>
                     <tbody>
                         @if ($students->isEmpty())
-                            <tr>
-                                <td colspan="{{ count($subjects) + 3 }}" class="text-danger text-center">
-                                    No students available for this section.
-                                </td>
-                            </tr>
+                        <tr>
+                            <td colspan="{{ count($subjects) + 3 }}" class="text-danger text-center">
+                                No students available for this section.
+                            </td>
+                        </tr>
                         @else
-                            @foreach ($students as $index => $student)
-                                <tr>
-                                    <td>{{ $index + 1 }}</td>
-                                    <td>{{ $student->first_name }} {{ $student->last_name }}</td>
-                                    <td>{{ $student->adm_no }}</td>
-                                    @foreach ($subjects as $subject)
-                                        <td style="width: 150px;">
-                                            <input type="number" 
-                                                   class="form-control" 
-                                                   style="width: 150px;" 
-                                                   wire:model.defer="marks.{{ $student->id }}.{{ $subject->id }}" 
-                                                   min="0" max="100"
-                                                   data-bs-toggle="tooltip" 
-                                                   data-bs-placement="top" 
-                                                   title="{{ $student->first_name }} {{ $student->last_name }} ({{ $student->adm_no }})">
-                                            @error("marks.{$student->id}.{$subject->id}")
-                                                <div class="text-danger">{{ $message }}</div>
-                                            @enderror
-                                        </td>
-                                    @endforeach
-                                </tr>
+                        @foreach ($students as $index => $student)
+                        <tr>
+                            <td>{{ $index + 1 }}</td>
+                            <td>{{ $student->first_name }} {{ $student->last_name }}</td>
+                            <td>{{ $student->adm_no }}</td>
+                            @foreach ($subjects as $subject)
+                            <td style="width: 150px;">
+                                <input type="number" class="form-control mark-input" style="width: 150px;"
+                                    wire:model.defer="marks.{{ $student->id }}.{{ $subject->id }}" min="0" max="100"
+                                    data-bs-toggle="tooltip" data-bs-placement="top"
+                                    title="{{ $student->first_name }} {{ $student->last_name }} ({{ $student->adm_no }})">
+                                @error("marks.{$student->id}.{$subject->id}")
+                                <div class="text-danger">{{ $message }}</div>
+                                @enderror
+                            </td>
                             @endforeach
+                        </tr>
+                        @endforeach
                         @endif
                     </tbody>
                 </table>
             </div>
-        
+
             <button type="submit" class="btn btn-primary mt-3">
                 {{ $buttonText }}
             </button>
         </form>
-        
-        @push('scripts')
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                // Initialize Bootstrap tooltips
-                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-                var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                    return new bootstrap.Tooltip(tooltipTriggerEl);
-                });
-        
-                // Show tooltip on focus and input
-                tooltipTriggerList.forEach(function(tooltipTriggerEl) {
-                    tooltipTriggerEl.addEventListener('focus', function() {
-                        var tooltip = bootstrap.Tooltip.getInstance(tooltipTriggerEl);
-                        if (tooltip) {
-                            tooltip.show();
-                        }
-                    });
-        
-                    tooltipTriggerEl.addEventListener('blur', function() {
-                        var tooltip = bootstrap.Tooltip.getInstance(tooltipTriggerEl);
-                        if (tooltip) {
-                            tooltip.hide();
-                        }
-                    });
-        
-                    // Show tooltip on input
-                    tooltipTriggerEl.addEventListener('input', function() {
-                        var tooltip = bootstrap.Tooltip.getInstance(tooltipTriggerEl);
-                        if (tooltip) {
-                            tooltip.show();
-                        }
-                    });
-                });
-            });
-        </script>
-        @endpush
-        
-        
-       
-        
-        
+
         @else
         <p class="text-danger mt-3">You have not selected any section. Please select a section to proceed.</p>
         @endif
@@ -195,81 +154,80 @@
         @endif
     </div>
     @endif
+    @push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initialize Bootstrap tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
 
-    <!-- View Assigned Marks -->
-    @if ($selectedExam && $selectedSection)
-    <h3 class="mt-4">Assigned Marks for Section: {{ $sections->find($selectedSection)->name }}</h3>
-    <h5>Exam: {{ $exams->find($selectedExam)->name ?? 'N/A' }}</h5>
-    <h5>Grading System: {{ $exams->find($selectedExam)->gradingSystem->name ?? 'N/A' }}</h5>
-    <div class="table-responsive mt-3">
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>Student Name</th>
-                    <th>Admission No</th>
-                    @foreach ($subjects as $subject)
-                    <th>{{ $subject->subject_name }}</th>
-                    @endforeach
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($students as $student)
-                <tr>
-                    <td>{{ $student->first_name }} {{ $student->last_name }}</td>
-                    <td>{{ $student->adm_no }}</td>
-                    @foreach ($subjects as $subject)
-                    @php
-                    $examMark = \App\Models\ExamMarks::where([
-                    'student_id' => $student->id,
-                    'exam_id' => $selectedExam,
-                    'subject_id' => $subject->id,
-                    ])->first();
-                    @endphp
-                    <td>
-                        @if (isset($editable[$student->id]))
-                        <input type="number" class="form-control" style="width: 120px;"
-                            wire:model.defer="marks.{{ $student->id }}.{{ $subject->id }}" min="0" max="100"
-                            placeholder="{{ $examMark ? $examMark->marks : 'Add marks' }}" />
-                        @else
-                        <span>{{ $examMark ? $examMark->marks : 'N/A' }}</span>
-                        @endif
-                    </td>
-                    @endforeach
-                    <td>
-                        @if (isset($editable[$student->id]))
-                        <button wire:click="updateMarks({{ $student->id }})" class="btn btn-success btn-sm mt-1">
-                            Update
-                        </button>
-                        @else
-                        <button wire:click="editMarks({{ $student->id }})" class="btn btn-primary btn-sm mt-1">
-                            Edit
-                        </button>
-                        @endif
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-    @endif
+            // Show tooltip on focus and input
+            tooltipTriggerList.forEach(function(tooltipTriggerEl) {
+                tooltipTriggerEl.addEventListener('focus', function() {
+                    var tooltip = bootstrap.Tooltip.getInstance(tooltipTriggerEl);
+                    if (tooltip) {
+                        tooltip.show();
+                    }
+                });
+
+                tooltipTriggerEl.addEventListener('blur', function() {
+                    var tooltip = bootstrap.Tooltip.getInstance(tooltipTriggerEl);
+                    if (tooltip) {
+                        tooltip.hide();
+                    }
+                });
+
+                // Show tooltip on input
+                tooltipTriggerEl.addEventListener('input', function() {
+                    var tooltip = bootstrap.Tooltip.getInstance(tooltipTriggerEl);
+                    if (tooltip) {
+                        tooltip.show();
+                    }
+                });
+            });
+
+            // Real-time validation for marks input fields
+            const inputs = document.querySelectorAll('.mark-input');
+            const successAlert = document.getElementById('success-alert');
+
+            // Function to validate all inputs and highlight empty ones
+            function validateMarks() {
+                let allValid = true;
+
+                // Loop through each input field
+                inputs.forEach(input => {
+                    if (input.value === '') {
+                        // If input is empty, highlight it with a red border
+                        input.style.border = '2px solid red';
+                        allValid = false;
+                    } else {
+                        // If input is filled, remove any red border
+                        input.style.border = '';
+                    }
+                });
+
+                // Display success message if all fields are valid
+                if (allValid) {
+                    successAlert.style.display = 'block';
+                    successAlert.innerText = 'All marks have been assigned successfully!';
+                } else {
+                    successAlert.style.display = 'none'; // Hide success alert if any field is invalid
+                }
+            }
+
+            // Initial validation when the form loads
+            validateMarks();
+
+            // Real-time validation as user interacts with the form
+            inputs.forEach(input => {
+                input.addEventListener('input', function () {
+                    validateMarks(); // Validate fields as they are updated
+                });
+            });
+        });
+    </script>
+    @endpush
 
 </div>
-
-{{-- @push('styles')
-<!-- Tooltip Styling and Script -->
-<style>
-    .custom-tooltip {
-        position: absolute;
-        background-color: #343a40;
-        color: #fff;
-        padding: 5px 10px;
-        border-radius: 5px;
-        display: none;
-        z-index: 9999;
-    }
-</style>
-
-@endpush --}}
-
-

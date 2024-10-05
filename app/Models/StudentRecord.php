@@ -69,6 +69,12 @@ class StudentRecord extends Model
         return $this->belongsTo(MyClass::class);
     }
 
+
+    /**
+     * Get the section that this student belongs to
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function section()
     {
         return $this->belongsTo(Section::class);
