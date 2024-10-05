@@ -183,7 +183,7 @@
 
                         <body>
                             <div class="table-responsive">
-                                <table id="marksTable" class="table table-bordered">
+                                <table  class="table table-bordered">
                                     <thead>
                                         <tr class="table-primary">
                                             <th rowspan="2" class="align-middle">Student Name</th>
@@ -215,7 +215,7 @@
                                             $subject->id);
                                             @endphp
                                             <td class="align-middle">
-                                                {{ $subjectMark !== 'N/A' ? "{$subjectMark} ({$grade})" : 'N/A' }}
+                                                {{ $subjectMark !== 'N/A' ? "{$subjectMark} {$grade}" : 'N/A' }}
                                             </td>
                                             @endforeach
                                             <td class="align-middle text-center">{{ $mark['total_marks'] ?? 'N/A' }}
@@ -243,7 +243,7 @@
                                 </table>
                             </div>
 
-                            <script>
+                            {{-- <script>
                                 $(document).ready(function() {
                                     $('#marksTable').DataTable({
                                         dom: 'Bfrtip',
@@ -252,7 +252,7 @@
                                         ]
                                     });
                                 });
-                            </script>
+                            </script> --}}
                             @elseif ($selectedClass && !$selectedExam)
                             <div class="alert alert-warning mt-4">
                                 Please select an exam to view student marks.

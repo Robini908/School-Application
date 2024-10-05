@@ -9,12 +9,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class StudentRecord extends Model
 {
     use HasFactory;
+
     // Ensure that the 'id' column is the primary key
     protected $primaryKey = 'id';
 
     // If the primary key is not an incrementing integer
     public $incrementing = true;
     protected $keyType = 'int';
+    
+    // Fillable fields
     protected $fillable = [
         'parent_id_no',
         'my_class_id',
@@ -48,12 +51,19 @@ class StudentRecord extends Model
         'disapproval_reason' // Added missing field
     ];
     
+    // Casts to ensure proper handling of date fields
+    protected $casts = [
+        'expulsion_date' => 'datetime',         // Cast to Carbon instance
+        'expulsion_end_date' => 'datetime',     // Cast to Carbon instance
+        // Add other date fields here if needed
+    ];
 
     public function parent_detail()
     {
         // Corrected relationship to reference the foreign key
         return $this->belongsTo(ParentDetail::class, 'parent_id_no', 'parent_id_no');
     }
+
     public function my_class()
     {
         return $this->belongsTo(MyClass::class);
@@ -68,6 +78,7 @@ class StudentRecord extends Model
     {
         return $this->belongsTo(Dorm::class);
     }
+
     public function examMarks()
     {
         // Ensure the foreign key is correctly defined
@@ -79,7 +90,5 @@ class StudentRecord extends Model
         return $this->hasMany(ExamMarks::class, 'student_id');
     }
 
-    // Check if the student is expelled
-
-    
+    // Add any additional methods or checks you may need
 }

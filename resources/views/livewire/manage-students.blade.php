@@ -1,9 +1,11 @@
-<div class="container ">
+<div class="container">
     <x-flash-messages />
+
     {{-- Header or Page Title --}}
     <h1 class="text-center text-2xl font-bold mb-4">Manage Students</h1>
 
     <div class="card">
+
         <div class="row g-3 align-items-center m-1">
             <div class="col-auto">
                 <label for="formFilter" class="form-label">Form: </label>
@@ -133,6 +135,7 @@
             </form>
         </div>
     </div>
+
     @elseif ($isViewingDetails)
     {{-- Viewing Student Details Page --}}
     <div class="card mb-4">
@@ -146,6 +149,7 @@
             {{-- Other student details can go here --}}
         </div>
     </div>
+
     @elseif ($isDeleting)
     {{-- Confirm Delete Page --}}
     <div class="card mb-4">
@@ -159,79 +163,85 @@
             <button wire:click="cancelDelete" class="btn btn-secondary">Cancel</button>
         </div>
     </div>
+
     @elseif ($isExpellingStudent)
     {{-- Expelling Student Page --}}
-    <div class="card shadow-sm border-light">
-        <div class="card-header d-flex justify-content-between align-items-center">
+    {{-- Expelling Student Page --}}
+    <div class="card mb-4">
+        <div class="card-header  text-white d-flex justify-content-between align-items-center ">
             <h4 class="mb-0">
-                {{ $selectedStudent->status === 'expelled' ? 'Reinstate Student' : 'Expel Student' }}: {{
-                $selectedStudent->first_name }} {{ $selectedStudent->last_name }}
+                {{ $selectedStudent->status === 'expelled' ? 'Reinstate Student' : 'Expel Student' }}: 
+                {{ $selectedStudent->first_name }} {{ $selectedStudent->last_name }}
             </h4>
-            <button wire:click="closeAction" class="btn btn-light btn-sm">Close</button>
+            <button wire:click="closeAction" class="btn btn-light btn-sm rounded-pill">Close</button>
         </div>
-
+    
         <div class="card-body">
+            <!-- Student Photo and Info Section -->
             <div class="row align-items-center mb-4">
-                <div class="col-md-4 text-center">
+                <div class="col-md-4 text-center mb-3">
                     <img src="{{ asset($selectedStudent->photo) }}" alt="Student Photo"
                         class="img-fluid rounded-circle shadow-sm" style="width: 150px; height: 150px;">
                 </div>
-                <div class="row mb-4">
-                    <div class="col-md-4">
-                        <h6 class="text-muted">Class</h6>
-                        <p class="lead">{{ $selectedStudent->my_class->name }}</p>
-
-                        <h6 class="text-muted">Status</h6>
-                        <p class="lead">{{ $selectedStudent->status }}</p>
-                    </div>
-
-                    <div class="col-md-4">
-                        <h6 class="text-muted">Section</h6>
-                        <p class="lead">{{ $selectedStudent->section->name }}</p>
-
-                        <h6 class="text-muted">Admission No</h6>
-                        <p class="lead">{{ $selectedStudent->adm_no }}</p>
-                    </div>
-
-                    <div class="col-md-4">
-                        <h6 class="text-muted">Parent</h6>
-                        <p class="lead">{{ optional($selectedStudent->parent_detail)->name ?? 'N/A' }}</p>
-
-                        <h6 class="text-muted">Year Admitted</h6>
-                        <p class="lead">{{ $selectedStudent->year_admitted }}</p>
-                    </div>
-
-                    <div class="col-md-4 mt-4">
-                        <h6 class="text-muted">KCPE Score</h6>
-                        <p class="lead">{{ $selectedStudent->kcpe }}</p>
-
-                        <h6 class="text-muted">Email</h6>
-                        <p class="lead">{{ $selectedStudent->email }}</p>
+    
+                <div class="col-md-8">
+                    <div class="row">
+                        <!-- Student Info Grid -->
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Class</h6>
+                            <p class="font-weight-bold">{{ $selectedStudent->my_class->name }}</p>
+    
+                            <h6 class="text-muted">Status</h6>
+                            <p class="font-weight-bold">{{ $selectedStudent->status }}</p>
+                        </div>
+    
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Section</h6>
+                            <p class="font-weight-bold">{{ $selectedStudent->section->name }}</p>
+    
+                            <h6 class="text-muted">Admission No</h6>
+                            <p class="font-weight-bold">{{ $selectedStudent->adm_no }}</p>
+                        </div>
+    
+                        <div class="col-md-6 mt-3">
+                            <h6 class="text-muted">Parent</h6>
+                            <p class="font-weight-bold">{{ optional($selectedStudent->parent_detail)->name ?? 'N/A' }}</p>
+    
+                            <h6 class="text-muted">Year Admitted</h6>
+                            <p class="font-weight-bold">{{ $selectedStudent->year_admitted }}</p>
+                        </div>
+    
+                        <div class="col-md-6 mt-3">
+                            <h6 class="text-muted">KCPE Score</h6>
+                            <p class="font-weight-bold">{{ $selectedStudent->kcpe }}</p>
+    
+                            <h6 class="text-muted">Email</h6>
+                            <p class="font-weight-bold">{{ $selectedStudent->email }}</p>
+                        </div>
                     </div>
                 </div>
-
             </div>
-
+    
+            <!-- Expel or Reinstate Actions -->
             <div class="text-center mb-4">
                 @if ($selectedStudent->status === 'expelled')
                 <p>Are you sure you want to reinstate this student?</p>
                 <div class="d-flex justify-content-center">
-                    <button wire:click="reinstateStudent" class="btn btn-success mx-2">Reinstate</button>
-                    <button wire:click="cancelAction" class="btn btn-secondary mx-2">Cancel</button>
+                    <button wire:click="reinstateStudent" class="btn btn-success mx-2 rounded-pill px-4">Reinstate</button>
+                    <button wire:click="cancelAction" class="btn btn-secondary mx-2 rounded-pill px-4">Cancel</button>
                 </div>
                 @else
                 <p>Are you sure you want to expel this student?</p>
-
+    
                 <!-- Reason for Expulsion -->
-                <div class="form-group mb-3">
+                <div class="form-group">
                     <label for="expulsionReason" class="form-label">Reason for Expulsion</label>
-                    <textarea wire:model="expulsionReason" id="expulsionReason" class="form-control" rows="3"
-                        required></textarea>
+                    <textarea wire:model="expulsionReason" id="expulsionReason" class="form-control" rows="3" required></textarea>
                     @error('expulsionReason') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
-
+    
                 <!-- Type of Expulsion -->
-                <div class="form-group mb-3">
+                <div class="form-group">
                     <label for="expulsionType" class="form-label">Type of Expulsion</label>
                     <select wire:model="expulsionType" id="expulsionType" class="form-control" required>
                         <option value="">Select Type</option>
@@ -241,29 +251,23 @@
                     </select>
                     @error('expulsionType') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
-
+    
                 <!-- Duration of Expulsion -->
-                <div class="form-group mb-4">
-                    <label for="expulsionDuration" class="form-label">Duration (Weeks)</label>
-                    <input type="number" wire:model="expulsionDuration" id="expulsionDuration" class="form-control"
-                        min="0.1" step="0.1" placeholder="Duration in weeks" required>
-                    @error('expulsionDuration') <span class="text-danger">{{ $message }}</span> @enderror
+                <div class="form-group">
+                    <label for="expulsionEndDate" class="form-label">Expulsion End Date</label>
+                    <input type="date" wire:model="expulsionEndDate" id="expulsionEndDate" class="form-control" required>
+                    @error('expulsionEndDate') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
-
+    
                 <div class="d-flex justify-content-center">
-                    <button wire:click="expelStudent" class="btn btn-danger mx-2">Expel</button>
-                    <button wire:click="cancelExpel" class="btn btn-secondary mx-2">Cancel</button>
+                    <button wire:click="expelStudent" class="btn btn-danger mx-2 rounded-pill px-4">Expel</button>
+                    <button wire:click="cancelExpel" class="btn btn-secondary mx-2 rounded-pill px-4">Cancel</button>
                 </div>
                 @endif
             </div>
         </div>
     </div>
-
-
-
-
-
-
+    
 
     @elseif ($isSuspendingStudent)
     {{-- Suspending Student Page --}}
@@ -290,6 +294,7 @@
             <p>{{ $selectedStudent->history }}</p>
         </div>
     </div>
+
     @elseif ($isApproving)
     {{-- Approving Student Page --}}
     <div class="card">
@@ -345,10 +350,6 @@
             @endif
         </div>
     </div>
-
-
-
-
     @elseif ($isSendingStudentMail)
     {{-- Send Email to Student Page --}}
     <div class="card mb-4">
@@ -356,44 +357,59 @@
             <h3 class="mb-0">Send Email to Student</h3>
             <button wire:click="closeAction" class="btn btn-secondary btn-sm">Close</button>
         </div>
+
         <div class="card-body">
             <!-- Display Student Details -->
-            <div class="mb-3">
+            <div class="mb-4">
                 <h5>Student Details</h5>
-                <p><strong>Name:</strong> {{ $selectedStudent->first_name }} {{ $selectedStudent->last_name }}</p>
-                <p><strong>Stream:</strong> {{ $selectedStudent->stream }}</p>
-                <p><strong>Class:</strong> {{ $selectedStudent->class }}</p>
+                <div class="row">
+                    <div class="col-md-4">
+                        <p><strong>Name:</strong> {{ $selectedStudent->first_name }} {{ $selectedStudent->last_name }}
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <p><strong>Stream:</strong> {{ $selectedStudent->stream }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p><strong>Class:</strong> {{ $selectedStudent->class }}</p>
+                    </div>
+                </div>
             </div>
 
             <!-- Rich Text Editor for Email Content -->
-            <div wire:ignore>
-                <label for="notificationContent">Email Content:</label>
-                <input id="notificationContent" type="hidden" name="notificationContent"
-                    wire:model.defer="notificationContent">
-                <trix-editor input="notificationContent"></trix-editor>
+            <div class="mb-4">
+                <label for="notificationContent" class="form-label">Email Content:</label>
+                <div wire:ignore>
+                    <input id="notificationContent" type="hidden" name="notificationContent"
+                        wire:model.defer="notificationContent">
+                    <trix-editor input="notificationContent" class="trix-content" style="min-height: 150px;">
+                    </trix-editor>
+                </div>
             </div>
 
             <!-- File Upload -->
-            <div class="mt-4">
-                <label for="file">Attach a File:</label>
-                <input type="file" wire:model="file" class="form-control">
-                @error('file') <span class="text-danger">{{ $message }}</span> @enderror
+            <div class="mb-4">
+                <label for="file" class="form-label">Attach a File:</label>
+                <input type="file" wire:model="file" class="form-control form-control-sm">
+                @error('file')
+                <span class="text-danger">{{ $message }}</span>
+                @enderror
             </div>
 
             <!-- Buttons -->
-            <div class="d-flex justify-content-between mt-4" style="gap: 5px;">
-                <button wire:click="sendStudentMail({{ $selectedStudent->id }})" class="btn btn-primary btn-sm">Send
-                    Mail</button>
+            <div class="d-flex justify-content-end" style="gap: 10px;">
+                <button wire:click="sendStudentMail({{ $selectedStudent->id }})" class="btn btn-primary btn-sm">
+                    Send Mail
+                </button>
                 <button wire:click="cancelReject" class="btn btn-secondary btn-sm">Cancel</button>
             </div>
         </div>
     </div>
 
-
-
     @else
     {{-- Default student list if no actions are being performed --}}
-    <div class="table-responsive">
+    {{-- Default student list if no actions are being performed --}}
+    <div class="table-responsive" wire:poll.10s="fetchStudents">
         <x-data-table id="studentTable" title="Student List" message="List of registered students"
             :columns="['Admission', 'Student Photo', 'Name', 'Gender', 'Class', 'Section', 'Status', 'Parent Name', 'Parent Contact', 'Actions']">
             @if($noResults)
@@ -422,7 +438,7 @@
                         </a>
                     </span>
                 </td>
-
+    
                 <td>{{ $student->gender }}</td>
                 <td>{{ $student->my_class->name ?? 'N/A' }}</td>
                 <td>{{ $student->section->name ?? 'N/A' }}</td>
@@ -497,7 +513,6 @@
             @endif
         </x-data-table>
     </div>
-
-
+    
     @endif
 </div>

@@ -45,9 +45,11 @@ class ManageStudents extends Component
 
     public $isExpellingStudent = false;
     public $currentStep = 1;
+    public $expulsionEndDate;
 
     public $isRejectingStudent = false;
     public $isSuspendingStudent = false;
+    public $noResults = false;
     public $isSendingStudentMail = false;
     public $isViewingHistoryDetails = false;
     public $isApproving = false;
@@ -70,9 +72,7 @@ class ManageStudents extends Component
     {
         $this->mystudents = collect(); // Initialize as empty collection
 
-        $this->fetchStudents(); // Fetch students on mount
-
-        $this->loadStudents();
+        $this->fetchStudents();
         $this->loadFilterOptions(); // Load filter options if needed
     }
 
@@ -157,9 +157,8 @@ class ManageStudents extends Component
 
     public function fetchStudents()
     {
-        $this->mystudents = StudentRecord::with(['my_class', 'section', 'parent_detail'])
-            ->orderBy('id', 'desc')
-            ->get();
+        // Directly load students from the database
+        $this->loadStudents();
     }
 
     public function loadStudents()
@@ -186,7 +185,10 @@ class ManageStudents extends Component
         }
 
         // Execute the query and get the results
-        $this->mystudents = $query->get(['*']); // Fetch all student records
+        $this->mystudents = $query->get(); // Fetch all student records
+
+        // Check if no results found
+        $this->noResults = $this->mystudents->isEmpty();
     }
 
     public function getStudentsWithExpulsionInfo()
@@ -196,7 +198,7 @@ class ManageStudents extends Component
                 'id' => $student->id,
                 'first_name' => $student->first_name,
                 'last_name' => $student->last_name,
-                'is_expelled' => (bool) $student->is_expelled, // or your own logic to determine this
+                'is_expelled' => (bool) $student->is_expelled,
                 'expulsion_type' => $student->is_expelled ? ($student->expulsion_type ?? 'N/A') : null,
                 'my_class' => $student->my_class,
                 'section' => $student->section,
@@ -204,11 +206,6 @@ class ManageStudents extends Component
             ];
         });
     }
-
-
-
-
-
 
     public function loadFilterOptions()
     {
@@ -278,36 +275,48 @@ class ManageStudents extends Component
         $this->validate([
             'expulsionReason' => 'required|string|max:255',
             'expulsionType' => 'required|in:dismissal,withdrawal,permanent_exclusion',
-            'expulsionDuration' => 'nullable|numeric|min:0.1', // Duration in weeks for temporary expulsions
+            'expulsionEndDate' => 'nullable|date|after:today', // Validate the end date for temporary expulsions
         ]);
 
         // Update the student's expulsion status
-        $this->selectedStudent->is_expelled = true; // Set to expelled
-        $this->selectedStudent->expulsion_reason = $this->expulsionReason; // Set expulsion reason
-        $this->selectedStudent->expelled_by = auth()->user()->id; // Get admin user ID
-        $this->selectedStudent->expulsion_date = now(); // Record the expulsion date
-        $this->selectedStudent->expulsion_type = $this->expulsionType; // Set expulsion type
+        $this->selectedStudent->is_expelled = true;
+        $this->selectedStudent->expulsion_reason = $this->expulsionReason;
+        $this->selectedStudent->expelled_by = auth()->user()->id;
+        $this->selectedStudent->expulsion_date = now();
+        $this->selectedStudent->expulsion_type = $this->expulsionType;
 
-        // Calculate the end date for temporary expulsions
-        if ($this->expulsionType == 'dismissal' && $this->expulsionDuration) {
-            // Convert the duration in weeks to days for more precision
-            $days = $this->expulsionDuration * 7; // 7 days in a week
-            $this->selectedStudent->expulsion_end_date = now()->addDays($days); // Set end date
+        // Calculate the duration in weeks based on the end date if it's dismissal or withdrawal
+        if (in_array($this->expulsionType, ['dismissal', 'withdrawal']) && $this->expulsionEndDate) {
+            // Calculate the difference in weeks between now and the expulsion end date
+            $endDate = \Carbon\Carbon::parse($this->expulsionEndDate);
+            $weeksDifference = now()->diffInWeeks($endDate); // Get the difference in weeks
+
+            // Set expulsion end date and duration in weeks
+            $this->selectedStudent->expulsion_end_date = $endDate; // Set the end date
+            $this->expulsionDuration = $weeksDifference; // Store the calculated weeks (for reference, if needed)
+        } else {
+            // For permanent exclusion, we set the end date to null
+            $this->selectedStudent->expulsion_end_date = null; // No end date for permanent exclusions
         }
 
-        $this->selectedStudent->save(); // Save changes
+        // Save the student record
+        $this->selectedStudent->save();
 
         // Notify the parent of the expelled student
-        $this->sendNotificationToGuardians($this->selectedStudent); // Call the notification method
+        $this->sendNotificationToGuardians($this->selectedStudent);
+
+        // Reload the student list
         $this->loadStudents();
-        // Reset flags and student data
+
+        // Reset flags and data
         $this->isRejectingStudent = false;
-
-
         $this->resetExpulsion();
 
-        session()->flash('success', 'Student expelled successfully.'); // Set session success message
+        // Set a success message
+        session()->flash('success', 'Student expelled successfully.');
     }
+
+
 
 
     public function resetExpulsion()
@@ -541,6 +550,7 @@ class ManageStudents extends Component
     {
         return view('livewire.manage-students', [
             'noResults' => $this->mystudents->isEmpty(),
+
             'students' => $this->mystudents,
         ]);
     }

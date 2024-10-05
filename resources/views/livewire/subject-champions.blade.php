@@ -59,7 +59,7 @@
                             <th scope="col">Admission Number</th> <!-- Added Admission Number Column -->
                             <th scope="col">Stream</th> <!-- Added Stream Column -->
                             <th scope="col">Marks</th>
-                        </tr>git
+                        </tr>
                     </thead>
                     <tbody>
                         @foreach ($champions as $champion)
