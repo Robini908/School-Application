@@ -6,13 +6,14 @@ use App\Models\MyClass;
 use App\Models\Section;
 use Livewire\Component;
 use App\Models\ParentDetail;
-use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 use App\Models\StudentRecord;
+use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\DisapprovalNotification;
 use App\Notifications\StudentExpelled;
+use App\Notifications\StudentSuspended;
 
 
 class ManageStudents extends Component
@@ -21,13 +22,10 @@ class ManageStudents extends Component
     use WithFileUploads;
 
     public $selectedStudent;
-    // protected $mystudents;
     public $mystudents;
 
     public $file; // For file upload
     public $notificationContent; // For rich text editor content
-
-
 
     public $showDeleteModal = false;
     protected $mystudent; // Change to protected
@@ -36,24 +34,28 @@ class ManageStudents extends Component
     public $sectionFilter = '';
     public $statusFilter = '';
     public $classes = [];
-    public $expulsionReason = '';
-    public $expulsionType = '';
+
+    // Updated suspension-related properties
+    public $suspensionReason = ''; // Renamed from expulsionReason
+    public $suspensionType = ''; // Renamed from expulsionType
 
     // Flags for different actions
     public $isEditingStudent = false;
     public $isViewingDetails = false;
-
     public $isExpellingStudent = false;
+
+    public $isSuspendingStudent = false; // Renamed from isExpellingStudent
     public $currentStep = 1;
-    public $expulsionEndDate;
+    public $suspensionEndDate; // Renamed from expulsionEndDate
 
     public $isRejectingStudent = false;
-    public $isSuspendingStudent = false;
     public $noResults = false;
     public $isSendingStudentMail = false;
     public $isViewingHistoryDetails = false;
     public $isApproving = false;
-    public $expulsionDuration = null;
+
+    // Removed/renamed expulsion-related fields
+    public $suspensionDuration = null; // Renamed from expulsionDuration
     public $isDeleting = false;
     public $isRejecting = false;
     public $disapprovalReason = ''; // To hold the disapproval reason
@@ -62,6 +64,7 @@ class ManageStudents extends Component
     public $isDisapproving = false;
     public $sections = [];
     public $statuses = ['Active', 'Inactive'];
+
 
     protected $listeners = [
         'refreshStudents' => 'loadStudents',
@@ -191,21 +194,22 @@ class ManageStudents extends Component
         $this->noResults = $this->mystudents->isEmpty();
     }
 
-    public function getStudentsWithExpulsionInfo()
+    public function getStudentsWithSuspensionInfo()
     {
         return $this->mystudents->map(function ($student) {
             return [
                 'id' => $student->id,
                 'first_name' => $student->first_name,
                 'last_name' => $student->last_name,
-                'is_expelled' => (bool) $student->is_expelled,
-                'expulsion_type' => $student->is_expelled ? ($student->expulsion_type ?? 'N/A') : null,
+                'is_suspended' => (bool) $student->is_suspended, // Updated from is_expelled to is_suspended
+                'suspension_type' => $student->is_suspended ? ($student->suspension_type ?? 'N/A') : null, // Updated field
                 'my_class' => $student->my_class,
                 'section' => $student->section,
                 'parent_detail' => $student->parent_detail,
             ];
         });
     }
+
 
     public function loadFilterOptions()
     {
@@ -237,7 +241,27 @@ class ManageStudents extends Component
     }
 
     // Expel Student
-    public function studentExpulsion($studentId)
+    // public function studentExpulsion($studentId)
+    // {
+    //     // Fetch the student data with related models
+    //     $this->selectedStudent = StudentRecord::with(['my_class', 'section', 'parent_detail'])->find($studentId);
+
+    //     // Check if student exists
+    //     if (!$this->selectedStudent) {
+    //         session()->flash('error', 'Student not found.'); // Set session error message
+    //         return;
+    //     }
+
+    //     // Set flags for expulsion process
+    //     $this->isExpellingStudent = true;
+
+    //     // Initialize the expulsion reason and type
+    //     $this->expulsionReason = ''; // Initialize reason variable
+    //     $this->expulsionType = ''; // Initialize expulsion type variable
+    //     $this->expulsionDuration = null; // Initialize expulsion duration variable
+    // }
+
+    public function studentSuspension($studentId)
     {
         // Fetch the student data with related models
         $this->selectedStudent = StudentRecord::with(['my_class', 'section', 'parent_detail'])->find($studentId);
@@ -248,13 +272,13 @@ class ManageStudents extends Component
             return;
         }
 
-        // Set flags for expulsion process
-        $this->isExpellingStudent = true;
+        // Set flags for suspension process
+        $this->isSuspendingStudent = true;
 
-        // Initialize the expulsion reason and type
-        $this->expulsionReason = ''; // Initialize reason variable
-        $this->expulsionType = ''; // Initialize expulsion type variable
-        $this->expulsionDuration = null; // Initialize expulsion duration variable
+        // Initialize the suspension reason and type
+        $this->suspensionReason = ''; // Initialize reason variable
+        $this->suspensionType = ''; // Initialize suspension type variable
+        $this->suspensionDuration = null; // Initialize suspension duration variable
     }
 
     public function sendNotificationToGuardians($student)
@@ -265,67 +289,62 @@ class ManageStudents extends Component
         // Check if the parent exists
         if ($parent) {
             // Send notification to the parent
-            $parent->notify(new StudentExpelled($student));
+            $parent->notify(new StudentSuspended($student)); // Updated notification class
         }
     }
 
-    public function expelStudent()
+    public function confirmStudentSuspension()
     {
         // Validate the input fields
         $this->validate([
-            'expulsionReason' => 'required|string|max:255',
-            'expulsionType' => 'required|in:dismissal,withdrawal,permanent_exclusion',
-            'expulsionEndDate' => 'nullable|date|after:today', // Validate the end date for temporary expulsions
+            'suspensionReason' => 'required|string|max:255',
+            'suspensionType' => 'required|in:dismissal,withdrawal,permanent_exclusion',
+            'suspensionEndDate' => 'nullable|date|after:today', // Validate the end date for temporary suspensions
         ]);
 
-        // Update the student's expulsion status
-        $this->selectedStudent->is_expelled = true;
-        $this->selectedStudent->expulsion_reason = $this->expulsionReason;
-        $this->selectedStudent->expelled_by = auth()->user()->id;
-        $this->selectedStudent->expulsion_date = now();
-        $this->selectedStudent->expulsion_type = $this->expulsionType;
+        // Update the student's suspension status
+        $this->selectedStudent->is_suspended = true;
+        $this->selectedStudent->suspension_reason = $this->suspensionReason;
+        $this->selectedStudent->suspended_by = auth()->user()->id;
+        $this->selectedStudent->suspension_date = now();
+        $this->selectedStudent->suspension_type = $this->suspensionType;
 
         // Calculate the duration in weeks based on the end date if it's dismissal or withdrawal
-        if (in_array($this->expulsionType, ['dismissal', 'withdrawal']) && $this->expulsionEndDate) {
-            // Calculate the difference in weeks between now and the expulsion end date
-            $endDate = \Carbon\Carbon::parse($this->expulsionEndDate);
-            $weeksDifference = now()->diffInWeeks($endDate); // Get the difference in weeks
+        if (in_array($this->suspensionType, ['dismissal', 'withdrawal']) && $this->suspensionEndDate) {
+            $endDate = \Carbon\Carbon::parse($this->suspensionEndDate);
+            $weeksDifference = now()->diffInWeeks($endDate);
 
-            // Set expulsion end date and duration in weeks
-            $this->selectedStudent->expulsion_end_date = $endDate; // Set the end date
-            $this->expulsionDuration = $weeksDifference; // Store the calculated weeks (for reference, if needed)
+            // Set suspension end date and duration in weeks
+            $this->selectedStudent->suspension_end_date = $endDate;
+            $this->suspensionDuration = $weeksDifference;
         } else {
-            // For permanent exclusion, we set the end date to null
-            $this->selectedStudent->expulsion_end_date = null; // No end date for permanent exclusions
+            $this->selectedStudent->suspension_end_date = null;
         }
 
         // Save the student record
         $this->selectedStudent->save();
 
-        // Notify the parent of the expelled student
+        // Notify the parent of the suspended student
         $this->sendNotificationToGuardians($this->selectedStudent);
 
         // Reload the student list
         $this->loadStudents();
 
         // Reset flags and data
-        $this->isRejectingStudent = false;
-        $this->resetExpulsion();
+        $this->isSuspendingStudent = false;
+        $this->resetSuspension();
 
         // Set a success message
-        session()->flash('success', 'Student expelled successfully.');
+        session()->flash('success', 'Student suspended successfully.');
     }
 
-
-
-
-    public function resetExpulsion()
+    public function resetSuspension()
     {
-        $this->selectedStudent = null; // Clear selected student data
-        $this->isExpellingStudent = false; // Reset expulsion flag
-        $this->expulsionReason = ''; // Reset reason
-        $this->expulsionType = ''; // Reset expulsion type
-        $this->expulsionDuration = null; // Reset duration
+        $this->selectedStudent = null;
+        $this->isSuspendingStudent = false;
+        $this->suspensionReason = '';
+        $this->suspensionType = '';
+        $this->suspensionDuration = null;
     }
 
 
@@ -468,7 +487,7 @@ class ManageStudents extends Component
         $this->isEditingStudent = false;
         $this->isViewingDetails = false;
         $this->isDeleting = false;
-        $this->isExpellingStudent = false;
+        // $this->isExpellingStudent = false;
         $this->isSuspendingStudent = false;
         $this->isViewingHistoryDetails = false;
         $this->isApproving = false;

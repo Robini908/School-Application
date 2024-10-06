@@ -1,12 +1,12 @@
-<div class="card mt-2" wire:poll.5s>
+<div class="card mt-2" wire:poll.10s>
     <div class="card-body">
         <h2 class="text-center font-weight-bold mb-4">Suspended Students</h2>
         <x-flash-messages />
 
-        @if (!$isReinstating && !$isExtendingExpulsion)
+        @if (!$isReinstating && !$isExtendingSuspension)
         <div class="row">
-            @forelse ($expelledStudents as $student)
-            <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+            @forelse ($suspendedStudents as $student)
+            <div class="col-lg-6 col-md-6 col-sm-12 mb-4">
                 <div class="card shadow-lg border-light">
                     <div class="card-body">
                         <h3 class="text-center font-weight-bold mb-2">{{ $student->first_name }} {{ $student->last_name }}</h3>
@@ -36,8 +36,18 @@
                         </div>
 
                         <div class="d-flex justify-content-between mt-3">
-                            <button wire:click="reinstate({{ $student->id }})" class="btn btn-success btn-sm">Reinstate</button>
-                            <button wire:click="extendExpulsion({{ $student->id }})" class="btn btn-primary btn-sm">Extend</button>
+                            <div class="d-flex align-items-center">
+                                <button wire:click="reinstate({{ $student->id }})" class="btn btn-success btn-sm me-2">
+                                    Reinstate
+                                </button>
+                                <div wire:loading wire:target="reinstate({{ $student->id }})" class="spinner-border spinner-border-sm ms-2" role="status"></div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <button wire:click="extendSuspension({{ $student->id }})" class="btn btn-primary btn-sm me-2">
+                                    Extend
+                                </button>
+                                <div wire:loading wire:target="extendSuspension({{ $student->id }})" class="spinner-border spinner-border-sm ms-2" role="status"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -56,14 +66,19 @@
             <h3 class="font-weight-bold mb-3">Reinstate Student</h3>
             <p class="mb-3">Are you sure you want to reinstate the student?</p>
             <div class="d-flex gap-3">
-                <button wire:click="confirmReinstatement" class="btn btn-success">Yes, Reinstate</button>
+                <div class="d-flex align-items-center">
+                    <button wire:click="confirmReinstatement" class="btn btn-success">
+                        Yes, Reinstate
+                    </button>
+                    <div wire:loading wire:target="confirmReinstatement" class="spinner-border spinner-border-sm ms-2" role="status"></div>
+                </div>
                 <button wire:click="$set('isReinstating', false)" class="btn btn-danger">Cancel</button>
             </div>
         </div>
         @endif
 
         {{-- Extend Suspension Logic --}}
-        @if ($isExtendingExpulsion)
+        @if ($isExtendingSuspension)
         <div class="mt-4">
             <h3 class="font-weight-bold mb-3">Extend Suspension</h3>
 
@@ -75,11 +90,16 @@
             </div>
 
             <label for="new_suspension_end_date" class="form-label">New Suspension End Date:</label>
-            <input type="date" wire:model="newExpulsionEndDate" class="form-control mb-2" />
+            <input type="date" wire:model="newSuspensionEndDate" class="form-control mb-2" />
 
             <div class="d-flex gap-3">
-                <button wire:click="confirmExtension" class="btn btn-primary">Confirm Extension</button>
-                <button wire:click="$set('isExtendingExpulsion', false)" class="btn btn-danger">Cancel</button>
+                <div class="d-flex align-items-center">
+                    <button wire:click="confirmExtension" class="btn btn-primary">
+                        Confirm Extension
+                    </button>
+                    <div wire:loading wire:target="confirmExtension" class="spinner-border spinner-border-sm ms-2" role="status"></div>
+                </div>
+                <button wire:click="$set('isExtendingSuspension', false)" class="btn btn-danger">Cancel</button>
             </div>
         </div>
         @endif

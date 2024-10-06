@@ -16,7 +16,7 @@ class StudentRecord extends Model
     // If the primary key is not an incrementing integer
     public $incrementing = true;
     protected $keyType = 'int';
-    
+
     // Fillable fields
     protected $fillable = [
         'parent_id_no',
@@ -41,26 +41,25 @@ class StudentRecord extends Model
         'photo',
         'status',
         'student_password',
-        'is_expelled',
-        'expulsion_reason',
-        'expelled_by',
-        'notification_content', // Added missing field
-        'expulsion_date',
-        'expulsion_type',
-        'expulsion_end_date',
-        'disapproval_reason' // Added missing field
+        'is_suspended',              // Renamed from is_expelled
+        'suspension_reason',          // Renamed from expulsion_reason
+        'suspended_by',               // Renamed from expelled_by
+        'notification_content',
+        'suspension_date',            // Renamed from expulsion_date
+        'suspension_type',            // Renamed from expulsion_type
+        'suspension_end_date',        // Renamed from expulsion_end_date
+        'disapproval_reason'
     ];
-    
+
     // Casts to ensure proper handling of date fields
     protected $casts = [
-        'expulsion_date' => 'datetime',         // Cast to Carbon instance
-        'expulsion_end_date' => 'datetime',     // Cast to Carbon instance
+        'suspension_date' => 'datetime',         // Renamed from expulsion_date
+        'suspension_end_date' => 'datetime',     // Renamed from expulsion_end_date
         // Add other date fields here if needed
     ];
 
     public function parent_detail()
     {
-        // Corrected relationship to reference the foreign key
         return $this->belongsTo(ParentDetail::class, 'parent_id_no', 'parent_id_no');
     }
 
@@ -68,7 +67,6 @@ class StudentRecord extends Model
     {
         return $this->belongsTo(MyClass::class);
     }
-
 
     /**
      * Get the section that this student belongs to
@@ -87,14 +85,11 @@ class StudentRecord extends Model
 
     public function examMarks()
     {
-        // Ensure the foreign key is correctly defined
-        return $this->hasMany(ExamMarks::class, 'student_id'); // student_id should be the foreign key
+        return $this->hasMany(ExamMarks::class, 'student_id'); 
     }
 
     public function marks(): HasMany
     {
         return $this->hasMany(ExamMarks::class, 'student_id');
     }
-
-    // Add any additional methods or checks you may need
 }

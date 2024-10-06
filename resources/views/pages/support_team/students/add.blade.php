@@ -19,7 +19,7 @@
                         <i class="icon-user-plus"></i> Admit New Student
                     </button>
                     <button class="dropdown-item" type="button" @click.prevent="activeTab = 'bulk-admit'">
-                        <i class="icon-clipboard-list"></i> Manage Expulsions  <!-- Icon for managing expulsions -->
+                        <i class="icon-clipboard-list"></i> Manage Suspensions  <!-- Icon for managing expulsions -->
                     </button>
                     <button class="dropdown-item" type="button" @click.prevent="activeTab = 'addbulk'">
                         <i class="icon-upload"></i> Add Bulk  <!-- Icon for adding bulk -->
@@ -41,7 +41,7 @@
 
             <!-- Bulk Admit Tab Content -->
             <div x-show="activeTab === 'bulk-admit'" class="p-4">
-                @livewire('manage-expulsions')
+                @livewire('manage-suspensions')
             </div>
 
             <!-- Add Bulk Tab Content -->
