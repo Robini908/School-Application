@@ -15,278 +15,249 @@
                     <!-- Year Filter (First) -->
                     <div class="row">
                         <!-- Year Filter -->
-                        <div class="col-md-3 mb-2">
+                        <div class="col-md-2 mb-2">
                             <label for="examYear">Year:</label>
-                            <input type="number" wire:model.debounce.500ms="selectedExamYear" id="examYear"
-                                class="form-control" placeholder="Enter Exam Year">
-                            @if ($loading) <div class="spinner-border spinner-border-sm" role="status"></div> @endif
+                            <div class="input-group">
+                                <input type="number" wire:model.debounce.500ms="selectedExamYear" id="examYear"
+                                    class="form-control" placeholder="Enter Exam Year">
+                                <div wire:loading wire:target="selectedExamYear" class="input-group-append">
+                                    <span class="input-group-text">
+                                        <div class="spinner-border spinner-border-sm" role="status"></div>
+                                    </span>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Year Admitted Filter -->
-                        <div class="col-md-3 mb-2">
+                        <div class="col-md-2 mb-2">
                             <label for="yearAdmitted">Year Admitted:</label>
-                            <input type="number" wire:model.debounce.500ms="selectedYearAdmitted" id="yearAdmitted"
-                                class="form-control" placeholder="Enter Year Admitted">
-                            @if ($loading) <div class="spinner-border spinner-border-sm" role="status"></div> @endif
+                            <div class="input-group">
+                                <input type="number" wire:model.debounce.500ms="selectedYearAdmitted" id="yearAdmitted"
+                                    class="form-control" placeholder="Enter Year Admitted">
+                                <div wire:loading wire:target="selectedYearAdmitted" class="input-group-append">
+                                    <span class="input-group-text">
+                                        <div class="spinner-border spinner-border-sm" role="status"></div>
+                                    </span>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Class Filter -->
-                        <div class="col-md-3 mb-2">
+                        <div class="col-md-2 mb-2">
                             <label for="class">Class:</label>
-                            <select wire:model="selectedClass" id="class" class="form-control select2"
-                                wire:loading.attr="disabled">
-                                <option value="">Select Class</option>
-                                @foreach ($classes as $class)
-                                <option value="{{ $class->id }}">{{ $class->name }}</option>
-                                @endforeach
-                            </select>
-                            <!-- Spinner shown during loading -->
-                            <div wire:loading wire:target="selectedClass" class="spinner-border spinner-border-sm mt-1"
-                                role="status" aria-hidden="true"></div>
+                            <div class="input-group">
+                                <select wire:model="selectedClass" id="class" class="form-control select2"
+                                    wire:loading.attr="disabled">
+                                    <option value="">Select Class</option>
+                                    @foreach ($classes as $class)
+                                    <option value="{{ $class->id }}">{{ $class->name }}</option>
+                                    @endforeach
+                                </select>
+                                <div wire:loading wire:target="selectedClass" class="input-group-append">
+                                    <span class="input-group-text">
+                                        <div class="spinner-border spinner-border-sm mt-1" role="status"></div>
+                                    </span>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Section Filter -->
-                        <div class="col-md-3 mb-2">
+                        <div class="col-md-2 mb-2">
                             <label for="section">Section:</label>
-                            <select wire:model="selectedSection" id="section" class="form-control select2"
-                                wire:loading.attr="disabled">
-                                <option value="">Select Section</option>
-                                @foreach ($sections as $section)
-                                <option value="{{ $section->id }}">{{ $section->name }}</option>
-                                @endforeach
-                            </select>
-                            @if ($loading) <div class="spinner-border spinner-border-sm" role="status"></div> @endif
+                            <div class="input-group">
+                                <select wire:model="selectedSection" id="section" class="form-control select2"
+                                    wire:loading.attr="disabled">
+                                    <option value="">Select Section</option>
+                                    @foreach ($sections as $section)
+                                    <option value="{{ $section->id }}">{{ $section->name }}</option>
+                                    @endforeach
+                                </select>
+                                <div wire:loading wire:target="selectedSection" class="input-group-append">
+                                    <span class="input-group-text">
+                                        <div class="spinner-border spinner-border-sm mt-1" role="status"></div>
+                                    </span>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Term Filter -->
-                        <div class="col-md-3 mb-2">
+                        <div class="col-md-2 mb-2">
                             <label for="term">Term:</label>
-                            <select wire:model="selectedTerm" id="term" class="form-control select2"
-                                wire:loading.attr="disabled">
-                                <option value="">Select Term</option>
-                                @foreach ($terms as $term)
-                                <option value="{{ $term->id }}">{{ $term->name }}</option>
-                                @endforeach
-                            </select>
-                            @if ($loading) <div class="spinner-border spinner-border-sm" role="status"></div> @endif
+                            <div class="input-group">
+                                <select wire:model="selectedTerm" id="term" class="form-control select2"
+                                    wire:loading.attr="disabled">
+                                    <option value="">Select Term</option>
+                                    @foreach ($terms as $term)
+                                    <option value="{{ $term->id }}">{{ $term->name }}</option>
+                                    @endforeach
+                                </select>
+                                <div wire:loading wire:target="selectedTerm" class="input-group-append">
+                                    <span class="input-group-text">
+                                        <div class="spinner-border spinner-border-sm mt-1" role="status"></div>
+                                    </span>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Exam Filter -->
-                        <div class="col-md-3 mb-2">
+                        <div class="col-md-2 mb-2">
                             <label for="exam">Exam:</label>
-                            <select wire:model="selectedExam" id="exam" class="form-control select2"
-                                wire:loading.attr="disabled">
-                                <option value="">Select Exam</option>
-                                @foreach ($exams as $exam)
-                                <option value="{{ $exam->id }}">{{ $exam->name }}</option>
-                                @endforeach
-                            </select>
-                            <!-- Spinner shown during loading -->
-                            <div wire:loading wire:target="selectedExam" class="spinner-border spinner-border-sm mt-1"
-                                role="status" aria-hidden="true"></div>
+                            <div class="input-group">
+                                <select wire:model="selectedExam" id="exam" class="form-control select2"
+                                    wire:loading.attr="disabled">
+                                    <option value="">Select Exam</option>
+                                    @foreach ($exams as $exam)
+                                    <option value="{{ $exam->id }}">{{ $exam->name }}</option>
+                                    @endforeach
+                                </select>
+                                <div wire:loading wire:target="selectedExam" class="input-group-append">
+                                    <span class="input-group-text">
+                                        <div class="spinner-border spinner-border-sm mt-1" role="status"></div>
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-
-                    </div>
-
-
-                    <!-- Display applied filters with "x" icon for individual reset -->
-                    <div class="mt-3">
-                        @if($selectedExamYear)
-                        <span class="badge badge-info">
-                            Year: {{ $selectedExamYear }}
-                            <button wire:click="resetFilter('selectedExamYear')" class="btn btn-sm btn-light">x</button>
-                        </span>
-                        @endif
-                        @if($selectedClass)
-                        <span class="badge badge-info">
-                            Class: {{ optional($classes->firstWhere('id', $selectedClass))->name }}
-                            <button wire:click="resetFilter('selectedClass')" class="btn btn-sm btn-light">x</button>
-                        </span>
-                        @endif
-                        @if($selectedYearAdmitted)
-                        <span class="badge badge-info">
-                            Year Admitted: {{ $selectedYearAdmitted }}
-                            <button wire:click="resetFilter('selectedYearAdmitted')"
-                                class="btn btn-sm btn-light">x</button>
-                        </span>
-                        @endif
-                        @if($selectedSection)
-                        <span class="badge badge-info">
-                            Section: {{ optional($sections->firstWhere('id', $selectedSection))->name }}
-                            <button wire:click="resetFilter('selectedSection')" class="btn btn-sm btn-light">x</button>
-                        </span>
-                        @endif
-                        @if($selectedTerm)
-                        <span class="badge badge-info">
-                            Term: {{ optional($terms->firstWhere('id', $selectedTerm))->name }}
-                            <button wire:click="resetFilter('selectedTerm')" class="btn btn-sm btn-light">x</button>
-                        </span>
-                        @endif
-                        @if($selectedExam)
-                        <span class="badge badge-info">
-                            Exam: {{ optional($exams->firstWhere('id', $selectedExam))->name }}
-                            <button wire:click="resetFilter('selectedExam')" class="btn btn-sm btn-light">x</button>
-                        </span>
-                        @endif
                     </div>
                 </div>
 
-                <button wire:click="resetAllFilters" class="btn btn-secondary mb-3">Reset All Filters</button>
+
+
+                <!-- Display applied filters with "x" icon for individual reset -->
+                <div class="mt-3">
+                    @if($selectedExamYear)
+                    <span class="badge badge-info">
+                        Year: {{ $selectedExamYear }}
+                        <button wire:click="resetFilter('selectedExamYear')" class="btn btn-sm btn-light">x</button>
+                    </span>
+                    @endif
+                    @if($selectedClass)
+                    <span class="badge badge-info">
+                        Class: {{ optional($classes->firstWhere('id', $selectedClass))->name }}
+                        <button wire:click="resetFilter('selectedClass')" class="btn btn-sm btn-light">x</button>
+                    </span>
+                    @endif
+                    @if($selectedYearAdmitted)
+                    <span class="badge badge-info">
+                        Year Admitted: {{ $selectedYearAdmitted }}
+                        <button wire:click="resetFilter('selectedYearAdmitted')" class="btn btn-sm btn-light">x</button>
+                    </span>
+                    @endif
+                    @if($selectedSection)
+                    <span class="badge badge-info">
+                        Section: {{ optional($sections->firstWhere('id', $selectedSection))->name }}
+                        <button wire:click="resetFilter('selectedSection')" class="btn btn-sm btn-light">x</button>
+                    </span>
+                    @endif
+                    @if($selectedTerm)
+                    <span class="badge badge-info">
+                        Term: {{ optional($terms->firstWhere('id', $selectedTerm))->name }}
+                        <button wire:click="resetFilter('selectedTerm')" class="btn btn-sm btn-light">x</button>
+                    </span>
+                    @endif
+                    @if($selectedExam)
+                    <span class="badge badge-info">
+                        Exam: {{ optional($exams->firstWhere('id', $selectedExam))->name }}
+                        <button wire:click="resetFilter('selectedExam')" class="btn btn-sm btn-light">x</button>
+                    </span>
+                    @endif
+                </div>
+            </div>
+
+            <button wire:click="resetAllFilters" class="btn btn-secondary mb-3">Reset All Filters</button>
 
 
 
 
 
 
-                <!-- Students Table -->
+            <!-- Students Table -->
 
-                <div>
-                    @if ($selectedClass && $selectedExam)
-                    <div class="mt-4">
-                        <div class="mb-2 text-center">
-                            <h3 class="text-2xl font-semibold">
-                                <strong>{{ $exams->find($selectedExam)->name ?? 'N/A' }}</strong> analysis for
-                                <strong>{{ $classes->firstWhere('id', $selectedClass)->name ?? 'N/A' }}</strong>
-                            </h3>
-                            <h5 class="text-muted text-semibold mb-2">
-                                Grading System used on this Exam is {{
-                                $exams->find($selectedExam) ? optional($exams->find($selectedExam)->gradingSystem)->name
-                                : 'N/A'
-                                }}
+            <div>
+                @if ($selectedClass && $selectedExam)
+                <div class="mt-4">
+                    <div class="mb-2 text-center">
+                        <h3 class="text-2xl font-semibold">
+                            <strong>{{ $exams->find($selectedExam)->name ?? 'N/A' }}</strong> analysis for
+                            <strong>{{ $classes->firstWhere('id', $selectedClass)->name ?? 'N/A' }}</strong>
+                        </h3>
+                        <h5 class="text-muted text-semibold mb-2">
+                            Grading System used on this Exam is {{
+                            $exams->find($selectedExam) ? optional($exams->find($selectedExam)->gradingSystem)->name
+                            : 'N/A'
+                            }}
+                        </h5>
+                    </div>
+
+                    <!-- Total Students in Selected Class -->
+                    <div class="mt-2">
+                        <div class="alert alert-info">
+                            <h5 class="text-center">
+                                The total number of students who sat for the <strong>{{
+                                    $exams->find($selectedExam)->name ?? 'N/A' }}</strong> exam in
+                                <strong>{{ $classes->firstWhere('id', $selectedClass)->name ?? 'N/A' }}</strong> is
+                                <strong>{{ count($marks) }}</strong>.
                             </h5>
-                        </div>
 
-                        <!-- Total Students in Selected Class -->
-                        <div class="mt-2">
-                            <div class="alert alert-info">
-                                <h5 class="text-center">
-                                    The total number of students who sat for the <strong>{{
-                                        $exams->find($selectedExam)->name ?? 'N/A' }}</strong> exam in
-                                    <strong>{{ $classes->firstWhere('id', $selectedClass)->name ?? 'N/A' }}</strong> is
-                                    <strong>{{ count($marks) }}</strong>.
-                                </h5>
-
-                                <!-- Stream Counts based on Class Selection -->
-                                <h6 class="text-center mt-2">Stream distribution:</h6>
-                                <div class="row mt-2" wire:loading.remove>
-                                    @foreach ($sections as $section)
-                                    @php
-                                    $streamStudentCount = collect($marks)->where('stream', $section->name)->count();
-                                    @endphp
-                                    <div class="col-6 col-md-4 mb-2">
-                                        <div class="alert alert-light text-center mb-0 p-1">
-                                            <strong>{{ $section->name }}</strong>: <span class="text-primary">{{
-                                                $streamStudentCount }}</span>
-                                        </div>
+                            <!-- Stream Counts based on Class Selection -->
+                            <h6 class="text-center mt-2">Stream distribution:</h6>
+                            <div class="row mt-2" wire:loading.remove>
+                                @foreach ($sections as $section)
+                                @php
+                                $streamStudentCount = collect($marks)->where('stream', $section->name)->count();
+                                @endphp
+                                <div class="col-6 col-md-4 mb-2">
+                                    <div class="alert alert-light text-center mb-0 p-1">
+                                        <strong>{{ $section->name }}</strong>: <span class="text-primary">{{
+                                            $streamStudentCount }}</span>
                                     </div>
-                                    @endforeach
                                 </div>
+                                @endforeach
+                            </div>
 
-                                <!-- Loading Spinner -->
-                                <div wire:loading class="text-center mt-2">
-                                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                                </div>
+                            <!-- Loading Spinner -->
+                            <div wire:loading class="text-center mt-2">
+                                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
                             </div>
                         </div>
+                    </div>
 
-                        @php
-                        $naCountThreshold = 2; // Threshold for N/A counts
-                        $hasCaution = false; // Flag for caution message
-                        $naCount = 0; // N/A count initialization
+                    @php
+                    $naCountThreshold = 2; // Threshold for N/A counts
+                    $hasCaution = false; // Flag for caution message
+                    $naCount = 0; // N/A count initialization
 
-                        // Check for N/A values in marks
-                        foreach ($marks as $mark) {
-                        foreach ($subjects as $subject) {
-                        $subjectMark = $mark['marks'][$subject->id] ?? 'N/A';
-                        $grade = $this->getGrade($subjectMark, $exam->gradingSystem->id, $subject->id);
-                        if ($subjectMark === 'N/A' || $grade === 'N/A') {
-                        $naCount++;
-                        }
-                        }
-                        }
+                    // Check for N/A values in marks
+                    foreach ($marks as $mark) {
+                    foreach ($subjects as $subject) {
+                    $subjectMark = $mark['marks'][$subject->id] ?? 'N/A';
+                    $grade = $this->getGrade($subjectMark, $exam->gradingSystem->id, $subject->id);
+                    if ($subjectMark === 'N/A' || $grade === 'N/A') {
+                    $naCount++;
+                    }
+                    }
+                    }
 
-                        // Set caution flag if N/A values exceed threshold
-                        if ($naCount >= $naCountThreshold) {
-                        $hasCaution = true;
-                        }
-                        @endphp
+                    // Set caution flag if N/A values exceed threshold
+                    if ($naCount >= $naCountThreshold) {
+                    $hasCaution = true;
+                    }
+                    @endphp
 
-                        @if ($hasCaution)
-                        <!-- Caution message -->
-                        <div class="alert alert-danger position-sticky"
-                            style="top: 0; z-index: 999; padding: 15px; text-align: left; border-radius: 5px;">
-                            <strong>Important:</strong> We have noticed the grading system '<strong>{{
-                                optional($exams->find($selectedExam)->gradingSystem)->name ?? 'N/A' }}</strong>' has no
-                            ranges defined for the subjects. Please ensure the ranges are carefully and fully defined
-                            for enhanced exam analysis.
-                        </div>
+                    @if ($hasCaution)
+                    <!-- Caution message -->
+                    <div class="alert alert-danger position-sticky"
+                        style="top: 0; z-index: 999; padding: 15px; text-align: left; border-radius: 5px;">
+                        <strong>Important:</strong> We have noticed the grading system '<strong>{{
+                            optional($exams->find($selectedExam)->gradingSystem)->name ?? 'N/A' }}</strong>' has no
+                        ranges defined for the subjects. Please ensure the ranges are carefully and fully defined
+                        for enhanced exam analysis.
+                    </div>
 
 
 
-                        <div class="position-relative" style="pointer-events: none;">
-                            <!-- Table behind caution -->
-                            <div class="table-responsive" style="opacity: 0.4;">
-                                <table class="table table-bordered">
-                                    <thead>
-                                        <tr class="table-primary">
-                                            <th rowspan="2" class="align-middle">Student Name</th>
-                                            <th rowspan="2" class="align-middle">Stream</th>
-                                            <th colspan="{{ count($subjects) }}" class="text-center">Subjects</th>
-                                            <th rowspan="2" class="align-middle text-center">Total Marks</th>
-                                            <th rowspan="2" class="align-middle text-center">Total Points</th>
-                                            <th rowspan="2" class="align-middle text-center">Class Position</th>
-                                            <th rowspan="2" class="align-middle text-center">Stream Position</th>
-                                            <th rowspan="2" class="align-middle text-center">Mean Score</th>
-                                        </tr>
-                                        <tr class="table-secondary">
-                                            @foreach ($subjects as $subject)
-                                            <th class="text-center">{{ $subject->subject_name }}</th>
-                                            @endforeach
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse ($marks as $mark)
-                                        <tr>
-                                            <td class="align-middle">{{ $mark['student_name'] ?? 'N/A' }}</td>
-                                            <td class="align-middle">{{ $mark['stream'] ?? 'N/A' }}</td>
-                                            @foreach ($subjects as $subject)
-                                            @php
-                                            $subjectMark = $mark['marks'][$subject->id] ?? 'N/A';
-                                            $grade = $this->getGrade($subjectMark, $exam->gradingSystem->id,
-                                            $subject->id);
-                                            @endphp
-                                            <td class="align-middle">
-                                                {{ $subjectMark !== 'N/A' ? "{$subjectMark} ({$grade})" : 'N/A' }}
-                                            </td>
-                                            @endforeach
-                                            <td class="align-middle text-center">{{ $mark['total_marks'] ?? 'N/A' }}
-                                            </td>
-                                            <td class="align-middle text-center">{{ $mark['total_points'] ?? 'N/A' }}
-                                            </td>
-                                            <td class="align-middle text-center">{{ $mark['position'] ?? 'N/A' }}</td>
-                                            <td class="align-middle text-center">{{ $mark['stream_position'] ?? 'N/A' }}
-                                            </td>
-                                            <td class="align-middle text-center">
-                                                @if (count($subjects) > 0)
-                                                {{ number_format($mark['total_marks'] / count($subjects), 2) }}
-                                                @else
-                                                N/A
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @empty
-                                        <tr>
-                                            <td colspan="{{ count($subjects) + 8 }}" class="text-center">No marks
-                                                available for this exam.</td>
-                                        </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        @else
-                        <!-- Table without caution -->
-                        <div class="table-responsive">
+                    <div class="position-relative" style="pointer-events: none;">
+                        <!-- Table behind caution -->
+                        <div class="table-responsive" style="opacity: 0.4;">
                             <table class="table table-bordered">
                                 <thead>
                                     <tr class="table-primary">
@@ -313,14 +284,17 @@
                                         @foreach ($subjects as $subject)
                                         @php
                                         $subjectMark = $mark['marks'][$subject->id] ?? 'N/A';
-                                        $grade = $this->getGrade($subjectMark, $exam->gradingSystem->id, $subject->id);
+                                        $grade = $this->getGrade($subjectMark, $exam->gradingSystem->id,
+                                        $subject->id);
                                         @endphp
                                         <td class="align-middle">
-                                            {{ $subjectMark !== 'N/A' ? "{$subjectMark} ({$grade})" : 'N/A' }}
+                                            {{ $subjectMark !== 'N/A' ? "{$subjectMark} {$grade}" : 'N/A' }}
                                         </td>
                                         @endforeach
-                                        <td class="align-middle text-center">{{ $mark['total_marks'] ?? 'N/A' }}</td>
-                                        <td class="align-middle text-center">{{ $mark['total_points'] ?? 'N/A' }}</td>
+                                        <td class="align-middle text-center">{{ $mark['total_marks'] ?? 'N/A' }}
+                                        </td>
+                                        <td class="align-middle text-center">{{ $mark['total_points'] ?? 'N/A' }}
+                                        </td>
                                         <td class="align-middle text-center">{{ $mark['position'] ?? 'N/A' }}</td>
                                         <td class="align-middle text-center">{{ $mark['stream_position'] ?? 'N/A' }}
                                         </td>
@@ -334,30 +308,88 @@
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="{{ count($subjects) + 8 }}" class="text-center">No marks available
-                                            for this exam.</td>
+                                        <td colspan="{{ count($subjects) + 8 }}" class="text-center">No marks
+                                            available for this exam.</td>
                                     </tr>
                                     @endforelse
                                 </tbody>
                             </table>
                         </div>
-                        @endif
-
-                        @elseif ($selectedClass && !$selectedExam)
-                        <div class="alert alert-warning mt-4">
-                            Please select an exam to view student marks.
-                        </div>
-                        @endif
-
-                        @if (!$selectedClass)
-                        <div class="alert alert-warning mt-4">
-                            Please select a class and an exam to view streams and student marks.
-                        </div>
-                        @endif
                     </div>
+                    @else
+                    <!-- Table without caution -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr class="table-primary">
+                                    <th rowspan="2" class="align-middle">Student Name</th>
+                                    <th rowspan="2" class="align-middle">Stream</th>
+                                    <th colspan="{{ count($subjects) }}" class="text-center">Subjects</th>
+                                    <th rowspan="2" class="align-middle text-center">Total Marks</th>
+                                    <th rowspan="2" class="align-middle text-center">Total Points</th>
+                                    <th rowspan="2" class="align-middle text-center">Class Position</th>
+                                    <th rowspan="2" class="align-middle text-center">Stream Position</th>
+                                    <th rowspan="2" class="align-middle text-center">Mean Score</th>
+                                </tr>
+                                <tr class="table-secondary">
+                                    @foreach ($subjects as $subject)
+                                    <th class="text-center">{{ $subject->subject_name }}</th>
+                                    @endforeach
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($marks as $mark)
+                                <tr>
+                                    <td class="align-middle">{{ $mark['student_name'] ?? 'N/A' }}</td>
+                                    <td class="align-middle">{{ $mark['stream'] ?? 'N/A' }}</td>
+                                    @foreach ($subjects as $subject)
+                                    @php
+                                    $subjectMark = $mark['marks'][$subject->id] ?? 'N/A';
+                                    $grade = $this->getGrade($subjectMark, $exam->gradingSystem->id, $subject->id);
+                                    @endphp
+                                    <td class="align-middle">
+                                        {{ $subjectMark !== 'N/A' ? "{$subjectMark} {$grade}" : 'N/A' }}
+                                    </td>
+                                    @endforeach
+                                    <td class="align-middle text-center">{{ $mark['total_marks'] ?? 'N/A' }}</td>
+                                    <td class="align-middle text-center">{{ $mark['total_points'] ?? 'N/A' }}</td>
+                                    <td class="align-middle text-center">{{ $mark['position'] ?? 'N/A' }}</td>
+                                    <td class="align-middle text-center">{{ $mark['stream_position'] ?? 'N/A' }}
+                                    </td>
+                                    <td class="align-middle text-center">
+                                        @if (count($subjects) > 0)
+                                        {{ number_format($mark['total_marks'] / count($subjects), 2) }}
+                                        @else
+                                        N/A
+                                        @endif
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="{{ count($subjects) + 8 }}" class="text-center">No marks available
+                                        for this exam.</td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                    @endif
+
+                    @elseif ($selectedClass && !$selectedExam)
+                    <div class="alert alert-warning mt-4">
+                        Please select an exam to view student marks.
+                    </div>
+                    @endif
+
+                    @if (!$selectedClass)
+                    <div class="alert alert-warning mt-4">
+                        Please select a class and an exam to view streams and student marks.
+                    </div>
+                    @endif
                 </div>
-
-
             </div>
+
+
         </div>
     </div>
+</div>

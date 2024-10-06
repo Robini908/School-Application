@@ -3,36 +3,63 @@
     <x-flash-messages />
     <!-- Show selection UI only if not showing details -->
     @if (!$showingDetails)
-    <div class="mb-3">
-        <label for="class" class="form-label">Select Class:</label>
-        <select wire:model="classId" id="class" class="form-control" wire:key="class-selection">
-            <option value="">Select Class</option>
-            @foreach ($classes as $class)
-            <option value="{{ $class->id }}" wire:key="class-{{ $class->id }}">{{ $class->name }}</option>
-            @endforeach
-        </select>
+    <div class="form-row mb-3">
+        <!-- Class Selection -->
+        <div class="col-md-4">
+            <label for="class" class="form-label">Select Class:</label>
+            <div class="input-group">
+                <select wire:model="classId" id="class" class="form-control" wire:key="class-selection">
+                    <option value="">Select Class</option>
+                    @foreach ($classes as $class)
+                    <option value="{{ $class->id }}" wire:key="class-{{ $class->id }}">{{ $class->name }}</option>
+                    @endforeach
+                </select>
+                <div wire:loading wire:target="classId" class="input-group-append">
+                    <span class="input-group-text">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                    </span>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Exam Selection -->
+        <div class="col-md-4">
+            <label for="exam" class="form-label">Select Exam:</label>
+            <div class="input-group">
+                <select wire:model="examId" id="exam" class="form-control" wire:key="exam-selection">
+                    <option value="">Select Exam</option>
+                    @foreach ($exams as $exam)
+                    <option value="{{ $exam->id }}" wire:key="exam-{{ $exam->id }}">{{ $exam->name }}</option>
+                    @endforeach
+                </select>
+                <div wire:loading wire:target="examId" class="input-group-append">
+                    <span class="input-group-text">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                    </span>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Section Selection -->
+        <div class="col-md-4">
+            <label for="section" class="form-label">Select Section:</label>
+            <div class="input-group">
+                <select wire:model="sectionId" id="section" class="form-control" wire:key="section-selection">
+                    <option value="">Select Section</option>
+                    @foreach ($sections as $section)
+                    <option value="{{ $section->id }}" wire:key="section-{{ $section->id }}">{{ $section->name }}</option>
+                    @endforeach
+                </select>
+                <div wire:loading wire:target="sectionId" class="input-group-append">
+                    <span class="input-group-text">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                    </span>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <div class="mb-3">
-        <label for="exam" class="form-label">Select Exam:</label>
-        <select wire:model="examId" id="exam" class="form-control" wire:key="exam-selection">
-            <option value="">Select Exam</option>
-            @foreach ($exams as $exam)
-            <option value="{{ $exam->id }}" wire:key="exam-{{ $exam->id }}">{{ $exam->name }}</option>
-            @endforeach
-        </select>
-    </div>
-
-    <div class="mb-3">
-        <label for="section" class="form-label">Select Section:</label>
-        <select wire:model="sectionId" id="section" class="form-control" wire:key="section-selection">
-            <option value="">Select Section</option>
-            @foreach ($sections as $section)
-            <option value="{{ $section->id }}" wire:key="section-{{ $section->id }}">{{ $section->name }}</option>
-            @endforeach
-        </select>
-    </div>
-
+    
+    <!-- Fetch Marks Button -->
     <div class="mb-4">
         <button wire:click="fetchMarks" class="btn btn-primary" wire:loading.attr="disabled"
             wire:loading.class="btn-secondary">
@@ -43,6 +70,7 @@
             </span>
         </button>
     </div>
+    
 
     @if ($marks && $marks->isNotEmpty())
     <div class="table-responsive">
