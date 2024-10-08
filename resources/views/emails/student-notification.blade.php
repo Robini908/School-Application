@@ -31,6 +31,13 @@
             font-size: 0.8em;
             color: #777;
         }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -41,7 +48,7 @@
 
         @if ($filePath)
             <p>You can download the attached file using the link below:</p>
-            <p><a href="{{ $filePath }}" style="color: #007bff;">Download Attachment</a></p>
+            <p><a href="{{ asset('storage/' . $filePath) }}">Download Attachment</a></p>
         @endif
 
         <p>Best Regards,<br>Your School Team</p>

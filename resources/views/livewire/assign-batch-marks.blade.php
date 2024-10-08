@@ -88,7 +88,7 @@
         </div>
         <div class="mt-3">
             <div class="alert alert-info">
-                <strong>Total Students in this Stream:</strong> {{ count($students) }}
+               <b class="text-lg text-semibold"> {{ count($students) }}</b> students found in this stream.
             </div>
         </div>
 

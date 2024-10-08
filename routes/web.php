@@ -6,10 +6,25 @@ use Illuminate\Support\Facades\Route;
 //use App\Http\Controllers\AdmissionController;
 use App\Http\Controllers\SubjectRanges;
 use App\Http\Controllers\StudentRecordController;
+use App\Mail\DisapprovalNotification;
+use Illuminate\Support\Facades\Mail;
 
 
 Auth::routes();
 
+
+Route::get('/send-test-email', function () {
+    $student = (object) [
+        'first_name' => 'John',
+        'last_name' => 'Doe',
+        'email' => 'abrahamopuba@gmail.com' // Replace with a valid email for testing
+    ];
+
+    $disapprovalReason = 'Your application was not approved due to incomplete documentation.';
+    Mail::to($student->email)->send(new DisapprovalNotification($student, $disapprovalReason));
+
+    return 'Test email sent!';
+});
 
 
 
@@ -24,7 +39,7 @@ Route::get('/get-session', 'SessionController@getSession')->name('get-session');
 
 
 Route::get('/student-info/{id}', function ($id) {
-   
+
 
     return view('pages.support_team.students.student_info', ['student' => $id]);
 })->name('student.info');
@@ -154,7 +169,7 @@ Route::group(['middleware' => 'auth'], function () {
             Route::post('pay_now/{id}', 'PaymentController@pay_now')->name('payments.pay_now');
         });
 
-        
+
 
         /*************** Pins *****************/
         Route::group(['prefix' => 'pins'], function () {

@@ -128,43 +128,55 @@ class CombinationFormula extends Component
         $this->loading = false;
     }
 
-    // Prepare student data for calculation
+
+
     private function prepareStudentData($exam)
     {
         $studentData = [];
 
         foreach ($this->students as $student) {
             $studentMarks = [];
+            $studentGrades = [];
             $totalMarks = 0;
             $totalPoints = 0;
 
             foreach ($this->subjects as $subject) {
                 $marksValue = $this->getStudentMarks($student, $subject);
-                $grade = $this->getGrade($marksValue, $exam->gradingSystem->id, $subject->id); // Fetch grade
+                $gradeData = $this->getGradeData($marksValue, $exam->gradingSystem->id, $subject->id);
                 $studentMarks[$subject->id] = $marksValue;
 
-                // Aggregate total marks and points based on the marks and grading system
+                // Check if points are valid to determine the grade
+                if ($gradeData['points'] > 0) {
+                    $studentGrades[$subject->id] = $gradeData['grade'];
+                } else {
+                    $studentGrades[$subject->id] = 'N/A'; // Set to N/A if no valid points
+                }
+
+                // Aggregate total marks and points
                 $totalMarks += $marksValue;
-                $totalPoints += $this->getTotalPoints($marksValue, $subject, $exam);
+                $totalPoints += $gradeData['points'];
             }
 
-            // Calculate mean score if subjects are present to avoid division by zero
+            // Calculate mean score
             $meanScore = count($this->subjects) > 0 ? $totalMarks / count($this->subjects) : 0;
 
             $studentData[] = [
                 'student_id' => $student->id,
                 'student_name' => "{$student->first_name} {$student->last_name}",
                 'marks' => $studentMarks,
+                'grades' => $studentGrades,
                 'total_marks' => $totalMarks,
                 'total_points' => $totalPoints,
-                'mean_score' => $meanScore, // Initialize mean score
-                'stream' => $student->section->name ?? 'N/A',
-                'grades' => $studentMarks // Store grades for later usage
+                'mean_score' => $meanScore,
+                'stream' => $student->section->name ?? 'N/A'
             ];
         }
 
         return $studentData;
     }
+
+
+
 
     // Get student marks for a specific subject
     private function getStudentMarks($student, $subject)
@@ -173,16 +185,45 @@ class CombinationFormula extends Component
         return $mark ? $mark->marks : 0; // Return marks or 0 if not available
     }
 
-    // Get total points based on the grading ranges
-    private function getTotalPoints($marksValue, $subject, $exam)
+    // Get both grade and points based on the grading system and subject marks
+    // Get both grade and points based on the grading system and subject marks
+    private function getGradeData($marksValue, $gradingSystemId, $subjectId)
     {
-        $gradingRange = GradingRange::where('grading_system_id', $exam->gradingSystem->id)
-            ->where('subject_id', $subject->id)
+        if ($marksValue === 'N/A' || $marksValue === null) {
+            return ['grade' => 'N/A', 'points' => 0]; // Handle undefined marks
+        }
+
+        // Fetch the grading range that corresponds to the marks
+        $gradingRange = GradingRange::where('grading_system_id', $gradingSystemId)
+            ->where('subject_id', $subjectId)
             ->where('range_from', '<=', $marksValue)
             ->where('range_to', '>=', $marksValue)
             ->first();
 
-        return $gradingRange ? ($gradingRange->gpa ?? 0) : 0; // Default to 0 if GPA is not found
+        // If no grading range found, log the issue and return N/A
+        if (!$gradingRange) {
+            \Log::warning("No grading range found for Marks: $marksValue, Grading System ID: $gradingSystemId, Subject ID: $subjectId");
+
+            return [
+                'grade' => 'N/A', // Explicitly return 'N/A' for grade
+                'points' => 0 // Default points
+            ];
+        }
+
+        // Return both grade and points (GPA)
+        return [
+            'grade' => $gradingRange->grade,
+            'points' => $gradingRange->gpa ?? 0 // Points (GPA)
+        ];
+    }
+
+
+
+
+    // Calculate total points based on the grading system (points handled in getGradeData)
+    private function getTotalPoints($marksValue, $subject, $exam)
+    {
+        return $this->getGradeData($marksValue, $exam->gradingSystem->id, $subject->id)['points'];
     }
 
     // Calculate positions and sort the student data with tie-breaking logic
@@ -237,15 +278,14 @@ class CombinationFormula extends Component
 
         // Calculate positions for each stream
         foreach ($streams as $stream => $students) {
-            // Sort the students in the stream by total marks, total points, and mean scores in descending order
             usort($students, function ($a, $b) {
                 if ($b['total_marks'] === $a['total_marks']) {
                     if ($b['total_points'] === $a['total_points']) {
-                        return $b['mean_score'] <=> $a['mean_score']; // Sort by mean score if points are equal
+                        return $b['mean_score'] <=> $a['mean_score'];
                     }
-                    return $b['total_points'] <=> $a['total_points']; // Otherwise, sort by total points
+                    return $b['total_points'] <=> $a['total_points'];
                 }
-                return $b['total_marks'] <=> $a['total_marks']; // Otherwise, sort by total marks
+                return $b['total_marks'] <=> $a['total_marks'];
             });
 
             // Assign positions for the stream without tie-breaking
@@ -256,22 +296,6 @@ class CombinationFormula extends Component
         }
     }
 
-    // Fetch the grade based on marks, grading system ID, and subject ID
-    public function getGrade($marksValue, $gradingSystemId, $subjectId)
-    {
-        if ($marksValue === 'N/A' || $marksValue === null) {
-            return 'N/A'; // Handle undefined marks
-        }
-
-        // Fetch the grading range that corresponds to the marks
-        $gradingRange = GradingRange::where('grading_system_id', $gradingSystemId)
-            ->where('subject_id', $subjectId)
-            ->where('range_from', '<=', $marksValue)
-            ->where('range_to', '>=', $marksValue)
-            ->first();
-
-        return $gradingRange ? $gradingRange->grade : 'N/A'; // Assuming 'grade' is the column with grade (A, B, etc.)
-    }
 
     public function filterStudents()
     {

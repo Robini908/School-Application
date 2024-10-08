@@ -130,21 +130,24 @@ class ManageStudents extends Component
         try {
             Mail::send('emails.student-notification', $emailData, function ($message) use ($student, $filePath) {
                 $message->to($student->email)->subject('Important Notification for Student');
+                // Check if parent email exists and cc it
                 if ($student->parent_detail->parent_email) {
-                    $message->cc($student->parent_detail->parent_email)->subject('Important Notification for Parent');
+                    $message->cc($student->parent_detail->parent_email, 'Parent Notification');
                 }
+                // Attach the file if uploaded
                 if ($filePath) {
                     $message->attach(storage_path("app/public/{$filePath}"));
                 }
             });
-            $this->isSendingStudentMail = false;
-            // Notify the user of success
+
+            // If email sent successfully, notify user
             session()->flash('success', 'Email sent successfully with attachment.');
         } catch (\Exception $e) {
             // Handle any errors that occur during email sending
             session()->flash('error', 'Failed to send email: ' . $e->getMessage());
         }
     }
+
 
     public function isSendingStudentMail($studentId)
     {
@@ -240,26 +243,22 @@ class ManageStudents extends Component
         $this->resetOtherFlags('isViewingDetails');
     }
 
-    // Expel Student
-    // public function studentExpulsion($studentId)
-    // {
-    //     // Fetch the student data with related models
-    //     $this->selectedStudent = StudentRecord::with(['my_class', 'section', 'parent_detail'])->find($studentId);
+    public function studentExpulsion($studentId)
+    {
+        // Fetch the student data with related models
+        $this->selectedStudent = StudentRecord::with(['my_class', 'section', 'parent_detail'])->find($studentId);
 
-    //     // Check if student exists
-    //     if (!$this->selectedStudent) {
-    //         session()->flash('error', 'Student not found.'); // Set session error message
-    //         return;
-    //     }
+        // Check if student exists
+        if (!$this->selectedStudent) {
+            session()->flash('error', 'Student not found.'); // Set session error message
+            return;
+        }
 
-    //     // Set flags for expulsion process
-    //     $this->isExpellingStudent = true;
+        // Set flags for expulsion process
+        $this->isExpellingStudent = true;
 
-    //     // Initialize the expulsion reason and type
-    //     $this->expulsionReason = ''; // Initialize reason variable
-    //     $this->expulsionType = ''; // Initialize expulsion type variable
-    //     $this->expulsionDuration = null; // Initialize expulsion duration variable
-    // }
+      
+    }
 
     public function studentSuspension($studentId)
     {
@@ -456,12 +455,6 @@ class ManageStudents extends Component
             \Mail::to($email)->send(new DisapprovalNotification($student, $this->disapprovalReason));
         }
     }
-
-
-
-    // Reject Student
-
-
 
     public function updated($propertyName)
     {

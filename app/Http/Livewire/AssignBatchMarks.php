@@ -21,6 +21,8 @@ class AssignBatchMarks extends Component
     public $selectedExam = null;
     public $examDetails = null;
     public $sections = [];
+
+    public $streamName;
     public $selectedSection = null;
     public $students = [];
     public $subjects = [];
@@ -32,6 +34,7 @@ class AssignBatchMarks extends Component
     {
         $this->classes = MyClass::all();
         $this->subjects = Subject::all();
+        
     }
 
     public function updatedSelectedClass($classId)

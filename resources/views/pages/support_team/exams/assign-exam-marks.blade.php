@@ -65,6 +65,10 @@
                         <i class="fas fa-pie-chart" style="color: #6f42c1; margin-right: 10px;"></i>
                         <span>Subject Analysis</span>
                     </button>
+                    <button class="dropdown-item" data-tab="class-analysis">
+                        <i class="fas fa-pie-chart" style="color: #6f42c1; margin-right: 10px;"></i>
+                        <span>Class Analysis</span>
+                    </button>
                 </div>
             </li>
         </ul>
@@ -98,6 +102,9 @@
             <!-- Subject Analysis Tab -->
             <div class="tab-pane" id="subject-analysis" style="display: none;">
                 <livewire:subject-analysis />
+            </div>
+            <div class="tab-pane" id="class-analysis" style="display: none;">
+                <livewire:class-analysis />
             </div>
         </div>
     </div>

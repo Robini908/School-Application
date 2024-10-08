@@ -11,21 +11,21 @@ class DisapprovalNotification extends Mailable
     use Queueable, SerializesModels;
 
     public $student;
-    public $reason;
+    public $disapprovalReason;
 
-    public function __construct($student, $reason)
+    public function __construct($student, $disapprovalReason)
     {
         $this->student = $student;
-        $this->reason = $reason;
+        $this->disapprovalReason = $disapprovalReason;
     }
 
     public function build()
     {
         return $this->view('emails.disapproval-notification')
-                    ->subject('Student Disapproval Notification')
+                    ->subject('Disapproval Notification')
                     ->with([
-                        'studentName' => $this->student->first_name . ' ' . $this->student->last_name,
-                        'reason' => $this->reason
+                        'studentName' => "{$this->student->first_name} {$this->student->last_name}",
+                        'disapprovalReason' => $this->disapprovalReason,
                     ]);
     }
 }

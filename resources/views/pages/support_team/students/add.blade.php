@@ -7,7 +7,7 @@
         <ul class="nav nav-tabs nav-tabs-highlight p-3">
             <!-- Manage Admissions Tab -->
             <li class="nav-item">
-                <a href="#" @click.prevent="activeTab = 'manage-students'" 
+                <a href="#" @click.prevent="activeTab = 'manage-students'"
                     :class="{ 'active': activeTab === 'manage-students' }" class="nav-link">Manage Admissions</a>
             </li>
 
@@ -19,10 +19,12 @@
                         <i class="icon-user-plus"></i> Admit New Student
                     </button>
                     <button class="dropdown-item" type="button" @click.prevent="activeTab = 'bulk-admit'">
-                        <i class="icon-clipboard-list"></i> Manage Suspensions  <!-- Icon for managing expulsions -->
+                        <i class="icon-clipboard-list"></i> Manage Suspensions
+                        <!-- Icon for managing expulsions -->
                     </button>
                     <button class="dropdown-item" type="button" @click.prevent="activeTab = 'addbulk'">
-                        <i class="icon-upload"></i> Add Bulk  <!-- Icon for adding bulk -->
+                        <i class="icon-upload"></i> Add Bulk
+                        <!-- Icon for adding bulk -->
                     </button>
                 </div>
             </li>
@@ -51,7 +53,8 @@
         </div>
     </div>
 </div>
-
+<script src="{{ asset('global_assets/js/main/add_student.js') }}"></script>
+<script src="{{ asset('global_assets/js/main/manage_admissions.js') }}"></script>
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('tabManager', () => ({
