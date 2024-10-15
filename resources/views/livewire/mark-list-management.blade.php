@@ -21,7 +21,7 @@
                 </div>
             </div>
         </div>
-    
+
         <!-- Exam Selection -->
         <div class="col-md-4">
             <label for="exam" class="form-label">Select Exam:</label>
@@ -39,7 +39,7 @@
                 </div>
             </div>
         </div>
-    
+
         <!-- Section Selection -->
         <div class="col-md-4">
             <label for="section" class="form-label">Select Section:</label>
@@ -47,7 +47,8 @@
                 <select wire:model="sectionId" id="section" class="form-control" wire:key="section-selection">
                     <option value="">Select Section</option>
                     @foreach ($sections as $section)
-                    <option value="{{ $section->id }}" wire:key="section-{{ $section->id }}">{{ $section->name }}</option>
+                    <option value="{{ $section->id }}" wire:key="section-{{ $section->id }}">{{ $section->name }}
+                    </option>
                     @endforeach
                 </select>
                 <div wire:loading wire:target="sectionId" class="input-group-append">
@@ -58,7 +59,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Fetch Marks Button -->
     <div class="mb-4">
         <button wire:click="fetchMarks" class="btn btn-primary" wire:loading.attr="disabled"
@@ -70,7 +71,7 @@
             </span>
         </button>
     </div>
-    
+
 
     @if ($marks && $marks->isNotEmpty())
     <div class="table-responsive">
@@ -110,106 +111,125 @@
     <!-- Details Card -->
     @if ($showingDetails)
 
-    <div class="card mt-4" wire:key="details-card">
-        <div class="card-header bg-primary text-white">
-            <h5>Details for Admission No: {{ $selectedAdmNo ?? 'N/A' }}</h5>
+    <!-- Include Google Fonts -->
+    <!-- Font CDN Links -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Georgia:wght@400&family=Courier+New:wght@400&family=Montserrat:wght@400;700&family=Poppins:wght@400;600&family=Open+Sans:wght@400;600&display=swap"
+        rel="stylesheet">
+
+    <div class="card mt-4" wire:key="details-card"
+        style="border-radius: 15px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); overflow: hidden;">
+        <div class="card-header bg-primary text-white"
+            style="border-top-left-radius: 15px; border-top-right-radius: 15px;">
+            <h5
+                style="font-family: 'Montserrat', sans-serif; font-size: 24px; text-align: center; letter-spacing: 1px;">
+                Details for Admission No: {{ $selectedAdmNo ?? 'N/A' }}</h5>
         </div>
-        <div class="card-body">
+        <div class="card-body" style="background-color: #f9f9f9;">
             <div class="row mb-4">
                 <div class="col-md-3 d-flex align-items-center justify-content-center">
                     @if (!empty($studentAdditionalDetails['photo']))
                     <img src="{{ asset($studentAdditionalDetails['photo']) }}" alt="Student Photo" class="img-thumbnail"
-                        style="width: 100px; height: 100px;">
+                        style="width: 100px; height: 100px; border-radius: 50%; border: 2px solid #007bff;">
                     @else
-                    <span class="text-muted">No Image</span>
+                    <span class="text-muted" style="font-size: 16px; font-family: 'Courier New', monospace;">No
+                        Image</span>
                     @endif
                 </div>
                 <div class="col-md-9">
-                    <h4 class="font-weight-bold">
+                    <h4
+                        style="font-weight: bold; font-family: 'Georgia', serif; font-size: 20px; color: #333; text-transform: capitalize;">
                         {{ $studentAdditionalDetails['first_name'] ?? 'N/A' }}
                         {{ $studentAdditionalDetails['middle_name'] ?? '' }}
                         {{ $studentAdditionalDetails['last_name'] ?? '' }}
                     </h4>
                     <div class="row mt-2">
-                        <div class="col-6"><strong>Class:</strong> {{ $studentAdditionalDetails['class_name'] ?? 'N/A'
-                            }}</div>
-                        <div class="col-6"><strong>Section:</strong> {{ $studentAdditionalDetails['section_name'] ??
-                            'N/A' }}</div>
+                        <div class="col-6" style="font-family: 'Poppins', sans-serif;"><strong>Class:</strong> {{
+                            $studentAdditionalDetails['class_name'] ?? 'N/A' }}</div>
+                        <div class="col-6" style="font-family: 'Poppins', sans-serif;"><strong>Section:</strong> {{
+                            $studentAdditionalDetails['section_name'] ?? 'N/A' }}</div>
                     </div>
                     <div class="row mt-1">
-                        <div class="col-6"><strong>Gender:</strong> {{ $studentAdditionalDetails['gender'] ?? 'N/A' }}
-                        </div>
-                        <div class="col-6"><strong>Admission No:</strong> {{ $selectedAdmNo ?? 'N/A' }}</div>
+                        <div class="col-6" style="font-family: 'Poppins', sans-serif;"><strong>Gender:</strong> {{
+                            $studentAdditionalDetails['gender'] ?? 'N/A' }}</div>
+                        <div class="col-6" style="font-family: 'Poppins', sans-serif;"><strong>Admission No:</strong> {{
+                            $selectedAdmNo ?? 'N/A' }}</div>
                     </div>
                 </div>
             </div>
 
             @if (!empty($studentDetails))
-            <!-- Display Exam Name -->
-            <h6 class="font-weight-bold mb-3">Exam: {{ $examName ?? 'N/A' }}</h6>
+            <h6
+                style="font-weight: bold; font-family: 'Courier New', monospace; font-size: 18px; margin-top: 20px; color: #555;">
+                Exam: {{ $examName ?? 'N/A' }}</h6>
+            <h6 style="font-weight: bold; font-family: 'Courier New', monospace; font-size: 18px; color: #555;">Grading
+                System: {{ $gradingSystemDetails['name'] ?? 'N/A' }}</h6>
+            <p class="text-muted mb-2" style="font-size: 16px; color: #777;">Description: {{
+                $gradingSystemDetails['description'] ?? 'N/A' }}</p>
 
-            <!-- Display Grading System Name -->
-            <h6 class="font-weight-bold mb-3">Grading System: {{ $gradingSystemDetails['name'] ?? 'N/A' }}</h6>
-
-            <!-- Display Grading System Description -->
-            <p class="text-muted mb-2">Description: {{ $gradingSystemDetails['description'] ?? 'N/A' }}</p>
-
-            <!-- Subject Marks and Grades -->
-            <h6 class="font-weight-bold mb-3">Subject Marks & Grades</h6>
-            <table class="table table-bordered table-striped text-center">
-                <thead class="thead-light">
+            <h6 style="font-weight: bold; font-family: 'Courier New', monospace; font-size: 18px; margin-top: 20px;">
+                Subject Marks & Grades</h6>
+            <table class="table table-bordered table-striped text-center" style="border-radius: 8px; overflow: hidden;">
+                <thead class="thead-light" style="background-color: #007bff; color: white;">
                     <tr>
-                        <th>Subject</th>
-                        <th>Marks</th>
-                        <th>Grade</th>
-                        <th>Remark</th>
-                        <th>GPA</th>
+                        <th style="font-family: 'Montserrat', sans-serif;">Subject</th>
+                        <th style="font-family: 'Montserrat', sans-serif;">Marks</th>
+                        <th style="font-family: 'Montserrat', sans-serif;">Grade</th>
+                        <th style="font-family: 'Montserrat', sans-serif;">Remark</th>
+                        <th style="font-family: 'Montserrat', sans-serif;">GPA</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($studentDetails as $detail)
                     <tr wire:key="subject-{{ $loop->index }}">
-                        <td>{{ $detail['subject_name'] ?? 'N/A' }}</td>
-                        <td>{{ $detail['marks'] ?? 'N/A' }}</td>
-                        <td>{{ $detail['grade'] ?? 'N/A' }}</td>
-                        <td>{{ $detail['remark'] ?? 'N/A' }}</td>
-                        <td>{{ $detail['gpa'] ?? 'N/A' }}</td>
+                        <td style="font-family: 'Roboto', sans-serif;">{{ $detail['subject_name'] ?? 'N/A' }}</td>
+                        <td style="font-family: 'Roboto', sans-serif;">{{ $detail['marks'] ?? 'N/A' }}</td>
+                        <td style="font-family: 'Roboto', sans-serif;">{{ $detail['grade'] ?? 'N/A' }}</td>
+                        <td style="font-family: 'Roboto', sans-serif;">{{ $detail['remark'] ?? 'N/A' }}</td>
+                        <td style="font-family: 'Roboto', sans-serif;">{{ $detail['gpa'] ?? 'N/A' }}</td>
                     </tr>
                     @endforeach
                 </tbody>
+            </table>
 
-                <div class="card mt-4">
-                    <div class="card-header">
-                        <h6>Overall Performance</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <p><strong>Total Marks:</strong> {{ $totalMarks ?? 'N/A' }}</p>
-                                <p><strong>Mean Score:</strong> {{ $meanScore ?? 'N/A' }}</p>
-                                <p><strong>Total Points:</strong> {{ $totalPoints ?? 'N/A' }}</p>
-                            </div>
-                            <div class="col-md-6">
-                                <p><strong>Position in Class:</strong> {{ $classPosition ?? 'N/A' }}</p>
-                                <p><strong>Position in Stream:</strong> {{ $streamPosition ?? 'N/A' }}</p>
-                            </div>
-                            
+            <div class="card mt-4" style="border-radius: 15px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
+                <div class="card-header" style="background-color: #f8f9fa;">
+                    <h6 style="font-weight: bold; text-align: center; font-family: 'Montserrat', sans-serif;">Overall
+                        Performance</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p style="font-family: 'Roboto', sans-serif;"><strong>Total Marks:</strong> {{ $totalMarks
+                                ?? 'N/A' }}</p>
+                            <p style="font-family: 'Roboto', sans-serif;"><strong>Mean Score:</strong> {{ $meanScore ??
+                                'N/A' }}</p>
+                            <p style="font-family: 'Roboto', sans-serif;"><strong>Total Points:</strong> {{ $totalPoints
+                                ?? 'N/A' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p style="font-family: 'Roboto', sans-serif;"><strong>Position in Class:</strong> {{
+                                $classPosition ?? 'N/A' }}</p>
+                            <p style="font-family: 'Roboto', sans-serif;"><strong>Position in Stream:</strong> {{
+                                $streamPosition ?? 'N/A' }}</p>
                         </div>
                     </div>
                 </div>
-
-            </table>
-
+            </div>
 
             @else
-            <p class="text-muted text-center">No details found for this student.</p>
+            <p class="text-muted text-center" style="font-size: 16px; color: #777;">No details found for this student.
+            </p>
             @endif
         </div>
 
         <div class="card-footer text-center">
-            <button wire:click="closeDetails" class="btn btn-danger btn-sm">Close</button>
+            <button wire:click="closeDetails" class="btn btn-danger btn-sm"
+                style="border-radius: 5px; font-family: 'Roboto', sans-serif;">Close</button>
         </div>
     </div>
+
+
 
 
     @endif

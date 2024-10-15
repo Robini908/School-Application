@@ -6,31 +6,16 @@
         </div>
         @endif
 
-        <!-- Example of displaying exam processing error -->
-        @if ($errors->has('exam_processing'))
-        <div class="alert alert-danger">
-            {{ $errors->first('exam_processing') }}
-        </div>
-        @endif
-
-        <!-- Example of displaying student save error -->
-        @if ($errors->has('student_save'))
-        <div class="alert alert-danger">
-            {{ $errors->first('student_save') }}
-        </div>
-        @endif
-
-
         <div class="card-header">
             <h5>Filter Students</h5>
         </div>
         <div class="card-body">
             <div class="mb-4">
                 <div class="form-row mt-4 mx-2">
-                    <!-- Year Filter (First) -->
+                    <!-- First Row -->
                     <div class="row">
                         <!-- Year Filter -->
-                        <div class="col-md-2 mb-2">
+                        <div class="col-md-4 mb-2">
                             <label for="examYear">Year:</label>
                             <div class="input-group">
                                 <input type="number" wire:model.debounce.500ms="selectedExamYear" id="examYear"
@@ -44,7 +29,7 @@
                         </div>
 
                         <!-- Year Admitted Filter -->
-                        <div class="col-md-2 mb-2">
+                        <div class="col-md-4 mb-2">
                             <label for="yearAdmitted">Year Admitted:</label>
                             <div class="input-group">
                                 <input type="number" wire:model.debounce.500ms="selectedYearAdmitted" id="yearAdmitted"
@@ -57,8 +42,30 @@
                             </div>
                         </div>
 
+                        <!-- Term Filter -->
+                        <div class="col-md-4 mb-2">
+                            <label for="term">Term:</label>
+                            <div class="input-group">
+                                <select wire:model="selectedTerm" id="term" class="form-control select2"
+                                    wire:loading.attr="disabled">
+                                    <option value="">Select Term</option>
+                                    @foreach ($terms as $term)
+                                    <option value="{{ $term->id }}">{{ $term->name }}</option>
+                                    @endforeach
+                                </select>
+                                <div wire:loading wire:target="selectedTerm" class="input-group-append">
+                                    <span class="input-group-text">
+                                        <div class="spinner-border spinner-border-sm" role="status"></div>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Second Row -->
+                    <div class="row mt-2">
                         <!-- Class Filter -->
-                        <div class="col-md-2 mb-2">
+                        <div class="col-md-4 mb-2">
                             <label for="class">Class:</label>
                             <div class="input-group">
                                 <select wire:model="selectedClass" id="class" class="form-control select2"
@@ -77,7 +84,7 @@
                         </div>
 
                         <!-- Section Filter -->
-                        <div class="col-md-2 mb-2">
+                        <div class="col-md-4 mb-2">
                             <label for="section">Section:</label>
                             <div class="input-group">
                                 <select wire:model="selectedSection" id="section" class="form-control select2"
@@ -95,27 +102,8 @@
                             </div>
                         </div>
 
-                        <!-- Term Filter -->
-                        <div class="col-md-2 mb-2">
-                            <label for="term">Term:</label>
-                            <div class="input-group">
-                                <select wire:model="selectedTerm" id="term" class="form-control select2"
-                                    wire:loading.attr="disabled">
-                                    <option value="">Select Term</option>
-                                    @foreach ($terms as $term)
-                                    <option value="{{ $term->id }}">{{ $term->name }}</option>
-                                    @endforeach
-                                </select>
-                                <div wire:loading wire:target="selectedTerm" class="input-group-append">
-                                    <span class="input-group-text">
-                                        <div class="spinner-border spinner-border-sm mt-1" role="status"></div>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
                         <!-- Exam Filter -->
-                        <div class="col-md-2 mb-2">
+                        <div class="col-md-4 mb-2">
                             <label for="exam">Exam:</label>
                             <div class="input-group">
                                 <select wire:model="selectedExam" id="exam" class="form-control select2"
@@ -126,14 +114,16 @@
                                     @endforeach
                                 </select>
                                 <div wire:loading wire:target="selectedExam" class="input-group-append">
-                                    <span class="input-group-text">
+                                    <span class="input-group-text d-flex align-items-center">
                                         <div class="spinner-border spinner-border-sm mt-1" role="status"></div>
+                                        <span class="ml-1">Just a moment...</span> <!-- Accompanying text -->
                                     </span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
 
 
 
@@ -187,15 +177,21 @@
 
             <!-- Students Table -->
 
+            <!-- Link to Google Fonts -->
+            <link
+                href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&family=Open+Sans:wght@400;600&family=Montserrat:wght@400;500;600&display=swap"
+                rel="stylesheet">
+
             <div>
                 @if ($selectedClass && $selectedExam)
                 <div class="mt-4">
                     <div class="mb-2 text-center">
-                        <h3 class="text-2xl font-semibold">
+                        <h3 style="font-size: 2.5rem; font-weight: 600; font-family: 'Montserrat', sans-serif;">
                             <strong>{{ $exams->find($selectedExam)->name ?? 'N/A' }}</strong> analysis for
                             <strong>{{ $classes->firstWhere('id', $selectedClass)->name ?? 'N/A' }}</strong>
                         </h3>
-                        <h5 class="text-muted text-semibold mb-2">
+                        <h5
+                            style="font-size: 1.5rem; font-weight: 500; color: #6c757d; font-family: 'Open Sans', sans-serif;">
                             Grading System used on this Exam is {{
                             $exams->find($selectedExam) ? optional($exams->find($selectedExam)->gradingSystem)->name
                             : 'N/A'
@@ -205,8 +201,8 @@
 
                     <!-- Total Students in Selected Class -->
                     <div class="mt-2">
-                        <div class="alert alert-info">
-                            <h5 class="text-center">
+                        <div class="alert alert-info" style="padding: 15px; border-radius: 5px;">
+                            <h5 style="font-size: 1.25rem; text-align: center; font-family: 'Roboto', sans-serif;">
                                 The total number of students who sat for the <strong>{{
                                     $exams->find($selectedExam)->name ?? 'N/A' }}</strong> exam in
                                 <strong>{{ $classes->firstWhere('id', $selectedClass)->name ?? 'N/A' }}</strong> is
@@ -214,15 +210,18 @@
                             </h5>
 
                             <!-- Stream Counts based on Class Selection -->
-                            <h6 class="text-center mt-2">Stream distribution:</h6>
+                            <h6
+                                style="font-size: 1.1rem; text-align: center; margin-top: 10px; font-family: 'Roboto', sans-serif;">
+                                Stream distribution:</h6>
                             <div class="row mt-2" wire:loading.remove>
                                 @foreach ($sections as $section)
                                 @php
                                 $streamStudentCount = collect($marks)->where('stream', $section->name)->count();
                                 @endphp
                                 <div class="col-6 col-md-4 mb-2">
-                                    <div class="alert alert-light text-center mb-0 p-1">
-                                        <strong>{{ $section->name }}</strong>: <span class="text-primary">{{
+                                    <div class="alert alert-light"
+                                        style="padding: 10px; text-align: center; margin-bottom: 0; border-radius: 5px;">
+                                        <strong>{{ $section->name }}</strong>: <span style="color: #007bff;">{{
                                             $streamStudentCount }}</span>
                                     </div>
                                 </div>
@@ -230,8 +229,9 @@
                             </div>
 
                             <!-- Loading Spinner -->
-                            <div wire:loading class="text-center mt-2">
-                                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                            <div wire:loading style="text-align: center; margin-top: 10px;">
+                                <div class="spinner-border spinner-border-sm" style="color: #007bff;" role="status">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -262,34 +262,42 @@
                     <!-- Caution message -->
                     <div class="alert alert-danger position-sticky"
                         style="top: 0; z-index: 999; padding: 15px; text-align: left; border-radius: 5px;">
-                        <strong>Important:</strong> We have noticed the grading system '<strong>{{
+                        <strong style="font-size: 1.25rem; font-family: 'Roboto', sans-serif;">Important:</strong> We
+                        have noticed the grading system '<strong>{{
                             optional($exams->find($selectedExam)->gradingSystem)->name ?? 'N/A' }}</strong>' has no
                         ranges defined for the subjects. Please ensure the ranges are carefully and fully defined
                         for enhanced exam analysis.
                     </div>
 
-
-
                     <div class="position-relative" style="pointer-events: none;">
                         <!-- Table behind caution -->
                         <div class="table-responsive" style="opacity: 0.4;">
-                            <table class="table table-bordered">
+                            <table class="table table-bordered" style="width: 100%; border-radius: 5px;">
                                 <thead>
                                     <tr class="table-primary">
-                                        <th rowspan="2" class="align-middle">Student Name</th>
-                                        <th rowspan="2" class="align-middle">Stream</th>
-                                        <th colspan="{{ count($subjects) }}" class="text-center">Subjects</th>
-                                        <th rowspan="2" class="align-middle text-center">Total Marks</th>
-                                        <th rowspan="2" class="align-middle text-center">Total Points</th>
-                                        <th rowspan="2" class="align-middle text-center">Class Position</th>
-                                        <th rowspan="2" class="align-middle text-center">Stream Position</th>
-                                        <th rowspan="2" class="align-middle text-center">Mean Score</th>
-                                        <th rowspan="2" class="align-middle text-center">Mean Grade</th>
-                                        <!-- New Column -->
+                                        <th rowspan="2" class="align-middle" style="font-family: 'Roboto', sans-serif;">
+                                            Student Name</th>
+                                        <th rowspan="2" class="align-middle" style="font-family: 'Roboto', sans-serif;">
+                                            Stream</th>
+                                        <th colspan="{{ count($subjects) }}" class="text-center"
+                                            style="font-family: 'Roboto', sans-serif;">Subjects</th>
+                                        <th rowspan="2" class="align-middle text-center"
+                                            style="font-family: 'Roboto', sans-serif;">Total Marks</th>
+                                        <th rowspan="2" class="align-middle text-center"
+                                            style="font-family: 'Roboto', sans-serif;">Total Points</th>
+                                        <th rowspan="2" class="align-middle text-center"
+                                            style="font-family: 'Roboto', sans-serif;">Class Position</th>
+                                        <th rowspan="2" class="align-middle text-center"
+                                            style="font-family: 'Roboto', sans-serif;">Stream Position</th>
+                                        <th rowspan="2" class="align-middle text-center"
+                                            style="font-family: 'Roboto', sans-serif;">Mean Score</th>
+                                        <th rowspan="2" class="align-middle text-center"
+                                            style="font-family: 'Roboto', sans-serif;">Mean Grade</th>
                                     </tr>
                                     <tr class="table-secondary">
                                         @foreach ($subjects as $subject)
-                                        <th class="text-center">{{ $subject->subject_name }}</th>
+                                        <th class="text-center" style="font-family: 'Roboto', sans-serif;">{{
+                                            $subject->subject_name }}</th>
                                         @endforeach
                                     </tr>
                                 </thead>
@@ -336,104 +344,106 @@
                                     @endforelse
                                 </tbody>
                             </table>
-
-
-
                         </div>
-
-
-
-
                     </div>
-                    @else
-                    <!-- Table without caution -->
-                    <div class="table-responsive">
-
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr class="table-primary">
-                                    <th rowspan="2" class="align-middle">Student Name</th>
-                                    <th rowspan="2" class="align-middle">Stream</th>
-                                    <th colspan="{{ count($subjects) }}" class="text-center">Subjects</th>
-                                    <th rowspan="2" class="align-middle text-center">Total Marks</th>
-                                    <th rowspan="2" class="align-middle text-center">Total Points</th>
-                                    <th rowspan="2" class="align-middle text-center">Class Position</th>
-                                    <th rowspan="2" class="align-middle text-center">Stream Position</th>
-                                    <th rowspan="2" class="align-middle text-center">Mean Score</th>
-                                    <th rowspan="2" class="align-middle text-center">Mean Grade</th> <!-- New Column -->
-                                </tr>
-                                <tr class="table-secondary">
-                                    @foreach ($subjects as $subject)
-                                    <th class="text-center">{{ $subject->subject_name }}</th>
-                                    @endforeach
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse ($marks as $mark)
-                                <tr>
-                                    <td class="align-middle">{{ $mark['student_name'] ?? '-' }}</td>
-                                    <td class="align-middle">{{ $mark['stream'] ?? '-' }}</td>
-
-                                    @foreach ($subjects as $subject)
-                                    @php
-                                    $subjectMark = $mark['marks'][$subject->id] ?? '-';
-                                    $gradeData = $this->getGradeData($subjectMark, $exam->gradingSystem->id,
-                                    $subject->id);
-                                    @endphp
-                                    <td class="align-middle text-center">
-                                        @if ($subjectMark === '-' || $gradeData['grade'] === '-')
-                                        N/A
-                                        @else
-                                        {{ $subjectMark }} {{ $gradeData['grade'] }}
-                                        @endif
-                                    </td>
-                                    @endforeach
-
-                                    <td class="align-middle text-center">{{ $mark['total_marks'] ?? '-' }}</td>
-                                    <td class="align-middle text-center">{{ $mark['total_points'] ?? '-' }}</td>
-                                    <td class="align-middle text-center">{{ $mark['position'] ?? '-' }}</td>
-                                    <td class="align-middle text-center">{{ $mark['stream_position'] ?? '-' }}</td>
-                                    <td class="align-middle text-center">{{ number_format($mark['mean_score'], 2) }}
-                                    </td>
-                                    <td class="align-middle text-center">
-                                        @if (isset($mark['total_points']))
-                                        {{ $this->getMeanGrade($mark['total_points'], $exam->gradingSystem->id) }}
-                                        @else
-                                        N/A
-                                        @endif
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="{{ count($subjects) + 8 }}" class="text-center">No marks available for
-                                        this exam.</td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-
-
-
-
-
-                    </div>
-                    @endif
-
-                    @elseif ($selectedClass && !$selectedExam)
-                    <div class="alert alert-warning mt-4">
-                        Please select an exam to view student marks.
-                    </div>
-                    @endif
-
-                    @if (!$selectedClass)
-                    <div class="alert alert-warning mt-4">
-                        Please select a class and an exam to view streams and student marks.
-                    </div>
-                    @endif
                 </div>
+               
             </div>
 
+            @else
+            <!-- Table without caution -->
+            <div class="table-responsive">
 
+                <table class="table table-bordered" style="width: 100%; border-radius: 5px;">
+                    <thead>
+                        <tr class="table-primary">
+                            <th rowspan="2" class="align-middle" style="font-family: 'Roboto', sans-serif;">
+                                Student Name</th>
+                            <th rowspan="2" class="align-middle" style="font-family: 'Roboto', sans-serif;">
+                                Stream</th>
+                            <th colspan="{{ count($subjects) }}" class="text-center"
+                                style="font-family: 'Roboto', sans-serif;">Subjects</th>
+                            <th rowspan="2" class="align-middle text-center"
+                                style="font-family: 'Roboto', sans-serif;">Total Marks</th>
+                            <th rowspan="2" class="align-middle text-center"
+                                style="font-family: 'Roboto', sans-serif;">Total Points</th>
+                            <th rowspan="2" class="align-middle text-center"
+                                style="font-family: 'Roboto', sans-serif;">Class Position</th>
+                            <th rowspan="2" class="align-middle text-center"
+                                style="font-family: 'Roboto', sans-serif;">Stream Position</th>
+                            <th rowspan="2" class="align-middle text-center"
+                                style="font-family: 'Roboto', sans-serif;">Mean Score</th>
+                            <th rowspan="2" class="align-middle text-center"
+                                style="font-family: 'Roboto', sans-serif;">Mean Grade</th>
+                        </tr>
+                        <tr class="table-secondary">
+                            @foreach ($subjects as $subject)
+                            <th class="text-center" style="font-family: 'Roboto', sans-serif;">{{
+                                $subject->subject_name }}</th>
+                            @endforeach
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($marks as $mark)
+                        <tr>
+                            <td class="align-middle">{{ $mark['student_name'] ?? '-' }}</td>
+                            <td class="align-middle">{{ $mark['stream'] ?? '-' }}</td>
+
+                            @foreach ($subjects as $subject)
+                            @php
+                            $subjectMark = $mark['marks'][$subject->id] ?? '-';
+                            $gradeData = $this->getGradeData($subjectMark, $exam->gradingSystem->id,
+                            $subject->id);
+                            @endphp
+                            <td class="align-middle text-center">
+                                @if ($subjectMark === '-' || $gradeData['grade'] === '-')
+                                N/A
+                                @else
+                                {{ $subjectMark }} {{ $gradeData['grade'] }}
+                                @endif
+                            </td>
+                            @endforeach
+
+                            <td class="align-middle text-center">{{ $mark['total_marks'] ?? '-' }}</td>
+                            <td class="align-middle text-center">{{ $mark['total_points'] ?? '-' }}</td>
+                            <td class="align-middle text-center">{{ $mark['position'] ?? '-' }}</td>
+                            <td class="align-middle text-center">{{ $mark['stream_position'] ?? '-' }}</td>
+                            <td class="align-middle text-center">{{ number_format($mark['mean_score'], 2) }}
+                            </td>
+                            <td class="align-middle text-center">
+                                @if (isset($mark['total_points']))
+                                {{ $this->getMeanGrade($mark['total_points'], $exam->gradingSystem->id) }}
+                                @else
+                                N/A
+                                @endif
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="{{ count($subjects) + 8 }}" class="text-center">No marks available
+                                for this exam.</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            @endif
+
+            @elseif ($selectedClass && !$selectedExam)
+            <div class="alert alert-warning mt-4">
+                Please select an exam to view student marks.
+            </div>
+            @endif
+
+            @if (!$selectedClass)
+            <div class="alert alert-warning mt-4">
+                Please select a class and an exam to view streams and student marks.
+            </div>
+            @endif
         </div>
     </div>
+
+
+</div>
+</div>
 </div>

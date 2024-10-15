@@ -36,42 +36,45 @@
             </button>
         </div>
 
-        <ul class="nav nav-tabs nav-tabs-highlight" id="tabLinks">
+        <ul class="nav nav-tabs" id="tabLinks" style="border-bottom: 2px solid #dee2e6;">
             <li class="nav-item">
-                <a href="#" class="nav-link active" data-tab="bulk-exam">Bulk Marks Allocation</a>
+                <a href="#" class="nav-link active" data-tab="bulk-exam" style="color: #007bff; font-weight: bold; border-bottom: 2px solid #007bff;">
+                    Bulk Marks Allocation
+                </a>
             </li>
             <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="moreActionsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <a class="nav-link dropdown-toggle" id="moreActionsDropdown" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: #495057;">
                     More Actions
                 </a>
-                <div class="dropdown-menu" aria-labelledby="moreActionsDropdown">
+                <div class="dropdown-menu" aria-labelledby="moreActionsDropdown" style="min-width: 200px;">
                     <button class="dropdown-item" data-tab="subject-wise-exam">
                         <i class="fas fa-book" style="color: #007bff; margin-right: 10px;"></i>
-                        <span>Assign Marks Subject-wise</span>
+                        Assign Marks Subject-wise
                     </button>
                     <button class="dropdown-item" data-tab="mark-list-management">
                         <i class="fas fa-list-alt" style="color: #28a745; margin-right: 10px;"></i>
-                        <span>Manage Marks List</span>
+                        Manage Marks List
                     </button>
                     <button class="dropdown-item" data-tab="exam-analysis">
                         <i class="fas fa-chart-line" style="color: #ffc107; margin-right: 10px;"></i>
-                        <span>Exam Analysis</span>
+                        Exam Analysis
                     </button>
                     <button class="dropdown-item" data-tab="subject-champions">
                         <i class="fas fa-trophy" style="color: #fd7e14; margin-right: 10px;"></i>
-                        <span>Subject Champions</span>
+                        Subject Champions
                     </button>
                     <button class="dropdown-item" data-tab="subject-analysis">
                         <i class="fas fa-pie-chart" style="color: #6f42c1; margin-right: 10px;"></i>
-                        <span>Subject Analysis</span>
+                        Subject Analysis
                     </button>
                     <button class="dropdown-item" data-tab="class-analysis">
-                        <i class="fas fa-pie-chart" style="color: #6f42c1; margin-right: 10px;"></i>
-                        <span>Class Analysis</span>
+                        <i class="fas fa-chart-bar" style="color: #6f42c1; margin-right: 10px;"></i>
+                        Class Analysis
                     </button>
                 </div>
             </li>
         </ul>
+        
 
         <div class="tab-content">
             <!-- Bulk Marks Allocation Tab -->
