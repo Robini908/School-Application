@@ -11,14 +11,8 @@ class GradingGrade extends Model
     use HasFactory;
 
     protected $fillable = [
-        'grading_system_id',
-        'grade',
-        'remark',
-        'gpa',
-        'description',
-        'additional_info',
+        'grade', 'remark', 'gpa', 'range_from', 'range_to', 'grading_system_id',
     ];
-
     /**
      * Get the grading system that owns the grade.
      */

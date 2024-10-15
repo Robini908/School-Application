@@ -34,13 +34,21 @@ class Exam extends Model
     {
         return $this->hasMany(StudentRecord::class);
     }
+
     public function classes(): BelongsToMany
     {
         return $this->belongsToMany(MyClass::class, 'exam_class_section', 'exam_id', 'class_id')
             ->withPivot('section_id');
     }
-    public function examMarks()
+
+    public function examMarks(): HasMany
     {
         return $this->hasMany(ExamMarks::class);
+    }
+
+    // Define the relationship with StudentResult
+    public function studentResults(): HasMany
+    {
+        return $this->hasMany(StudentResult::class, 'exam_id', 'id'); 
     }
 }

@@ -6,6 +6,21 @@
         </div>
         @endif
 
+        <!-- Example of displaying exam processing error -->
+        @if ($errors->has('exam_processing'))
+        <div class="alert alert-danger">
+            {{ $errors->first('exam_processing') }}
+        </div>
+        @endif
+
+        <!-- Example of displaying student save error -->
+        @if ($errors->has('student_save'))
+        <div class="alert alert-danger">
+            {{ $errors->first('student_save') }}
+        </div>
+        @endif
+
+
         <div class="card-header">
             <h5>Filter Students</h5>
         </div>
@@ -269,6 +284,8 @@
                                         <th rowspan="2" class="align-middle text-center">Class Position</th>
                                         <th rowspan="2" class="align-middle text-center">Stream Position</th>
                                         <th rowspan="2" class="align-middle text-center">Mean Score</th>
+                                        <th rowspan="2" class="align-middle text-center">Mean Grade</th>
+                                        <!-- New Column -->
                                     </tr>
                                     <tr class="table-secondary">
                                         @foreach ($subjects as $subject)
@@ -279,35 +296,33 @@
                                 <tbody>
                                     @forelse ($marks as $mark)
                                     <tr>
-                                        <td class="align-middle">{{ $mark['student_name'] ?? 'N/A' }}</td>
-                                        <td class="align-middle">{{ $mark['stream'] ?? 'N/A' }}</td>
+                                        <td class="align-middle">{{ $mark['student_name'] ?? '-' }}</td>
+                                        <td class="align-middle">{{ $mark['stream'] ?? '-' }}</td>
 
                                         @foreach ($subjects as $subject)
                                         @php
-                                        $subjectMark = $mark['marks'][$subject->id] ?? 'N/A';
+                                        $subjectMark = $mark['marks'][$subject->id] ?? '-';
                                         $gradeData = $this->getGradeData($subjectMark, $exam->gradingSystem->id,
                                         $subject->id);
                                         @endphp
                                         <td class="align-middle text-center">
-                                            @if ($subjectMark === 'N/A' || $gradeData['grade'] === 'N/A')
+                                            @if ($subjectMark === '-' || $gradeData['grade'] === '-')
                                             N/A
-                                            <!-- Display N/A if marks or grade is 'N/A' -->
                                             @else
-                                            {{ $subjectMark }} ({{ $gradeData['grade'] }})
-                                            <!-- Display marks with grades -->
+                                            {{ $subjectMark }} {{ $gradeData['grade'] }}
                                             @endif
                                         </td>
                                         @endforeach
 
-                                        <td class="align-middle text-center">{{ $mark['total_marks'] ?? 'N/A' }}</td>
-                                        <td class="align-middle text-center">{{ $mark['total_points'] ?? 'N/A' }}</td>
-                                        <td class="align-middle text-center">{{ $mark['position'] ?? 'N/A' }}</td>
-                                        <td class="align-middle text-center">{{ $mark['stream_position'] ?? 'N/A' }}
+                                        <td class="align-middle text-center">{{ $mark['total_marks'] ?? '-' }}</td>
+                                        <td class="align-middle text-center">{{ $mark['total_points'] ?? '-' }}</td>
+                                        <td class="align-middle text-center">{{ $mark['position'] ?? '-' }}</td>
+                                        <td class="align-middle text-center">{{ $mark['stream_position'] ?? '-' }}</td>
+                                        <td class="align-middle text-center">{{ number_format($mark['mean_score'], 2) }}
                                         </td>
                                         <td class="align-middle text-center">
-                                            @if (count($subjects) > 0)
-                                            {{ number_format($mark['mean_score'], 2) }}
-                                            <!-- Display mean score -->
+                                            @if (isset($mark['total_points']))
+                                            {{ $this->getMeanGrade($mark['total_points'], $exam->gradingSystem->id) }}
                                             @else
                                             N/A
                                             @endif
@@ -323,6 +338,7 @@
                             </table>
 
 
+
                         </div>
 
 
@@ -332,6 +348,7 @@
                     @else
                     <!-- Table without caution -->
                     <div class="table-responsive">
+
                         <table class="table table-bordered">
                             <thead>
                                 <tr class="table-primary">
@@ -343,6 +360,7 @@
                                     <th rowspan="2" class="align-middle text-center">Class Position</th>
                                     <th rowspan="2" class="align-middle text-center">Stream Position</th>
                                     <th rowspan="2" class="align-middle text-center">Mean Score</th>
+                                    <th rowspan="2" class="align-middle text-center">Mean Grade</th> <!-- New Column -->
                                 </tr>
                                 <tr class="table-secondary">
                                     @foreach ($subjects as $subject)
@@ -353,34 +371,33 @@
                             <tbody>
                                 @forelse ($marks as $mark)
                                 <tr>
-                                    <td class="align-middle">{{ $mark['student_name'] ?? 'N/A' }}</td>
-                                    <td class="align-middle">{{ $mark['stream'] ?? 'N/A' }}</td>
+                                    <td class="align-middle">{{ $mark['student_name'] ?? '-' }}</td>
+                                    <td class="align-middle">{{ $mark['stream'] ?? '-' }}</td>
 
                                     @foreach ($subjects as $subject)
                                     @php
-                                    $subjectMark = $mark['marks'][$subject->id] ?? 'N/A';
+                                    $subjectMark = $mark['marks'][$subject->id] ?? '-';
                                     $gradeData = $this->getGradeData($subjectMark, $exam->gradingSystem->id,
                                     $subject->id);
                                     @endphp
                                     <td class="align-middle text-center">
-                                        @if ($subjectMark === 'N/A' || $gradeData['grade'] === 'N/A')
+                                        @if ($subjectMark === '-' || $gradeData['grade'] === '-')
                                         N/A
-                                        <!-- Display N/A if marks or grade is 'N/A' -->
                                         @else
-                                        {{ $subjectMark }} ({{ $gradeData['grade'] }})
-                                        <!-- Display marks with grades -->
+                                        {{ $subjectMark }} {{ $gradeData['grade'] }}
                                         @endif
                                     </td>
                                     @endforeach
 
-                                    <td class="align-middle text-center">{{ $mark['total_marks'] ?? 'N/A' }}</td>
-                                    <td class="align-middle text-center">{{ $mark['total_points'] ?? 'N/A' }}</td>
-                                    <td class="align-middle text-center">{{ $mark['position'] ?? 'N/A' }}</td>
-                                    <td class="align-middle text-center">{{ $mark['stream_position'] ?? 'N/A' }}</td>
+                                    <td class="align-middle text-center">{{ $mark['total_marks'] ?? '-' }}</td>
+                                    <td class="align-middle text-center">{{ $mark['total_points'] ?? '-' }}</td>
+                                    <td class="align-middle text-center">{{ $mark['position'] ?? '-' }}</td>
+                                    <td class="align-middle text-center">{{ $mark['stream_position'] ?? '-' }}</td>
+                                    <td class="align-middle text-center">{{ number_format($mark['mean_score'], 2) }}
+                                    </td>
                                     <td class="align-middle text-center">
-                                        @if (count($subjects) > 0)
-                                        {{ number_format($mark['mean_score'], 2) }}
-                                        <!-- Display mean score -->
+                                        @if (isset($mark['total_points']))
+                                        {{ $this->getMeanGrade($mark['total_points'], $exam->gradingSystem->id) }}
                                         @else
                                         N/A
                                         @endif
@@ -394,6 +411,9 @@
                                 @endforelse
                             </tbody>
                         </table>
+
+
+
 
 
                     </div>

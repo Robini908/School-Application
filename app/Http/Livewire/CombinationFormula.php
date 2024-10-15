@@ -7,8 +7,11 @@ use App\Models\MyClass;
 use App\Models\Section;
 use App\Models\Subject;
 use Livewire\Component;
+use App\Models\GradingGrade;
 use App\Models\GradingRange;
 use App\Models\StudentRecord;
+use App\Models\StudentResult;
+use Illuminate\Support\Facades\DB;
 
 class CombinationFormula extends Component
 {
@@ -72,110 +75,139 @@ class CombinationFormula extends Component
         $this->loading = false;
     }
 
-    public function updatedSelectedSection($sectionId)
-    {
-        $this->loading = true;
-
-        // Load exams based on the selected section and class
-        $this->exams = Exam::where('section_id', $sectionId)
-            ->where('class_id', $this->selectedClass)
-            ->get();
-
-        // Fetch the selected section data for display
-        $this->selectedSectionData = Section::find($sectionId);
-
-        // Reset marks and subjects
-        $this->marks = [];
-        $this->subjects = [];
-
-        $this->loading = false;
-    }
 
     public function updatedSelectedExam($examId)
     {
         $this->loading = true;
 
-        // Fetch the exam along with its associated grading system and subjects
-        $exam = Exam::with('gradingSystem.subjects')->find($examId);
+        \Log::info("Fetching exam data for exam ID: $examId");
 
+        $exam = Exam::with('gradingSystem.subjects')->find($examId);
         if (!$exam) {
-            // If no exam is found, reset marks and subjects
-            $this->marks = [];
-            $this->subjects = [];
-            $this->loading = false;
+            \Log::warning("No exam found for ID: $examId");
+            $this->resetExamData();
             return;
         }
 
-        // Fetch students and their marks for the selected exam and section
-        $this->students = StudentRecord::where('my_class_id', $this->selectedClass)
+        $this->students = StudentRecord::with(['examMarks' => function ($query) use ($examId) {
+            $query->where('exam_id', $examId);
+        }, 'section'])
+            ->where('my_class_id', $this->selectedClass)
             ->when($this->selectedSection, function ($query) {
                 $query->where('section_id', $this->selectedSection);
             })
-            ->with(['examMarks' => function ($query) use ($examId) {
-                $query->where('exam_id', $examId);
-            }, 'section']) // Load the associated section (stream)
             ->get();
 
-        // Store subjects for display
+        \Log::info("Fetched Students Count: " . $this->students->count());
+
         $this->subjects = $exam->gradingSystem->subjects;
 
-        // Prepare student data for calculation
         $studentData = $this->prepareStudentData($exam);
 
-        // Calculate positions with tie-breaking logic
         $this->marks = $this->calculatePositions($studentData);
 
         $this->loading = false;
     }
 
-
-
     private function prepareStudentData($exam)
     {
+        \Log::info("Preparing student data for exam ID: {$exam->id}");
         $studentData = [];
+        DB::beginTransaction(); // Start transaction
 
-        foreach ($this->students as $student) {
-            $studentMarks = [];
-            $studentGrades = [];
-            $totalMarks = 0;
-            $totalPoints = 0;
+        try {
+            foreach ($this->students as $student) {
+                $studentMarks = [];
+                $studentGrades = [];
+                $totalMarks = 0;  // Ensure this is an integer
+                $totalPoints = 0;  // Ensure this is an integer
 
-            foreach ($this->subjects as $subject) {
-                $marksValue = $this->getStudentMarks($student, $subject);
-                $gradeData = $this->getGradeData($marksValue, $exam->gradingSystem->id, $subject->id);
-                $studentMarks[$subject->id] = $marksValue;
+                foreach ($this->subjects as $subject) {
+                    $marksValue = $this->getStudentMarks($student, $subject);
 
-                // Check if points are valid to determine the grade
-                if ($gradeData['points'] > 0) {
-                    $studentGrades[$subject->id] = $gradeData['grade'];
-                } else {
-                    $studentGrades[$subject->id] = 'N/A'; // Set to N/A if no valid points
+                    // Cast marksValue to integer, in case it's a string
+                    $marksValue = (int)$marksValue;
+
+                    // Get grade data, and ensure points are treated correctly
+                    $gradeData = $this->getGradeData($marksValue, $exam->gradingSystem->id, $subject->id);
+
+                    $studentMarks[$subject->id] = $marksValue;
+                    // Ensure points are handled safely
+                    $points = isset($gradeData['points']) ? (int)$gradeData['points'] : 0; // Cast to int
+                    $studentGrades[$subject->id] = $points > 0 ? $gradeData['grade'] : '-';
+
+                    // Perform the arithmetic operations safely
+                    $totalMarks += $marksValue;
+                    $totalPoints += $points;
                 }
 
-                // Aggregate total marks and points
-                $totalMarks += $marksValue;
-                $totalPoints += $gradeData['points'];
+                $meanScore = count($this->subjects) ? $totalMarks / count($this->subjects) : 0;
+                $meanGrade = $this->getMeanGrade($totalPoints, $exam->gradingSystem->id);
+
+                $studentResult = [
+                    'student_id' => $student->id,
+                    'exam_id' => $exam->id,
+                    'student_name' => "{$student->first_name} {$student->last_name}",
+                    'marks' => $studentMarks,
+                    'grades' => $studentGrades,
+                    'total_marks' => $totalMarks,
+                    'total_points' => $totalPoints,
+                    'mean_score' => $meanScore,
+                    'mean_grade' => $meanGrade,
+                    'stream' => $student->section->name ?? '-',
+                ];
+
+                $studentData[] = $studentResult;
             }
 
-            // Calculate mean score
-            $meanScore = count($this->subjects) > 0 ? $totalMarks / count($this->subjects) : 0;
+            // Calculate overall and stream positions
+            $studentData = $this->calculatePositions($studentData);
 
-            $studentData[] = [
-                'student_id' => $student->id,
-                'student_name' => "{$student->first_name} {$student->last_name}",
-                'marks' => $studentMarks,
-                'grades' => $studentGrades,
-                'total_marks' => $totalMarks,
-                'total_points' => $totalPoints,
-                'mean_score' => $meanScore,
-                'stream' => $student->section->name ?? 'N/A'
-            ];
+            // Save each student's result with positions
+            foreach ($studentData as $studentResult) {
+                $this->saveStudentResult($studentResult);
+            }
+
+            DB::commit(); // Commit transaction if all student data is processed successfully
+
+        } catch (\Exception $e) {
+            DB::rollBack(); // Rollback the transaction if an error occurs
+            \Log::error("Failed to process student data for exam ID: {$exam->id}. Error: {$e->getMessage()}");
+
+            $this->addError('exam_processing', "Failed to process the exam data: " . $e->getMessage());
         }
+
+        \Log::info("Total Students Processed: " . count($studentData));
 
         return $studentData;
     }
 
+    private function saveStudentResult($data)
+    {
+        \Log::info("Attempting to save student result: " . json_encode($data));
 
+        try {
+            StudentResult::updateOrCreate(
+                ['student_id' => $data['student_id'], 'exam_id' => $data['exam_id']],
+                $data
+            );
+            \Log::info("Saved student result for Student ID: {$data['student_id']} in Exam ID: {$data['exam_id']}");
+        } catch (\Exception $e) {
+            \Log::error("Failed to save student result for Student ID: {$data['student_id']} - Error: {$e->getMessage()}");
+
+            // Add an error to the Livewire error bag for UI display
+            $this->addError('student_save', "Failed to save result for student: {$data['student_name']} - {$e->getMessage()}");
+        }
+    }
+
+
+
+    private function resetExamData()
+    {
+        $this->marks = [];
+        $this->subjects = [];
+        $this->loading = false;
+    }
 
 
     // Get student marks for a specific subject
@@ -186,11 +218,10 @@ class CombinationFormula extends Component
     }
 
     // Get both grade and points based on the grading system and subject marks
-    // Get both grade and points based on the grading system and subject marks
     private function getGradeData($marksValue, $gradingSystemId, $subjectId)
     {
-        if ($marksValue === 'N/A' || $marksValue === null) {
-            return ['grade' => 'N/A', 'points' => 0]; // Handle undefined marks
+        if ($marksValue === '-' || $marksValue === null) {
+            return ['grade' => '-', 'points' => '-']; // Handle undefined marks
         }
 
         // Fetch the grading range that corresponds to the marks
@@ -205,25 +236,16 @@ class CombinationFormula extends Component
             \Log::warning("No grading range found for Marks: $marksValue, Grading System ID: $gradingSystemId, Subject ID: $subjectId");
 
             return [
-                'grade' => 'N/A', // Explicitly return 'N/A' for grade
-                'points' => 0 // Default points
+                'grade' => '-', // Explicitly return 'N/A' for grade
+                'points' => '-' // Default points
             ];
         }
 
         // Return both grade and points (GPA)
         return [
             'grade' => $gradingRange->grade,
-            'points' => $gradingRange->gpa ?? 0 // Points (GPA)
+            'points' => $gradingRange->gpa ?? '-' // Points (GPA)
         ];
-    }
-
-
-
-
-    // Calculate total points based on the grading system (points handled in getGradeData)
-    private function getTotalPoints($marksValue, $subject, $exam)
-    {
-        return $this->getGradeData($marksValue, $exam->gradingSystem->id, $subject->id)['points'];
     }
 
     // Calculate positions and sort the student data with tie-breaking logic
@@ -255,8 +277,10 @@ class CombinationFormula extends Component
                 $position++;
             }
 
+            // Calculate stream positions
             $this->calculateStreamPositions($studentData);
         } catch (\Exception $e) {
+            \Log::error("Error calculating positions: " . $e->getMessage());
             $this->addError('calculatePositions', 'Error calculating positions: ' . $e->getMessage());
         }
 
@@ -266,7 +290,6 @@ class CombinationFormula extends Component
     // Calculate stream positions without tie-breaking
     private function calculateStreamPositions(&$studentData)
     {
-        // Group students by stream
         $streams = [];
         foreach ($studentData as &$data) {
             $streamKey = $data['stream'];
@@ -276,7 +299,6 @@ class CombinationFormula extends Component
             $streams[$streamKey][] = &$data; // Reference to the student data
         }
 
-        // Calculate positions for each stream
         foreach ($streams as $stream => $students) {
             usort($students, function ($a, $b) {
                 if ($b['total_marks'] === $a['total_marks']) {
@@ -288,13 +310,29 @@ class CombinationFormula extends Component
                 return $b['total_marks'] <=> $a['total_marks'];
             });
 
-            // Assign positions for the stream without tie-breaking
             $position = 1;
             foreach ($students as $index => &$data) {
-                $data['stream_position'] = $position++; // Assign position without tie-breaking
+                $data['stream_position'] = $position++; // Assign stream position
             }
         }
     }
+
+
+    public function getMeanGrade($totalPoints, $gradingSystemId)
+    {
+        // Find the corresponding grade for the total points based on the grading system
+        $gradeData = GradingGrade::where('grading_system_id', $gradingSystemId)
+            ->where('range_from', '<=', $totalPoints) // Updated column name
+            ->where('range_to', '>=', $totalPoints)   // Updated column name
+            ->first();
+
+        return $gradeData ? $gradeData->grade : '-'; // Return '-' if no grade found
+    }
+
+
+
+
+
 
 
     public function filterStudents()
@@ -318,6 +356,27 @@ class CombinationFormula extends Component
         if ($this->selectedSection) {
             $this->students->where('section_id', $this->selectedSection);
         }
+
+
+
+        // if (!$this->examId) {
+        //     $this->errorMessage = 'Please select an exam to view champions.';
+        //     return;
+        // }
+
+        // $query = ExamMarks::with(['student', 'subject'])->where('exam_id', $this->examId);
+
+        // if ($this->classId) {
+        //     $query->whereHas('student', function ($q) {
+        //         $q->where('my_class_id', $this->classId);
+        //     });
+        // }
+
+        // if ($this->streamId) {
+        //     $query->whereHas('student', function ($q) {
+        //         $q->where('section_id', $this->streamId);
+        //     });
+        // }
 
         if ($this->selectedYearAdmitted) {
             $this->students->where('year_admitted', $this->selectedYearAdmitted);

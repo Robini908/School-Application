@@ -88,28 +88,9 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Right side with visualization -->
-            {{--<div class="col-lg-6">
-                <div class="card bg-light shadow-sm h-100">
-                    <!-- Added 'h-100' class to make the card fill the height -->
-                    <div class="card-header bg-success text-white">
-                        <h5 class="card-title mb-0">All users(Pie Chart)</h5>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="userPieChart"></canvas>
-                    </div>
-                </div>
-            </div>--}}
         </div>
     </div>
 </div>
 
-{{--Events Calendar Ends--}}
-
-{{-- Recent Students Panel Begins --}}
-<div class="card">
-    {{-- @livewire('manage-students') --}}
-</div>
 
 @endsection

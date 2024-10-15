@@ -92,4 +92,11 @@ class StudentRecord extends Model
     {
         return $this->hasMany(ExamMarks::class, 'student_id');
     }
+
+    public function studentResults(): HasMany
+    {
+        return $this->hasMany(StudentResult::class, 'student_id', 'id'); 
+    }
+    
 }
+

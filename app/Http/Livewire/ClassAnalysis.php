@@ -2,138 +2,129 @@
 
 namespace App\Http\Livewire;
 
-use App\Models\Exam;
-use App\Models\MyClass;
-use App\Models\ExamMarks;
 use Livewire\Component;
+use App\Models\Exam;
+use App\Models\StudentResult;
 
 class ClassAnalysis extends Component
 {
-    public $examId;   // Selected exam ID
-    public $gradesCount = []; // Array to hold grades count for each class
-    public $exams = []; // List of exams
-    public $errorMessage;
+    public $examId;
+    public $averageMeanScore;
+    public $gradesCount = [];
+    public $errorMessage = null;
+    public $exams = [];
+    public $className; // Variable for class name
+    public $examName; // Variable for exam name
 
     public function mount()
     {
-        // Load all exams
         $this->exams = Exam::all();
-        $this->gradesCount = [];
-    }
-
-    public function updatedExamId()
-    {
-        $this->gradesCount = []; // Reset grades count
-        $this->errorMessage = null; // Clear error message
-
-        if ($this->examId) {
-            $exam = Exam::with('gradingSystem')->find($this->examId);
-
-            if ($exam) {
-                $this->getGradesCount(); // Fetch grades count after selecting the exam
-            } else {
-                $this->errorMessage = 'Exam not found.';
-            }
-        }
     }
 
     public function getGradesCount()
     {
+        // Validate exam selection
         if (!$this->examId) {
             $this->errorMessage = 'Please select an exam to view class analysis.';
             return;
         }
-
-        // Get the exam and associated grading system
-        $exam = Exam::with('gradingSystem.gradingRanges')->find($this->examId);
-
-        if (!$exam) {
-            $this->errorMessage = 'Exam not found.';
+    
+        $exam = Exam::with(['gradingSystem.gradingRanges', 'studentResults.student.my_class', 'studentResults.student.section'])
+            ->find($this->examId);
+    
+        // Validate exam and grading system
+        if (!$exam || !$exam->gradingSystem || $exam->gradingSystem->gradingRanges->isEmpty()) {
+            $this->errorMessage = 'No grading system or ranges defined for this exam.';
             return;
         }
-
-        // Initialize the grades count for each class
-        $classes = MyClass::all();
-        foreach ($classes as $class) {
-            $this->gradesCount[$class->id] = [
-                'class_name' => $class->name,
-                'grades' => [
-                    'A' => 0,
-                    'A-' => 0,
-                    'B+' => 0,
-                    'B' => 0,
-                    'B-' => 0,
-                    'C+' => 0,
-                    'C' => 0,
-                    'C-' => 0,
-                    'D+' => 0,
-                    'D' => 0,
-                    'D-' => 0,
-                    'E' => 0,
-                    'F' => 0,
-                ],
-            ];
+    
+        $studentResults = $exam->studentResults;
+    
+        // Handle case where no student results are found
+        if ($studentResults->isEmpty()) {
+            // Update the error message to include the exam name
+            $this->errorMessage = 'Error! No student results found for the exam: ' . $exam->name . '.';
+            return;
         }
-
-        // Get exam marks, preload student and class relations
-        $examMarks = ExamMarks::where('exam_id', $this->examId)
-            ->with(['student.my_class', 'subject']) // Ensure 'my_class' is used here
-            ->get();
-
-        // Process the marks and count grades for each class
-        foreach ($examMarks as $mark) {
-            $student = $mark->student;
-            $classId = $student->my_class_id; // Get the class ID of the student
-            $subjectId = $mark->subject_id;   // Get the subject ID
-
-            // Get the appropriate grading ranges for this subject or general ones
-            $gradingRanges = $exam->gradingSystem->gradingRanges
-                ->where('subject_id', $subjectId)
-                ->all();
-
-            if (empty($gradingRanges)) {
-                $gradingRanges = $exam->gradingSystem->gradingRanges; // Use default ranges if none found for subject
+    
+        // Initialize grades count
+        $this->gradesCount = [];
+        $totalMeanScores = []; // To store mean scores for average calculation
+    
+        // Process each student's result
+        foreach ($studentResults as $result) {
+            $student = $result->student;
+            $classId = $student->my_class->id;
+            $sectionId = $student->section->id;
+    
+            // Initialize class and section if not already set
+            if (!isset($this->gradesCount[$classId])) {
+                $this->gradesCount[$classId] = [
+                    'class_name' => $student->my_class->name,
+                    'sections' => [],
+                ];
             }
-
-            // Get the grade for the current mark
-            $grade = $this->getGrade($mark->marks, $gradingRanges);
-
-            // Increment the count of the grade for the class
-            if (isset($this->gradesCount[$classId]['grades'][$grade])) {
-                $this->gradesCount[$classId]['grades'][$grade]++;
+    
+            if (!isset($this->gradesCount[$classId]['sections'][$sectionId])) {
+                $this->gradesCount[$classId]['sections'][$sectionId] = [
+                    'section_name' => $student->section->name,
+                    'grades' => array_fill_keys(['A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D+', 'D', 'D-', 'E', 'F'], 0),
+                    'student_count' => 0, // Count of students in the section
+                    'total_score' => 0, // Total score to calculate mean
+                    'mean_score' => 0, // To store the mean score for the section
+                ];
+            }
+    
+            // Increment student count for section
+            $this->gradesCount[$classId]['sections'][$sectionId]['student_count']++;
+    
+            // Assuming each student result has a score field
+            $totalScore = $result->score; // Adjust this if your score field is named differently
+    
+            // Ensure totalScore is a number
+            if (is_numeric($totalScore)) {
+                $this->gradesCount[$classId]['sections'][$sectionId]['total_score'] += $totalScore;
+            }
+    
+            // Get the mean grade for the student
+            $meanGrade = $result->mean_grade; // Assuming this contains the mean grade directly
+    
+            // Increment the corresponding grade count
+            if (array_key_exists($meanGrade, $this->gradesCount[$classId]['sections'][$sectionId]['grades'])) {
+                $this->gradesCount[$classId]['sections'][$sectionId]['grades'][$meanGrade]++;
             }
         }
-
-        if (empty($this->gradesCount)) {
-            $this->errorMessage = 'No grades found for the selected exam.';
+    
+        // Calculate mean score for each section
+        foreach ($this->gradesCount as &$classData) {
+            foreach ($classData['sections'] as &$sectionData) {
+                if ($sectionData['student_count'] > 0) {
+                    $sectionData['mean_score'] = $sectionData['total_score'] / $sectionData['student_count'];
+                    $totalMeanScores[] = $sectionData['mean_score']; // Add to total mean scores for averaging
+                } else {
+                    $sectionData['mean_score'] = 0; // No students, mean score is 0
+                }
+            }
         }
+    
+        // Calculate overall average mean score for each class
+        if (count($totalMeanScores) > 0) {
+            $this->averageMeanScore = array_sum($totalMeanScores) / count($totalMeanScores);
+        } else {
+            $this->averageMeanScore = 0; // No scores to average
+        }
+    
+        // Set the exam name and class name
+        $this->examName = $exam->name; // Set the selected exam name
+        $this->className = $this->gradesCount ? reset($this->gradesCount)['class_name'] : ''; // Set the first class name
+    
+        // Clear the error message if data is found
+        $this->errorMessage = null;
     }
-
-    /**
-     * Determine the grade for the given marks based on the grading ranges.
-     */
-    public function getGrade($marks, $gradingRanges)
-    {
-        if ($marks === 'N/A' || $marks === null) {
-            return 'N/A'; // Handle undefined marks
-        }
-
-        // Loop through the grading ranges and find the grade
-        foreach ($gradingRanges as $range) {
-            if ($marks >= $range->range_from && $marks <= $range->range_to) {
-                return $range->grade;
-            }
-        }
-
-        return 'F'; // Default grade if no match is found
-    }
+    
 
     public function render()
     {
-        return view('livewire.class-analysis', [
-            'gradesCount' => $this->gradesCount,
-            'errorMessage' => $this->errorMessage,
-            'exams' => $this->exams,
-        ]);
+        return view('livewire.class-analysis');
     }
 }

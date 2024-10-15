@@ -6,7 +6,7 @@
 
 
         
-        <livewire:manage-grades lazy />
+        <livewire:grade-manager lazy />
         {{-- <livewire:subject-analysis/> --}}
         
   

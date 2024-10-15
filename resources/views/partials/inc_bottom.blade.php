@@ -13,6 +13,23 @@
 <script type="text/javascript" src="{{ asset('global_assets/js/plugins/notifications/sweet_alert2.min.js') }}"></script>
 <script type="text/javascript" src="{{ asset('global_assets/js/plugins/notifications/pnotify.min.js') }}"></script>
 
+
+{{-- Buttons --}}
+<script type="text/javascript" src="{{ asset('global_assets/js/plugins/buttons/hover_dropdown.min.js') }}"></script>
+<script type="text/javascript" src="{{ asset('global_assets/js/plugins/buttons/ladda.min.js') }}"></script>
+<script type="text/javascript" src="{{ asset('global_assets/js/plugins/buttons/spin.min.js') }}"></script>
+
+
+{{-- Extensions --}}
+{{-- <script type="text/javascript" src="{{ asset('global_assets/js/plugins/extensions/jquery-ui/external/jquery/jquery.js') }}"></script>       --}}
+<script type="text/javascript" src="{{ asset('/global_assets/js/plugins/extensions/jquery-ui/jquery-ui.js') }}"></script>
+
+
+
+
+
+
+
 {{--DataTables--}}
 <script src="{{ asset('global_assets/js/plugins/tables/datatables/datatables.min.js') }}"></script>
 <script src="{{ asset('global_assets/js/plugins/tables/datatables/extensions/jszip/jszip.min.js') }}"></script>
