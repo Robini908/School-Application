@@ -62,6 +62,7 @@ class StudentRecord extends Model
     {
         return $this->belongsTo(ParentDetail::class, 'parent_id_no', 'parent_id_no');
     }
+    
 
     public function my_class()
     {

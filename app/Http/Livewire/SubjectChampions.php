@@ -56,7 +56,8 @@ class SubjectChampions extends Component
             return;
         }
 
-        $query = ExamMarks::with(['student', 'subject'])->where('exam_id', $this->examId);
+        $query = ExamMarks::with(['student', 'subject'])
+            ->where('exam_id', $this->examId);
 
         if ($this->classId) {
             $query->whereHas('student', function ($q) {
@@ -70,12 +71,16 @@ class SubjectChampions extends Component
             });
         }
 
-        // Group by subject_id and get the top performer per subject
+        // Group by subject_id and find the maximum marks per subject
         $this->champions = $query->get()
             ->groupBy('subject_id')
             ->map(function ($marks) {
-                return $marks->sortByDesc('marks')->first();
-            })->values(); // Keep as a collection without flattening
+                // Find the highest marks
+                $highestMarks = $marks->max('marks');
+
+                // Return all students who achieved the highest marks
+                return $marks->where('marks', $highestMarks);
+            })->flatten(1); // Flatten to keep all tied champions
 
         if ($this->champions->isEmpty()) {
             $this->errorMessage = 'No champions found for the selected criteria.';

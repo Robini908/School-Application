@@ -28,6 +28,7 @@ class ManageStudents extends Component
     public $notificationContent; // For rich text editor content
 
     public $showDeleteModal = false;
+    
     protected $mystudent; // Change to protected
     protected $filePath; // Change to protected
     public $formFilter = '';

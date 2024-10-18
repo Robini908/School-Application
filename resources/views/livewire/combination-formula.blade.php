@@ -344,6 +344,7 @@
                                     @endforelse
                                 </tbody>
                             </table>
+                            {{ $students->links() }}
                         </div>
                     </div>
                 </div>
@@ -426,6 +427,7 @@
                         @endforelse
                     </tbody>
                 </table>
+                {{ $students->links() }}
             </div>
             @endif
 

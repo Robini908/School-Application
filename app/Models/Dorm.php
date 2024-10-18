@@ -21,4 +21,5 @@ class Dorm extends Eloquent
     {
         return $this->hasMany(StudentRecord::class);
     }
+    
 }

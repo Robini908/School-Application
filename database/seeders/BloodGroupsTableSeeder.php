@@ -6,7 +6,6 @@ use App\Models\BloodGroup;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-
 class BloodGroupsTableSeeder extends Seeder
 {
     /**
@@ -16,12 +15,18 @@ class BloodGroupsTableSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('blood_groups')->delete();
+       
 
-        $bgs = ['O-', 'O+', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
-        foreach($bgs as  $bg){
-            BloodGroup::create(['name' => $bg]);
+        // Array of blood groups to seed
+        $bloodGroups = ['O-', 'O+', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
+
+        // Create blood groups using a loop for compatibility
+        $data = [];
+        foreach ($bloodGroups as $bg) {
+            $data[] = ['name' => $bg];
         }
-    }
 
+        // Insert all blood groups in a single query
+        BloodGroup::insert($data);
+    }
 }

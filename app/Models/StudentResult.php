@@ -15,25 +15,17 @@ class StudentResult extends Model
     protected $fillable = [
         'student_id',
         'exam_id', // Add exam_id for mass assignment
-        'student_name', // Consider removing if not necessary
-        'marks',
-        'grades',
-        'subjects',
+       
         'total_marks',
         'total_points',
         'mean_score',
         'mean_grade',
-        'stream',
+        
         'position',
         'stream_position',
     ];
 
-    // Cast JSON attributes to array
-    protected $casts = [
-        'marks' => 'array',
-        'grades' => 'array',
-        'subjects' => 'array',
-    ];
+    
 
     // Define the relationship with StudentRecord
     public function student()

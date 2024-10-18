@@ -61,7 +61,7 @@
                 </div>
 
                 <div class="media-body text-right">
-                    <h3 class="mb-0">{{ $users->where('user_type', 'parent')->count() }}</h3>
+                    <h3 class="mb-0">{{ $totalParents }}</h3>
                     <span class="text-uppercase font-size-xs">Total Parents</span>
                 </div>
             </div>

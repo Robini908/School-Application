@@ -12,6 +12,7 @@ use App\Models\GradingRange;
 use App\Models\StudentRecord;
 use App\Models\StudentResult;
 use Illuminate\Support\Facades\DB;
+use Livewire\WithPagination;
 
 class CombinationFormula extends Component
 {
@@ -39,6 +40,7 @@ class CombinationFormula extends Component
     public $terms; // New property for terms
     public $students; // This will be a Collection
     public $examResults = []; // Store subjects and scores for selected exam
+    use WithPagination;
 
 
     public function mount()
@@ -96,7 +98,7 @@ class CombinationFormula extends Component
             ->when($this->selectedSection, function ($query) {
                 $query->where('section_id', $this->selectedSection);
             })
-            ->get();
+            ->paginate(50); // Load 50 students per page
 
         \Log::info("Fetched Students Count: " . $this->students->count());
 
@@ -356,27 +358,6 @@ class CombinationFormula extends Component
         if ($this->selectedSection) {
             $this->students->where('section_id', $this->selectedSection);
         }
-
-
-
-        // if (!$this->examId) {
-        //     $this->errorMessage = 'Please select an exam to view champions.';
-        //     return;
-        // }
-
-        // $query = ExamMarks::with(['student', 'subject'])->where('exam_id', $this->examId);
-
-        // if ($this->classId) {
-        //     $query->whereHas('student', function ($q) {
-        //         $q->where('my_class_id', $this->classId);
-        //     });
-        // }
-
-        // if ($this->streamId) {
-        //     $query->whereHas('student', function ($q) {
-        //         $q->where('section_id', $this->streamId);
-        //     });
-        // }
 
         if ($this->selectedYearAdmitted) {
             $this->students->where('year_admitted', $this->selectedYearAdmitted);

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\Qs;
+use App\Models\ParentDetail;
 use App\Repositories\UserRepo;
 use App\Models\StudentRecord; // Import the StudentRecord model
 
@@ -43,6 +44,8 @@ class HomeController extends Controller
             $d['users'] = $this->user->getAll();
             // Count total students using the StudentRecord model
             $d['totalStudents'] = StudentRecord::count();
+            $d['totalParents'] = ParentDetail::count();
+
         }
 
         return view('pages.support_team.dashboard', $d);

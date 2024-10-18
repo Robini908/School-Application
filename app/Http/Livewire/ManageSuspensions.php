@@ -10,6 +10,8 @@ class ManageSuspensions extends Component
 {
     public $suspendedStudents = [];
     public $isReinstating = false;
+    public $showForm = false;
+    
     public $selectedStudentId;
     public $student;
     public $newSuspensionEndDate;

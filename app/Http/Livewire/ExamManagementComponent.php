@@ -12,6 +12,7 @@ use App\Models\GradingRange;
 use App\Models\GradingSystem;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Collection;
+use Livewire\WithPagination;
 
 
 class ExamManagementComponent extends Component
@@ -56,6 +57,8 @@ class ExamManagementComponent extends Component
     public $selectedSections = [];
     public $selectAllSections = false;
     public $isConfirmingDeleting = false; // Track whether the deletion is confirmed
+
+    use WithPagination;
 
 
 
@@ -170,23 +173,24 @@ class ExamManagementComponent extends Component
             ->when($this->filterGradingSystem, function ($query) {
                 $query->where('grading_system_id', $this->filterGradingSystem);
             })
-            ->get();
-
+            ->paginate(10); // Use paginate for full pagination
+    
         // Fetch sections based on the selected class
         if ($this->selectedClass) {
             $this->sections = Section::where('my_class_id', $this->selectedClass)->get();
         } else {
             $this->sections = collect(); // Reset sections if no class is selected
         }
-
+    
         return view('livewire.exam-management-component', [
             'exams' => $exams,
             'examDetails' => $this->examDetails,
             'sections' => $this->sections, // Pass sections to the view
         ]);
     }
+    
 
-  
+
 
 
     public function resetFilter($filter)
@@ -203,7 +207,7 @@ class ExamManagementComponent extends Component
     }
 
 
-    
+
 
     public function confirmDelete($id)
     {
@@ -223,7 +227,7 @@ class ExamManagementComponent extends Component
         Exam::find($this->examId)->delete();
 
         session()->flash('message', 'Exam deleted successfully.');
-        
+
         $this->cancelDelete(); // Hide the modal after deletion
         $this->emit('examDeleted'); // Optional: Emit an event to refresh the exam list
     }
@@ -344,7 +348,7 @@ class ExamManagementComponent extends Component
         $this->isCreating = false;
         $this->isEditing = true;
         $this->showExamCard = false; // Hide the card when editing
-        
+
     }
 
 

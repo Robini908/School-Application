@@ -67,7 +67,8 @@
             <!-- Get Champions Button -->
             <button wire:click="getChampions" class="btn btn-primary d-flex align-items-center">
                 Get Champions
-                <div wire:loading wire:target="getChampions" class="spinner-border spinner-border-sm text-light ms-2" role="status"></div>
+                <div wire:loading wire:target="getChampions" class="spinner-border spinner-border-sm text-light ms-2"
+                    role="status"></div>
             </button>
 
             @if($errorMessage)
@@ -103,7 +104,15 @@
                         @endforeach
                     </tbody>
                 </table>
+
+                {{-- <!-- Pagination Links -->
+                <div class="mt-3">
+                    {{ $champions->links() }}
+                   
+                </div> --}}
+
             </div>
+
 
             @else
             <div class="mt-4 text-muted">No champions found for the selected criteria.</div>

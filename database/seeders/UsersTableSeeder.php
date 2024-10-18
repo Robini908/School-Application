@@ -1,4 +1,5 @@
 <?php
+
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
@@ -6,10 +7,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\Helpers\Qs;
 use Illuminate\Support\Str;
+use Faker\Factory as Faker;
 
 class UsersTableSeeder extends Seeder
 {
-
     /**
      * Run the database seeds.
      *
@@ -17,19 +18,26 @@ class UsersTableSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('users')->delete();
+        // Truncate the users table for a clean slate (uncomment if you need it)
+        // DB::table('users')->truncate();
 
+        // Create default users
         $this->createNewUsers();
-        $this->createManyUsers( 3);
+
+        // Create 100 users for each user type except teacher
+        $this->createManyUsers(100);
+
+        // Create 200 teachers
+        $this->createTeachers(200);
     }
 
     protected function createNewUsers()
     {
         $password = Hash::make('cj'); // Default user password
 
-        $d = [
-
-            ['name' => 'CJ Inspired',
+        $users = [
+            [
+                'name' => 'CJ Inspired',
                 'email' => 'cj@cj.com',
                 'username' => 'cj',
                 'password' => $password,
@@ -37,68 +45,106 @@ class UsersTableSeeder extends Seeder
                 'code' => strtoupper(Str::random(10)),
                 'remember_token' => Str::random(10),
             ],
-
-            ['name' => 'Admin KORA',
-            'email' => 'admin@admin.com',
-            'password' => $password,
-            'user_type' => 'admin',
-            'username' => 'admin',
-            'code' => strtoupper(Str::random(10)),
-            'remember_token' => Str::random(10),
-            ],
-
-            ['name' => 'Teacher Chike',
-                'email' => 'teacher@teacher.com',
-                'user_type' => 'teacher',
-                'username' => 'teacher',
+            [
+                'name' => 'Admin KORA',
+                'email' => 'admin@admin.com',
+                'username' => 'admin',
                 'password' => $password,
+                'user_type' => 'admin',
                 'code' => strtoupper(Str::random(10)),
                 'remember_token' => Str::random(10),
             ],
-
-            ['name' => 'Parent Kaba',
+            [
+                'name' => 'Parent Kaba',
                 'email' => 'parent@parent.com',
-                'user_type' => 'parent',
                 'username' => 'parent',
                 'password' => $password,
+                'user_type' => 'parent',
                 'code' => strtoupper(Str::random(10)),
                 'remember_token' => Str::random(10),
             ],
-
-            ['name' => 'Accountant Jeff',
+            [
+                'name' => 'Accountant Jeff',
                 'email' => 'accountant@accountant.com',
-                'user_type' => 'accountant',
                 'username' => 'accountant',
                 'password' => $password,
+                'user_type' => 'accountant',
                 'code' => strtoupper(Str::random(10)),
                 'remember_token' => Str::random(10),
             ],
         ];
-        DB::table('users')->insert($d);
+
+        foreach ($users as $user) {
+            // Check if email or username already exists
+            if (!DB::table('users')->where('email', $user['email'])->orWhere('username', $user['username'])->exists()) {
+                DB::table('users')->insert($user);
+            }
+        }
     }
 
     protected function createManyUsers(int $count)
     {
         $data = [];
-        $user_type = Qs::getAllUserTypes(['super_admin', 'librarian', 'student']);
+        $userTypes = Qs::getAllUserTypes(['super_admin', 'admin', 'parent', 'accountant', 'librarian', 'student']);
 
-        for($i = 1; $i <= $count; $i++){
+        // Initialize Faker
+        $faker = Faker::create();
 
-            foreach ($user_type as $k => $ut){
+        foreach ($userTypes as $userType) {
+            for ($i = 1; $i <= $count; $i++) {
+                $email = strtolower($userType) . $i . '@example.com';
+                $username = strtolower($userType) . $i;
 
-                $data[] = ['name' => ucfirst($user_type[$k]).' '.$i,
-                    'email' => $user_type[$k].$i.'@'.$user_type[$k].'.com',
-                    'user_type' => $user_type[$k],
-                    'username' => $user_type[$k].$i,
-                    'password' => Hash::make($user_type[$k]),
+                // Check for existing email or username before adding to data array
+                if (!DB::table('users')->where('email', $email)->orWhere('username', $username)->exists()) {
+                    $data[] = [
+                        'name' => ucfirst($userType) . ' ' . $faker->lastName, // Random last name
+                        'email' => $email,
+                        'user_type' => $userType,
+                        'username' => $username,
+                        'password' => Hash::make('password'), // Default password
+                        'code' => strtoupper(Str::random(10)),
+                        'remember_token' => Str::random(10),
+                    ];
+                }
+            }
+        }
+
+        // Insert users in chunks to optimize performance
+        $chunks = array_chunk($data, 1000); // Insert in batches of 1000
+        foreach ($chunks as $chunk) {
+            DB::table('users')->insert($chunk);
+        }
+    }
+
+    protected function createTeachers(int $count)
+    {
+        $data = [];
+        // Initialize Faker
+        $faker = Faker::create();
+
+        for ($i = 1; $i <= $count; $i++) {
+            $email = 'teacher' . $i . '@example.com';
+            $username = 'teacher' . $i;
+
+            // Check for existing email or username before adding to data array
+            if (!DB::table('users')->where('email', $email)->orWhere('username', $username)->exists()) {
+                $data[] = [
+                    'name' => 'Teacher ' . $faker->name, // Random teacher name
+                    'email' => $email,
+                    'user_type' => 'teacher',
+                    'username' => $username,
+                    'password' => Hash::make('password'), // Default password
                     'code' => strtoupper(Str::random(10)),
                     'remember_token' => Str::random(10),
                 ];
-
             }
-
         }
 
-        DB::table('users')->insert($data);
+        // Insert teachers in chunks to optimize performance
+        $chunks = array_chunk($data, 1000); // Insert in batches of 1000
+        foreach ($chunks as $chunk) {
+            DB::table('users')->insert($chunk);
+        }
     }
 }
