@@ -5,16 +5,17 @@ namespace App;
 use App\Models\Lga;
 use App\Models\Dorm;
 use App\Models\State;
+use App\Models\MyClass;
 use App\Models\UserType;
 use App\Models\BloodGroup;
 use App\Models\DormMaster;
 use App\Models\Nationality;
 use App\Models\StaffRecord;
 use App\Models\StudentRecord;
-use App\Models\MyClass;
-use App\Models\Section; // Import Section model
+use App\Models\StudentPromotionDemotion;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Section; // Import Section model
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
@@ -44,6 +45,11 @@ class User extends Authenticatable
     public function lga()
     {
         return $this->belongsTo(Lga::class);
+    }
+
+    public function promotionsDemotions()
+    {
+        return $this->hasMany(StudentPromotionDemotion::class, 'approved_by');
     }
 
     public function userType()

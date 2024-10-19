@@ -5,7 +5,7 @@
     @if($step === 1)
         <div class="mb-4">
             <label for="class" class="block text-gray-700">Select Class</label>
-            <select wire:model="selectedClass" id="class" class="border rounded w-full p-2">
+            <select wire:model.live="selectedClass" id="class" class="border rounded w-full p-2">
                 <option value="">-- Select Class --</option>
                 @foreach($classes as $class)
                     <option value="{{ $class->id }}">{{ $class->name }}</option>
@@ -25,7 +25,7 @@
     @if($step === 2)
         <div class="mb-4">
             <label for="exam" class="block text-gray-700">Select Exam</label>
-            <select wire:model="selectedExam" id="exam" class="border rounded w-full p-2">
+            <select wire:model.live="selectedExam" id="exam" class="border rounded w-full p-2">
                 <option value="">-- Select Exam --</option>
                 @foreach($exams as $exam)
                     <option value="{{ $exam->id }}">{{ $exam->name }}</option>
@@ -60,7 +60,7 @@
                         <td class="border px-4 py-2">{{ $student->adm_no }}</td>
                         @foreach($subjects as $subject)
                             <td class="border px-4 py-2">
-                                <input type="number" wire:model.defer="marks.{{ $student->id }}.{{ $subject->id }}" class="border rounded p-2 w-full" placeholder="Enter marks">
+                                <input type="number" wire:model="marks.{{ $student->id }}.{{ $subject->id }}" class="border rounded p-2 w-full" placeholder="Enter marks">
                             </td>
                         @endforeach
                     </tr>

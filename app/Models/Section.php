@@ -33,6 +33,11 @@ class Section extends Model
             ->where('user_type', 'teacher'); // Assuming 'user_type' indicates if the user is a teacher
     }
 
+    public function promotionsDemotions()
+    {
+        return $this->hasMany(StudentPromotionDemotion::class, 'old_section_id')->orWhere('new_section_id', $this->id);
+    }
+
     /**
      * Define the relationship with StudentRecord.
      * Each section can have multiple student records.

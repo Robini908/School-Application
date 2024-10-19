@@ -1,34 +1,30 @@
 {
   "name": "laravel/laravel",
   "description": "The Laravel Framework.",
-  "keywords": [
-    "framework",
-    "laravel"
-  ],
+  "keywords": ["framework", "laravel"],
   "license": "MIT",
   "type": "project",
   "require": {
-    "php": "^7.2||^8.0",
-    "barryvdh/laravel-dompdf": "^0.8.3",
-    "fakerphp/faker": "^1.14",
-    "fideloper/proxy": "^4.4",
-
-    "guzzlehttp/guzzle": "^7.0.1",
+    "php": "^8.2.12",
+    "barryvdh/laravel-dompdf": "^2.0",
+    "fakerphp/faker": "^1.19",
+    "guzzlehttp/guzzle": "^7.5",
     "hashids/hashids": "^4.1.0",
-    "laravel/framework": "^8.40",
-    "laravel/tinker": "^2.5",
-    "laravel/ui": "^3.0",
-    "livewire/livewire": "^2.12",
+    "laravel/framework": "^10.0",
+    "laravel/tinker": "^2.8",
+    "laravel/ui": "^4.0",
+    "livewire/livewire": "^3.5",
     "maatwebsite/excel": "^3.1",
     "mckenziearts/laravel-notify": "^2.5",
-    "voku/portable-ascii": "^1.6"
+    "voku/portable-ascii": "^2.0"
   },
   "require-dev": {
-    "barryvdh/laravel-ide-helper": "^2.8",
-    "facade/ignition": "^2.5",
-    "mockery/mockery": "^1.4.2",
-    "nunomaduro/collision": "^5.0",
-    "phpunit/phpunit": "^9.3.3"
+    "barryvdh/laravel-ide-helper": "^2.13",
+    "friendsofphp/php-cs-fixer": "*",
+    "mockery/mockery": "^1.5.1",
+    "nunomaduro/collision": "^7.0",
+    "phpunit/phpunit": "^10.0",
+    "spatie/laravel-ignition": "^2.0"
   },
   "autoload": {
     "psr-4": {
@@ -50,9 +46,12 @@
   "config": {
     "preferred-install": "dist",
     "sort-packages": true,
-    "optimize-autoloader": true
+    "optimize-autoloader": true,
+    "allow-plugins": {
+      "wikimedia/composer-merge-plugin": true
+    }
   },
-  "minimum-stability": "dev",
+  "minimum-stability": "stable",
   "prefer-stable": true,
   "scripts": {
     "post-autoload-dump": [
@@ -68,7 +67,8 @@
     "post-update-cmd": [
       "Illuminate\\Foundation\\ComposerScripts::postUpdate",
       "@php artisan ide-helper:generate",
-      "@php artisan ide-helper:meta"
+      "@php artisan ide-helper:meta",
+      "@php artisan vendor:publish --tag=livewire:assets --ansi --force"
     ]
   }
 }

@@ -9,7 +9,7 @@
 
     <div class="mb-4">
         <label for="class" class="block">Class</label>
-        <select wire:model="selectedClass" id="class" class="form-select">
+        <select wire:model.live="selectedClass" id="class" class="form-select">
             <option value="">Select Class</option>
             @foreach($classes as $class)
                 <option value="{{ $class->id }}">{{ $class->name }}</option>
@@ -19,7 +19,7 @@
 
     <div class="mb-4">
         <label for="exam" class="block">Exam</label>
-        <select wire:model="selectedExam" id="exam" class="form-select">
+        <select wire:model.live="selectedExam" id="exam" class="form-select">
             <option value="">Select Exam</option>
             @foreach($exams as $exam)
                 <option value="{{ $exam->id }}">{{ $exam->name }}</option>
@@ -29,7 +29,7 @@
 
     <div class="mb-4">
         <label for="subject" class="block">Subject</label>
-        <select wire:model="selectedSubject" id="subject" class="form-select">
+        <select wire:model.live="selectedSubject" id="subject" class="form-select">
             <option value="">Select Subject</option>
             @foreach($subjects as $subject)
                 <option value="{{ $subject->id }}">{{ $subject->subject_name }}</option>
@@ -39,7 +39,7 @@
 
     <div class="mb-4">
         <label for="section" class="block">Section</label>
-        <select wire:model="selectedSection" id="section" class="form-select">
+        <select wire:model.live="selectedSection" id="section" class="form-select">
             <option value="">Select Section</option>
             @foreach($this->sections ?? [] as $section)
                 <option value="{{ $section->id }}">{{ $section->name }}</option>
@@ -61,7 +61,7 @@
                     <tr>
                         <td class="border">{{ $student->first_name }} {{ $student->last_name }}</td>
                         <td class="border">
-                            <input type="number" wire:model.defer="marks.{{ $student->id }}" class="form-input" />
+                            <input type="number" wire:model="marks.{{ $student->id }}" class="form-input" />
                         </td>
                     </tr>
                 @endforeach

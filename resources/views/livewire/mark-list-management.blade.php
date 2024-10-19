@@ -8,7 +8,7 @@
         <div class="col-md-4">
             <label for="class" class="form-label">Select Class:</label>
             <div class="input-group">
-                <select wire:model="classId" id="class" class="form-control" wire:key="class-selection">
+                <select wire:model.live="classId" id="class" class="form-control" wire:key="class-selection">
                     <option value="">Select Class</option>
                     @foreach ($classes as $class)
                     <option value="{{ $class->id }}" wire:key="class-{{ $class->id }}">{{ $class->name }}</option>
@@ -26,7 +26,7 @@
         <div class="col-md-4">
             <label for="exam" class="form-label">Select Exam:</label>
             <div class="input-group">
-                <select wire:model="examId" id="exam" class="form-control" wire:key="exam-selection">
+                <select wire:model.live="examId" id="exam" class="form-control" wire:key="exam-selection">
                     <option value="">Select Exam</option>
                     @foreach ($exams as $exam)
                     <option value="{{ $exam->id }}" wire:key="exam-{{ $exam->id }}">{{ $exam->name }}</option>
@@ -44,7 +44,7 @@
         <div class="col-md-4">
             <label for="section" class="form-label">Select Section:</label>
             <div class="input-group">
-                <select wire:model="sectionId" id="section" class="form-control" wire:key="section-selection">
+                <select wire:model.live="sectionId" id="section" class="form-control" wire:key="section-selection">
                     <option value="">Select Section</option>
                     @foreach ($sections as $section)
                     <option value="{{ $section->id }}" wire:key="section-{{ $section->id }}">{{ $section->name }}

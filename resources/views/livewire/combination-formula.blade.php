@@ -18,7 +18,7 @@
                         <div class="col-md-4 mb-2">
                             <label for="examYear">Year:</label>
                             <div class="input-group">
-                                <input type="number" wire:model.debounce.500ms="selectedExamYear" id="examYear"
+                                <input type="number" wire:model.live.debounce.500ms="selectedExamYear" id="examYear"
                                     class="form-control" placeholder="Enter Exam Year">
                                 <div wire:loading wire:target="selectedExamYear" class="input-group-append">
                                     <span class="input-group-text">
@@ -32,7 +32,7 @@
                         <div class="col-md-4 mb-2">
                             <label for="yearAdmitted">Year Admitted:</label>
                             <div class="input-group">
-                                <input type="number" wire:model.debounce.500ms="selectedYearAdmitted" id="yearAdmitted"
+                                <input type="number" wire:model.live.debounce.500ms="selectedYearAdmitted" id="yearAdmitted"
                                     class="form-control" placeholder="Enter Year Admitted">
                                 <div wire:loading wire:target="selectedYearAdmitted" class="input-group-append">
                                     <span class="input-group-text">
@@ -46,7 +46,7 @@
                         <div class="col-md-4 mb-2">
                             <label for="term">Term:</label>
                             <div class="input-group">
-                                <select wire:model="selectedTerm" id="term" class="form-control select2"
+                                <select wire:model.live="selectedTerm" id="term" class="form-control select2"
                                     wire:loading.attr="disabled">
                                     <option value="">Select Term</option>
                                     @foreach ($terms as $term)
@@ -68,7 +68,7 @@
                         <div class="col-md-4 mb-2">
                             <label for="class">Class:</label>
                             <div class="input-group">
-                                <select wire:model="selectedClass" id="class" class="form-control select2"
+                                <select wire:model.live="selectedClass" id="class" class="form-control select2"
                                     wire:loading.attr="disabled">
                                     <option value="">Select Class</option>
                                     @foreach ($classes as $class)
@@ -87,7 +87,7 @@
                         <div class="col-md-4 mb-2">
                             <label for="section">Section:</label>
                             <div class="input-group">
-                                <select wire:model="selectedSection" id="section" class="form-control select2"
+                                <select wire:model.live="selectedSection" id="section" class="form-control select2"
                                     wire:loading.attr="disabled">
                                     <option value="">Select Section</option>
                                     @foreach ($sections as $section)
@@ -106,7 +106,7 @@
                         <div class="col-md-4 mb-2">
                             <label for="exam">Exam:</label>
                             <div class="input-group">
-                                <select wire:model="selectedExam" id="exam" class="form-control select2"
+                                <select wire:model.live="selectedExam" id="exam" class="form-control select2"
                                     wire:loading.attr="disabled">
                                     <option value="">Select Exam</option>
                                     @foreach ($exams as $exam)

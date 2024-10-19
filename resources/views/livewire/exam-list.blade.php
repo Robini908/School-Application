@@ -68,11 +68,11 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <form wire:submit.prevent="{{ $editingExamId ? 'updateExam' : 'addExam' }}">
+                            <form wire:submit="{{ $editingExamId ? 'updateExam' : 'addExam' }}">
                                 <div class="form-group row">
                                     <label class="col-lg-3 col-form-label font-weight-semibold">Name <span class="text-danger">*</span></label>
                                     <div class="col-lg-9">
-                                        <input wire:model="name" type="text" class="form-control" placeholder="Name of Exam">
+                                        <input wire:model.live="name" type="text" class="form-control" placeholder="Name of Exam">
                                         @error('name') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
                                 </div>
@@ -80,7 +80,7 @@
                                 <div class="form-group row">
                                     <label for="term" class="col-lg-3 col-form-label font-weight-semibold">Term</label>
                                     <div class="col-lg-9">
-                                        <select wire:model="term" class="form-control select-search" id="term">
+                                        <select wire:model.live="term" class="form-control select-search" id="term">
                                             <option value="1">First Term</option>
                                             <option value="2">Second Term</option>
                                             <option value="3">Third Term</option>
@@ -92,7 +92,7 @@
                                 <div class="form-group row">
                                     <label for="grading_system_id" class="col-lg-3 col-form-label font-weight-semibold">Grading System</label>
                                     <div class="col-lg-9">
-                                        <select wire:model="grading_system_id" class="form-control select-search w-100" id="grading_system_id">
+                                        <select wire:model.live="grading_system_id" class="form-control select-search w-100" id="grading_system_id">
                                             @foreach ($gradingSystems as $system)
                                             <option value="{{ $system->id }}">{{ $system->name }}</option>
                                             @endforeach
@@ -104,7 +104,7 @@
                                 <div class="form-group row">
                                     <label for="classes" class="col-lg-3 col-form-label font-weight-semibold">Select Classes</label>
                                     <div class="col-lg-9">
-                                        <select wire:model="selectedClasses" class="form-control select-search w-100" id="classes" multiple style="height: fit-content;">
+                                        <select wire:model.live="selectedClasses" class="form-control select-search w-100" id="classes" multiple style="height: fit-content;">
                                             @foreach ($classes as $class_)
                                             <option value="{{ $class_->id }}">{{ $class_->name }}</option>
                                             @endforeach

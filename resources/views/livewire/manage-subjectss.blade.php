@@ -1,30 +1,30 @@
-<div class="container">
+<div class="container mt-0">
     <x-flash-messages />
     @if ($showForm)
     <!-- Show Form for Creating or Editing -->
-    <div class="card mb-4" style="border: 1px solid #007bff;">
+    <div class="card " style="border: 1px solid #007bff;">
         <div class="card-header bg-primary text-white">
             <h3>{{ $isEditing ? 'Edit Subject' : 'Create New Subject' }}</h3>
         </div>
         <div class="card-body" style="background-color: #f8f9fa;">
-            <form wire:submit.prevent="{{ $isEditing ? 'update' : 'store' }}">
+            <form wire:submit="{{ $isEditing ? 'update' : 'store' }}">
                 <div class="form-group mb-3">
                     <label for="subject_name">Subject Name</label>
-                    <input type="text" wire:model="subject_name" id="subject_name" class="form-control"
+                    <input type="text" wire:model.live="subject_name" id="subject_name" class="form-control"
                         placeholder="Enter subject name" style="border-radius: 0.25rem;">
                     @error('subject_name') <div class="text-danger">{{ $message }}</div> @enderror
                 </div>
 
                 <div class="form-group mb-3">
                     <label for="subject_code">Subject Code</label>
-                    <input type="text" wire:model="subject_code" id="subject_code" class="form-control"
+                    <input type="text" wire:model.live="subject_code" id="subject_code" class="form-control"
                         placeholder="Enter subject code" style="border-radius: 0.25rem;">
                     @error('subject_code') <div class="text-danger">{{ $message }}</div> @enderror
                 </div>
 
                 <div class="form-group mb-3">
                     <label for="abbreviation">Abbreviation</label>
-                    <input type="text" wire:model="abbreviation" id="abbreviation" class="form-control"
+                    <input type="text" wire:model.live="abbreviation" id="abbreviation" class="form-control"
                         placeholder="Enter abbreviation" style="border-radius: 0.25rem;">
                     @error('abbreviation') <div class="text-danger">{{ $message }}</div> @enderror
                 </div>
@@ -32,7 +32,7 @@
                 <!-- Category Selection -->
                 <div class="form-group mb-3">
                     <label for="category_id">Category</label>
-                    <select wire:model="category_id" id="category_id" class="form-control"
+                    <select wire:model.live="category_id" id="category_id" class="form-control"
                         style="border-radius: 0.25rem;">
                         <option value="">Select a Category</option>
                         @foreach ($categories as $category)
@@ -72,7 +72,7 @@
                             <!-- New Category Input -->
                             <div class="form-group mb-3">
                                 <label for="new_category">New Category Name</label>
-                                <input type="text" wire:model="new_category" id="new_category" class="form-control"
+                                <input type="text" wire:model.live="new_category" id="new_category" class="form-control"
                                     placeholder="Enter new category" style="border-radius: 0.25rem;">
                                 <button type="button" wire:click="addCategory" class="btn btn-success mt-2"
                                     wire:loading.attr="disabled" data-toggle="tooltip" data-placement="top"
@@ -103,7 +103,7 @@
                                             <td>
                                                 @if ($editingCategoryId === $category->id)
                                                 <div class="input-group">
-                                                    <input type="text" wire:model="edit_category" class="form-control"
+                                                    <input type="text" wire:model.live="edit_category" class="form-control"
                                                         wire:keydown.enter="updateCategory" wire:keydown.escape="cancelEdit"
                                                         placeholder="Edit category name" />
                                                     <button type="button" wire:click="updateCategory"
@@ -161,7 +161,7 @@
 
     @else
     <!-- Show Table of Subjects -->
-    <div class="card">
+    <div class="card mt-0">
         <div class="card-header">
             <button wire:click="create" class="btn btn-primary mb-2" wire:loading.attr="disabled">
                 Add Subject
@@ -170,7 +170,7 @@
     
             <!-- Filter dropdown for categories -->
             <div class="float-end">
-                <select wire:model="selectedCategory" wire:change="filterByCategory($event.target.value)" class="form-control">
+                <select wire:model.live="selectedCategory" wire:change="filterByCategory($event.target.value)" class="form-control">
                     <option value="">All Subjects</option>
                     @foreach($categories as $category)
                         <option value="{{ $category->id }}">{{ $category->name }}</option>

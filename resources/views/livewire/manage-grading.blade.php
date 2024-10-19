@@ -81,10 +81,10 @@
 
                 <!-- Create New Grading Tab -->
                 <div class="tab-pane fade" id="new-gradingsystem">
-                    <form wire:submit.prevent="store">
+                    <form wire:submit="store">
                         <div class="form-group mb-4">
                             <label for="name" class="font-semibold"><b>Grading Name:</b></label>
-                            <input type="text" class="form-control" id="name" wire:model="name" required>
+                            <input type="text" class="form-control" id="name" wire:model.live="name" required>
                         </div>
                         <div>
                             <!-- Smaller submit button for grading creation -->

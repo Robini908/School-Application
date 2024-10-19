@@ -1,12 +1,12 @@
 <div>
-    <div class="container mt-5">
+    <div class="container mt-0">
         <!-- Flash Message -->
         <x-flash-messages/>
 
         <!-- Add Class Button -->
-        <button wire:click="toggleClassForm" class="btn btn-primary mb-3">
+        {{-- <button wire:click="toggleClassForm" class="btn btn-primary mb-3">
             {{ $editMode ? 'Cancel Edit' : 'Add Class' }}
-        </button>
+        </button> --}}
 
         <!-- Class Form (Add/Edit) -->
         @if($editMode || !$editMode)
@@ -16,7 +16,7 @@
             </div>
 
             <div class="card-body">
-                <form wire:submit.prevent="saveClass">
+                <form wire:submit="saveClass">
                     <!-- Loading Indicator -->
                     @if($loading)
                     <div class="text-center mb-3">
@@ -30,7 +30,7 @@
                     <!-- Class Name -->
                     <div class="form-group">
                         <label for="name">Class Name</label>
-                        <input type="text" id="name" wire:model="name" class="form-control"
+                        <input type="text" id="name" wire:model.live="name" class="form-control"
                             placeholder="Enter class name">
                         @error('name') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
@@ -42,7 +42,7 @@
 
                         <!-- Add Stream Input Section -->
                         <div class="input-group mb-3">
-                            <input type="text" wire:model="streamName" class="form-control" placeholder="Add New Stream"
+                            <input type="text" wire:model.live="streamName" class="form-control" placeholder="Add New Stream"
                                 @if($streamEditMode) disabled @endif> <!-- Disable when editing -->
                             <div class="input-group-append">
                                 <button type="button" wire:click="addStream" class="btn btn-primary"
@@ -71,7 +71,7 @@
                                     @if($streamEditMode && $selectedStream === $index)
                                     <!-- Show editing inputs below selected stream -->
                                     <div class="mt-2">
-                                        <input type="text" wire:model="streamName" class="form-control"
+                                        <input type="text" wire:model.live="streamName" class="form-control"
                                             placeholder="Edit Stream Name">
                                         @error('streamName') <span class="text-danger">{{ $message }}</span> @enderror
                                         <button type="button" wire:click="updateStream" class="btn btn-success mt-2">
@@ -183,10 +183,10 @@
                             @if($showInlineForm && $class->id === $selectedClassForAssignment)
                             <tr>
                                 <td colspan="3">
-                                    <form wire:submit.prevent="saveStreamTeacher">
+                                    <form wire:submit="saveStreamTeacher">
                                         <div class="row align-items-end">  <!-- Align items to the bottom for better visual alignment -->
                                             <div class="col">
-                                                <select wire:model="streamTeacher" class="form-control" required>
+                                                <select wire:model.live="streamTeacher" class="form-control" required>
                                                     <option value="">-- Select Teacher --</option>
                                                     @foreach($teachers as $teacher)
                                                         <option value="{{ $teacher->id }}">{{ $teacher->name }}</option>
@@ -199,7 +199,7 @@
                                     
                                             <div class="col">
                                                 <label for="session">Session</label>
-                                                <select wire:model="session" id="session" class="form-control" required>
+                                                <select wire:model.live="session" id="session" class="form-control" required>
                                                     <option value="">Select a session</option>
                                                     @foreach(range(date('Y'), 1900) as $year)
                                                         <option value="{{ $year }}">{{ $year }}</option>
@@ -246,7 +246,7 @@
                                                         <td>
                                                             @if($editingStreamId === $stream->id)
                                                             <form
-                                                                wire:submit.prevent="assignStreamTeacher({{ $stream->id }})">
+                                                                wire:submit="assignStreamTeacher({{ $stream->id }})">
                                                                 <label class="form-label">Current Class Teacher:
                                                                     <strong>{{ $stream->teacher ? $stream->teacher->name
                                                                         : 'Not Assigned' }}</strong></label>
@@ -254,7 +254,7 @@
                                                                     <strong>{{ $stream->session_year }}</strong></label>
 
                                                                 <div class="form-group d-flex align-items-center">
-                                                                    <select wire:model="selectedTeacherId"
+                                                                    <select wire:model.live="selectedTeacherId"
                                                                         class="form-control me-2" style="width: auto;">
                                                                         <option value="">Select Teacher</option>
                                                                         @foreach($teachers as $teacher)
@@ -263,7 +263,7 @@
                                                                         @endforeach
                                                                     </select>
 
-                                                                    <select wire:model="sessionYear"
+                                                                    <select wire:model.live="sessionYear"
                                                                         class="form-control me-2" style="width: auto;">
                                                                         <option value="">Select Year</option>
                                                                         @for($year = date('Y'); $year >= 2000; $year--)

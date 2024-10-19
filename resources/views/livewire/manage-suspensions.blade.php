@@ -90,7 +90,7 @@
             </div>
 
             <label for="new_suspension_end_date" class="form-label">New Suspension End Date:</label>
-            <input type="date" wire:model="newSuspensionEndDate" class="form-control mb-2" />
+            <input type="date" wire:model.live="newSuspensionEndDate" class="form-control mb-2" />
 
             <div class="d-flex gap-3">
                 <div class="d-flex align-items-center">

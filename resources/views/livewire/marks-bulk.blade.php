@@ -6,7 +6,7 @@
         </div>
 
         <div class="card-body">
-            <form wire:submit.prevent="submit">
+            <form wire:submit="submit">
                 <div class="row">
                     <div class="col-md-10">
                         <fieldset>
@@ -14,7 +14,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="my_class_id" class="col-form-label font-weight-bold">Class:</label>
-                                        <select wire:model="my_class_id" required id="my_class_id" class="form-control select">
+                                        <select wire:model.live="my_class_id" required id="my_class_id" class="form-control select">
                                             <option value="">Select Class</option>
                                             @foreach($my_classes as $c)
                                                 <option value="{{ $c->id }}">{{ $c->name }}</option>
@@ -26,7 +26,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="section_id" class="col-form-label font-weight-bold">Section:</label>
-                                        <select wire:model="section_id" required id="section_id" class="form-control select">
+                                        <select wire:model.live="section_id" required id="section_id" class="form-control select">
                                             @if($my_class_id)
                                                 @foreach($sections as $s)
                                                     <option value="{{ $s->id }}">{{ $s->name }}</option>

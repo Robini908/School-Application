@@ -6,7 +6,7 @@
                 <div class="col-md-4">
                     <label for="class" class="form-label">Select Class</label>
                     <div class="input-group">
-                        <select wire:model="classId" id="class" class="form-control">
+                        <select wire:model.live="classId" id="class" class="form-control">
                             <option value="">Select Class</option>
                             @foreach($classes as $class)
                             <option value="{{ $class->id }}">{{ $class->name }}</option>
@@ -24,7 +24,7 @@
                 <div class="col-md-4">
                     <label for="section" class="form-label">Select Stream (Optional, for stream analysis)</label>
                     <div class="input-group">
-                        <select wire:model="sectionId" id="section" class="form-control">
+                        <select wire:model.live="sectionId" id="section" class="form-control">
                             <option value="">All Sections</option>
                             @foreach($sections as $section)
                             <option value="{{ $section->id }}">{{ $section->name }}</option>
@@ -42,7 +42,7 @@
                 <div class="col-md-4">
                     <label for="exam" class="form-label">Select Exam</label>
                     <div class="input-group">
-                        <select wire:model="examId" id="exam" class="form-control">
+                        <select wire:model.live="examId" id="exam" class="form-control">
                             <option value="">Select Exam</option>
                             @foreach($exams as $exam)
                             <option value="{{ $exam->id }}">{{ $exam->name }}</option>

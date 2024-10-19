@@ -1,35 +1,36 @@
-
-window._ = require('lodash');
-window.Popper = require('popper.js').default;
-
-/**
- * We'll load jQuery and the Bootstrap jQuery plugin which provides support
- * for JavaScript based Bootstrap features such as modals and tabs. This
- * code may be modified to fit the specific needs of your application.
- */
-
-try {
-    window.$ = window.jQuery = require('jquery');
-
-    require('bootstrap');
-} catch (e) {}
+// Importing necessary libraries
+import _ from 'lodash';
+import Popper from 'popper.js';
+import $ from 'jquery';
+import 'bootstrap';
+import axios from 'axios';
 
 /**
- * We'll load the axios HTTP library which allows us to easily issue requests
- * to our Laravel back-end. This library automatically handles sending the
- * CSRF token as a header based on the value of the "XSRF" token cookie.
+ * Make jQuery, Popper, and Lodash globally available
  */
+window._ = _;
+window.Popper = Popper;
+window.$ = window.jQuery = $;
 
-window.axios = require('axios');
+// Ensure jQuery is ready
+$(function() {
+    console.log('jQuery is ready!');
+    
+    // Additional jQuery code can go here
+    // For example, setting up Bootstrap modals or event listeners
+});
 
+/**
+ * Set up Axios for HTTP requests
+ */
+window.axios = axios;
+
+// Set the default Axios headers
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
 /**
- * Next we will register the CSRF Token as a common header with Axios so that
- * all outgoing HTTP requests automatically have it attached. This is just
- * a simple convenience so we don't have to attach every token manually.
+ * Register the CSRF Token as a common header with Axios
  */
-
 let token = document.head.querySelector('meta[name="csrf-token"]');
 
 if (token) {
@@ -39,13 +40,10 @@ if (token) {
 }
 
 /**
- * Echo exposes an expressive API for subscribing to channels and listening
- * for events that are broadcast by Laravel. Echo and event broadcasting
- * allows your team to easily build robust real-time web applications.
+ * Optional: Uncomment the following code to set up Laravel Echo
  */
 
-// import Echo from 'laravel-echo'
-
+// import Echo from 'laravel-echo';
 // window.Pusher = require('pusher-js');
 
 // window.Echo = new Echo({

@@ -2,7 +2,7 @@
     <x-flash-messages />
 
     <div class="mb-4">
-        <input type="text" wire:model="search" placeholder="Search classes..." class="form-control">
+        <input type="text" wire:model.live="search" placeholder="Search classes..." class="form-control">
     </div>
 
     <table class="table table-striped">
@@ -31,10 +31,10 @@
 
     <div class="mt-4">
         <h5>{{ $classId ? 'Edit Class' : 'Create Class' }}</h5>
-        <form wire:submit.prevent="{{ $classId ? 'update' : 'create' }}">
+        <form wire:submit="{{ $classId ? 'update' : 'create' }}">
             <div class="form-group">
                 <label>Name</label>
-                <input type="text" wire:model="name" class="form-control" placeholder="Class Name" required>
+                <input type="text" wire:model.live="name" class="form-control" placeholder="Class Name" required>
             </div>
             <button type="submit" class="btn btn-primary">{{ $classId ? 'Update' : 'Create' }}</button>
         </form>

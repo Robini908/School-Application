@@ -2,7 +2,7 @@
     <!-- Dropdown to select exam -->
     <div class="form-group">
         <label for="exam">Select Exam:</label>
-        <select wire:model="examId" wire:change="getGradesCount" id="exam" class="form-control">
+        <select wire:model.live="examId" wire:change="getGradesCount" id="exam" class="form-control">
             <option value="">-- Choose Exam --</option>
             @foreach ($exams as $exam)
                 <option value="{{ $exam->id }}">{{ $exam->name }}</option>

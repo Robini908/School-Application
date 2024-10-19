@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="p-2">
-    <a href="{{ route('exams.set') }}" class="btn btn-primary">Back to Exams</a>
+    <a  href="{{ route('exams.set') }}"  class="btn btn-primary">Back to Exams</a>
 </div>
 
 <div class="card">

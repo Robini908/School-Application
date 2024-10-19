@@ -19,7 +19,7 @@
             <form>
                 <div class="form-group">
                     <label for="studentName">Name:</label>
-                    <input type="text" id="studentName" class="form-control" wire:model="selectedStudent.name">
+                    <input type="text" id="studentName" class="form-control" wire:model.live="selectedStudent.name">
                 </div>
                 {{-- Other form fields can go here --}}
                 <button type="submit" class="btn btn-primary">Save</button>
@@ -126,7 +126,7 @@
                 <!-- Reason for Suspension -->
                 <div class="form-group mb-2">
                     <label for="suspensionReason" class="form-label">Reason for Suspension</label>
-                    <textarea wire:model="suspensionReason" id="suspensionReason" class="form-control" rows="2"
+                    <textarea wire:model.live="suspensionReason" id="suspensionReason" class="form-control" rows="2"
                         required></textarea>
                     @error('suspensionReason') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
@@ -134,7 +134,7 @@
                 <!-- Type of Suspension -->
                 <div class="form-group mb-2">
                     <label for="suspensionType" class="form-label">Type of Suspension</label>
-                    <select wire:model="suspensionType" id="suspensionType" class="form-control" required>
+                    <select wire:model.live="suspensionType" id="suspensionType" class="form-control" required>
                         <option value="">Select Type</option>
                         <option value="dismissal">Dismissal</option>
                         <option value="withdrawal">Withdrawal</option>
@@ -146,7 +146,7 @@
                 <!-- Duration of Suspension -->
                 <div class="form-group mb-3">
                     <label for="suspensionEndDate" class="form-label">Suspension End Date</label>
-                    <input type="date" wire:model="suspensionEndDate" id="suspensionEndDate" class="form-control"
+                    <input type="date" wire:model.live="suspensionEndDate" id="suspensionEndDate" class="form-control"
                         required>
                     @error('suspensionEndDate') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
@@ -231,7 +231,7 @@
             <div class="mt-4">
                 <div class="card card-body bg-light">
                     <label for="disapprovalReason"><strong>Reason for Disapproval:</strong></label>
-                    <textarea wire:model="disapprovalReason" id="disapprovalReason" class="form-control"
+                    <textarea wire:model.live="disapprovalReason" id="disapprovalReason" class="form-control"
                         placeholder="Provide reason for disapproval"></textarea>
                     <div class="d-flex justify-content-between mt-2">
                         <div class="d-flex align-items-center">
@@ -280,7 +280,7 @@
                 <label for="notificationContent" class="form-label">Email Content:</label>
                 <div wire:ignore>
                     <input id="notificationContent" type="hidden" name="notificationContent"
-                        wire:model.defer="notificationContent">
+                        wire:model="notificationContent">
                     <trix-editor input="notificationContent" class="trix-content" style="min-height: 150px;">
                     </trix-editor>
                 </div>
@@ -289,7 +289,7 @@
             <!-- File Upload -->
             <div class="mb-4">
                 <label for="file" class="form-label">Attach a File:</label>
-                <input type="file" wire:model="file" class="form-control form-control-sm">
+                <input type="file" wire:model.live="file" class="form-control form-control-sm">
                 @error('file')
                 <span class="text-danger">{{ $message }}</span>
                 @enderror
@@ -322,7 +322,7 @@
                     <label for="formFilter" class="form-label">Form: </label>
                 </div>
                 <div class="col-auto">
-                    <select id="form" class="form-control p-1" wire:model="formFilter">
+                    <select id="form" class="form-control p-1" wire:model.live="formFilter">
                         <option value="">Select Form...</option>
                         <option value="">All</option>
                         @foreach($forms as $form)
@@ -334,7 +334,7 @@
                     <label class="col-form-label">Stream:</label>
                 </div>
                 <div class="col-auto">
-                    <select id="section" class="form-control p-1" wire:model="sectionFilter">
+                    <select id="section" class="form-control p-1" wire:model.live="sectionFilter">
                         <option value="">Select Stream...</option>
                         <option value="">All</option>
                         @if($formFilter)
@@ -348,7 +348,7 @@
                     <label class="col-form-label">Status:</label>
                 </div>
                 <div class="col-auto">
-                    <select id="status" class="form-control p-1" wire:model="statusFilter">
+                    <select id="status" class="form-control p-1" wire:model.live="statusFilter">
                         <option value="">Select Status...</option>
                         <option value="">All</option>
                         @foreach($statuses as $status)

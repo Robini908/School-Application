@@ -86,7 +86,7 @@
                 <!-- Subject Selection -->
                 <div class="form-group">
                     <label for="subject" class="font-weight-bold">Select Subject</label>
-                    <select id="subject" wire:model="selectedSubjectId" class="form-control"
+                    <select id="subject" wire:model.live="selectedSubjectId" class="form-control"
                         wire:change="viewGradingSystemDetails">
                         <option value="">Select Subject</option>
                         @foreach ($mySubjects as $subject)
@@ -134,11 +134,11 @@
             <!-- Exam Form -->
             <div class="card">
                 <div class="card-body">
-                    <form wire:submit.prevent="store" class="mt-4">
+                    <form wire:submit="store" class="mt-4">
                         <!-- Exam Name -->
                         <div class="mb-4">
                             <label for="name" class="form-label">Exam Name</label>
-                            <input type="text" id="name" wire:model="name" class="form-control form-control-lg"
+                            <input type="text" id="name" wire:model.live="name" class="form-control form-control-lg"
                                 placeholder="Exam Name" />
                             @error('name')
                             <small class="form-text text-danger">{{ $message }}</small>
@@ -149,7 +149,7 @@
                         <div class="row mb-4">
                             <div class="col-md-4">
                                 <label for="term" class="form-label">Term</label>
-                                <select id="term" wire:model="term" class="form-control form-select-lg">
+                                <select id="term" wire:model.live="term" class="form-control form-select-lg">
                                     <option value="">Select Term</option>
                                     @foreach ($terms as $value => $label)
                                     <option value="{{ $value }}">{{ $label }}</option>
@@ -162,7 +162,7 @@
 
                             <div class="col-md-4">
                                 <label for="year" class="form-label">Year</label>
-                                <select id="year" wire:model="year" class="form-control form-select-lg">
+                                <select id="year" wire:model.live="year" class="form-control form-select-lg">
                                     <option value="">Select Year</option>
                                     @foreach (range(2000, date('Y')) as $yearOption)
                                     <option value="{{ $yearOption }}">{{ $yearOption }}</option>
@@ -175,7 +175,7 @@
 
                             <div class="col-md-4">
                                 <label for="class" class="form-label">Class</label>
-                                <select id="class" wire:model="selectedClass" class="form-control form-select-lg">
+                                <select id="class" wire:model.live="selectedClass" class="form-control form-select-lg">
                                     <option value="">Select Class</option>
                                     @foreach ($classes as $class)
                                     <option value="{{ $class->id }}">{{ $class->name }}</option>
@@ -192,7 +192,7 @@
                             @if ($selectedClass && $sections->count() > 0)
                             <label class="form-label">Select Stream</label>
                             <div class="d-flex align-items-center mb-2">
-                                <input type="checkbox" id="selectAllSections" wire:model="selectAllSections"
+                                <input type="checkbox" id="selectAllSections" wire:model.live="selectAllSections"
                                     wire:click="toggleSelectAllSections">
                                 <label for="selectAllSections" class="ms-2">Select All Streams</label>
                             </div>
@@ -201,7 +201,7 @@
                                 <div class="col-6 col-md-4 col-lg-3 mb-2">
                                     <div class="form-check">
                                         <input type="checkbox" id="section{{ $section->id }}" value="{{ $section->id }}"
-                                            wire:model="selectedSections" class="form-check-input">
+                                            wire:model.live="selectedSections" class="form-check-input">
                                         <label class="form-check-label" for="section{{ $section->id }}">{{
                                             $section->name
                                             }}</label>
@@ -219,7 +219,7 @@
                         <div class="mb-4">
                             <label for="gradingSystem" class="form-label">Grading System</label>
                             @if ($gradingSystems->count() > 0)
-                            <select id="gradingSystem" wire:model="grading_system_id"
+                            <select id="gradingSystem" wire:model.live="grading_system_id"
                                 class="form-control form-select-lg">
                                 <option value="">Select Grading System</option>
                                 @foreach ($gradingSystems as $gradingSystem)
@@ -292,7 +292,7 @@
             <!-- Filter by Name -->
             <div class="col-md-3 mb-3">
                 <label for="filterName" class="font-weight-bold">Filter by Name</label>
-                <input type="text" id="filterName" wire:model.debounce.500ms="filterName" class="form-control" placeholder="Search by name" />
+                <input type="text" id="filterName" wire:model.live.debounce.500ms="filterName" class="form-control" placeholder="Search by name" />
                 <div wire:loading wire:target="filterName" class="text-center my-1" style="background-color: #e9ecef; padding: 5px; border-radius: 5px;">
                     <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                     <span>Loading...</span>
@@ -302,7 +302,7 @@
             <!-- Filter by Year -->
             <div class="col-md-3 mb-3">
                 <label for="filterYear" class="font-weight-bold">Filter by Year</label>
-                <select id="filterYear" wire:model="filterYear" class="form-control select2">
+                <select id="filterYear" wire:model.live="filterYear" class="form-control select2">
                     <option value="">Select Year</option>
                     @foreach (range(2000, date('Y')) as $year)
                         <option value="{{ $year }}">{{ $year }}</option>
@@ -317,7 +317,7 @@
             <!-- Filter by Term -->
             <div class="col-md-3 mb-3">
                 <label for="filterTerm" class="font-weight-bold">Filter by Term</label>
-                <select id="filterTerm" wire:model="filterTerm" class="form-control select2">
+                <select id="filterTerm" wire:model.live="filterTerm" class="form-control select2">
                     <option value="">Select Term</option>
                     @foreach ($terms as $value => $label)
                         <option value="{{ $value }}">{{ $label }}</option>
@@ -332,7 +332,7 @@
             <!-- Filter by Grading System -->
             <div class="col-md-3 mb-3">
                 <label for="filterGradingSystem" class="font-weight-bold">Filter by Grading System</label>
-                <select id="filterGradingSystem" wire:model="filterGradingSystem" class="form-control select2">
+                <select id="filterGradingSystem" wire:model.live="filterGradingSystem" class="form-control select2">
                     <option value="">Select Grading System</option>
                     @foreach ($gradingSystems as $gradingSystem)
                         <option value="{{ $gradingSystem->id }}">{{ $gradingSystem->name }}</option>

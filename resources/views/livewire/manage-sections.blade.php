@@ -51,17 +51,17 @@
 
 
             @if($isCreating || $isEditing)
-            <form wire:submit.prevent="save">
+            <form wire:submit="save">
                 <div class="form-group">
                     <label for="name">Stream Name</label>
-                    <input wire:model="name" type="text" class="form-control" id="name" placeholder="Enter stream name"
+                    <input wire:model.live="name" type="text" class="form-control" id="name" placeholder="Enter stream name"
                         required>
                     @error('name') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
 
                 <div class="form-group">
                     <label for="class">Select Class</label>
-                    <select wire:model="my_class_id" class="form-control" id="class" required>
+                    <select wire:model.live="my_class_id" class="form-control" id="class" required>
                         <option value="">Select Class</option>
                         @foreach($my_classes as $class)
                         <option value="{{ $class->id }}">{{ $class->name }}</option>
@@ -72,7 +72,7 @@
 
                 <div class="form-group">
                     <label for="teacher">Select Teacher</label>
-                    <select wire:model="teacher_id" class="form-control" @if($isTeacherDropdownDisabled) disabled
+                    <select wire:model.live="teacher_id" class="form-control" @if($isTeacherDropdownDisabled) disabled
                         @endif>
                         <option value="">Select Teacher</option>
                         @foreach($teachers as $teacher)
@@ -88,7 +88,7 @@
             </form>
             @elseif($isAssigningTeacher)
             <p>Current Class Teacher: {{ $sections->find($editSectionId)->teacher->name ?? 'Not Assigned' }}</p>
-            <select wire:model="teacher_id" class="form-control">
+            <select wire:model.live="teacher_id" class="form-control">
                 <option value="">Select a Teacher</option>
                 @foreach($teachers as $teacher)
                 <option value="{{ $teacher->id }}">{{ $teacher->name }}</option>
@@ -197,7 +197,7 @@
     <div class="card mt-4">
         <div class="p-3">
             <label for="classFilter" class="form-label">Filter by Class:</label>
-            <select wire:model="selectedClass" id="classFilter" class="form-control">
+            <select wire:model.live="selectedClass" id="classFilter" class="form-control">
                 <option value="">All Classes</option>
                 @foreach($my_classes as $class)
                 <option value="{{ $class->id }}">{{ $class->name }}</option>

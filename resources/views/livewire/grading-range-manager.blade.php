@@ -1,4 +1,4 @@
-<div x-data="{ instructionsVisible: false, isEditing: @entangle('isEditing'), currentIndex: null, showForm: @entangle('showForm'), isLoading: @entangle('isLoading') }"
+<div x-data="{ instructionsVisible: false, isEditing: @entangle('isEditing').live, currentIndex: null, showForm: @entangle('showForm').live, isLoading: @entangle('isLoading').live }"
     class="container my-4">
     <x-flash-messages />
     <div class="card">
@@ -14,7 +14,7 @@
 
                 <div class="mb-4">
                     <label for="grading-system" class="form-label">Select Grading System</label>
-                    <select wire:model="selectedGradingSystem" class="form-control" id="grading-system">
+                    <select wire:model.live="selectedGradingSystem" class="form-control" id="grading-system">
                         <option value="">Select a Grading System</option>
                         @foreach($gradingSystems as $gradingSystem)
                         <option value="{{ $gradingSystem->id }}" wire:key="grading-system-{{ $gradingSystem->id }}">
@@ -28,7 +28,7 @@
                 @if($selectedGradingSystem)
                 <div class="mb-4">
                     <label for="subject" class="form-label">Select Subject</label>
-                    <select wire:model="subjectId" class="form-control" id="subject">
+                    <select wire:model.live="subjectId" class="form-control" id="subject">
                         <option value="">Select a Subject</option>
                         @foreach($subjects as $subject)
                         <option value="{{ $subject->id }}">{{ $subject->subject_name }}</option>
@@ -97,7 +97,7 @@
             <p>Select a subject from the dropdown to reuse grading ranges that are already established in the system.
             </p>
             <label for="reuseSubject" class="form-label">Subject:</label>
-            <select wire:model="reuseSubjectId" id="reuseSubject" class="form-control">
+            <select wire:model.live="reuseSubjectId" id="reuseSubject" class="form-control">
                 <option value="">Select a Subject</option>
                 @foreach($subjects as $subject)
                 <option value="{{ $subject->id }}">{{ $subject->subject_name }}</option>
@@ -122,7 +122,7 @@
             <h5 class="mb-3">Reuse Grading Ranges (Different Grading System)</h5>
             <div class="mb-3">
                 <label for="reuseGradingSystem" class="form-label">Select Grading System:</label>
-                <select wire:model="reuseGradingSystemId" id="reuseGradingSystem" class="form-control">
+                <select wire:model.live="reuseGradingSystemId" id="reuseGradingSystem" class="form-control">
                     <option value="">Select a Grading System</option>
                     @foreach($gradingSystems as $gradingSystem)
                     <option value="{{ $gradingSystem->id }}">{{ $gradingSystem->name }}</option>
@@ -131,7 +131,7 @@
             </div>
             <div class="mb-3">
                 <label for="reuseSubjectFromOtherSystem" class="form-label">Select Subject:</label>
-                <select wire:model="reuseSubjectFromOtherSystemId" id="reuseSubjectFromOtherSystem"
+                <select wire:model.live="reuseSubjectFromOtherSystemId" id="reuseSubjectFromOtherSystem"
                     class="form-control">
                     <option value="">Select a Subject</option>
                     @foreach($subjects as $subject)
@@ -177,25 +177,25 @@
                         }}</td>
                     @endif
                     <td>
-                        <input type="number" wire:model.lazy="ranges.{{ $index }}.range_from"
+                        <input type="number" wire:model.blur="ranges.{{ $index }}.range_from"
                             class="form-control form-control-sm" placeholder="Range From" required>
                     </td>
                     <td>
-                        <input type="number" wire:model.lazy="ranges.{{ $index }}.range_to"
+                        <input type="number" wire:model.blur="ranges.{{ $index }}.range_to"
                             class="form-control form-control-sm" placeholder="Range To" required>
                     </td>
                     <td>
-                        <input type="text" wire:model.lazy="ranges.{{ $index }}.grade"
+                        <input type="text" wire:model.blur="ranges.{{ $index }}.grade"
                             class="form-control form-control-sm" placeholder="Grade" required
                             onkeypress="return /[A-Za-z+\-]/.test(event.key)"
                             oninput="this.value = this.value.toUpperCase()">
                     </td>
                     <td>
-                        <input type="text" wire:model.lazy="ranges.{{ $index }}.remark"
+                        <input type="text" wire:model.blur="ranges.{{ $index }}.remark"
                             class="form-control form-control-sm" placeholder="Remark">
                     </td>
                     <td>
-                        <input type="number" step="0.1" wire:model.lazy="ranges.{{ $index }}.gpa"
+                        <input type="number" step="0.1" wire:model.blur="ranges.{{ $index }}.gpa"
                             class="form-control form-control-sm" placeholder="GPA">
                     </td>
                     <td>

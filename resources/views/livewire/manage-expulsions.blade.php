@@ -75,7 +75,7 @@
             </div>
 
             <label for="new_suspension_end_date" class="form-label">New Suspension End Date:</label>
-            <input type="date" wire:model="newExpulsionEndDate" class="form-control mb-2" />
+            <input type="date" wire:model.live="newExpulsionEndDate" class="form-control mb-2" />
 
             <div class="d-flex gap-3">
                 <button wire:click="confirmExtension" class="btn btn-primary">Confirm Extension</button>

@@ -13,10 +13,11 @@
                 <div class="col-md-4">
                     <label for="class">Select Class:</label>
                     <div class="input-group">
-                        <select wire:model="selectedClass" id="class" class="form-control">
+                        <select wire:model.live="selectedClass" id="class" class="form-control">
                             <option value="">-- Select Class --</option>
                             @foreach($classes as $class)
-                            <option value="{{ $class->id }}">{{ $class->name }}</option>
+                            <option value="{{ $class->id }}" wire:key="class-{{ $class->id }}">{{ $class->name }}
+                            </option>
                             @endforeach
                         </select>
                         <div wire:loading wire:target="selectedClass" class="input-group-append">
@@ -31,10 +32,10 @@
                 <div class="col-md-4">
                     <label for="exam">Select Exam:</label>
                     <div class="input-group">
-                        <select wire:model="selectedExam" id="exam" class="form-control">
+                        <select wire:model.live="selectedExam" id="exam" class="form-control">
                             <option value="">-- Select Exam --</option>
                             @foreach($exams as $exam)
-                            <option value="{{ $exam->id }}">{{ $exam->name }}</option>
+                            <option value="{{ $exam->id }}" wire:key="exam-{{ $exam->id }}">{{ $exam->name }}</option>
                             @endforeach
                         </select>
                         <div wire:loading wire:target="selectedExam" class="input-group-append">
@@ -49,10 +50,11 @@
                 <div class="col-md-4">
                     <label for="subject">Select Subject:</label>
                     <div class="input-group">
-                        <select wire:model="selectedSubject" id="subject" class="form-control">
+                        <select wire:model.live="selectedSubject" id="subject" class="form-control">
                             <option value="">-- Select Subject --</option>
                             @foreach($subjects as $subject)
-                            <option value="{{ $subject->id }}">{{ $subject->subject_name }}</option>
+                            <option value="{{ $subject->id }}" wire:key="subject-{{ $subject->id }}">{{
+                                $subject->subject_name }}</option>
                             @endforeach
                         </select>
                         <div wire:loading wire:target="selectedSubject" class="input-group-append">
@@ -66,7 +68,7 @@
         </div>
     </div>
 
-    {{-- Stream and Students Selection --}}
+    <!-- Stream and Students Selection -->
     @if ($selectedClass && $selectedExam && $selectedSubject)
     <div class="card mt-4">
         <div class="card-body">
@@ -77,12 +79,11 @@
                 <div class="d-flex flex-wrap">
                     @foreach($sections as $section)
                     <div class="form-check mr-4 mb-2">
-                        <!-- Increased margin-right and added margin-bottom -->
-                        <input type="radio" wire:model="selectedSection" value="{{ $section->id }}"
-                            id="section_{{ $section->id }}" class="form-check-input">
+                        <input type="radio" wire:model.live="selectedSection" value="{{ $section->id }}"
+                            id="section_{{ $section->id }}" class="form-check-input"
+                            wire:key="section-{{ $section->id }}">
                         <label for="section_{{ $section->id }}" class="form-check-label">{{ $section->name }}</label>
 
-                        <!-- Show spinner only for the selected radio button -->
                         @if ($selectedSection == $section->id)
                         <div wire:loading wire:target="selectedSection" class="mt-1">
                             <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
@@ -92,6 +93,7 @@
                     @endforeach
                 </div>
             </div>
+
 
 
             @if ($selectedSection)
@@ -112,7 +114,7 @@
                     @foreach($students as $student)
                     <tr>
                         <td>{{ $student->first_name }} {{ $student->last_name }} ({{ $student->adm_no }})</td>
-                        <td><input type="number" wire:model.defer="marks.{{ $student->id }}" class="form-control"
+                        <td><input type="number" wire:model="marks.{{ $student->id }}" class="form-control"
                                 placeholder="Enter marks" min="0" max="100"></td>
                         @error("marks.{$student->id}")
                         <div class="text-danger">{{ $message }}</div>
@@ -139,7 +141,7 @@
                         @if (collect($assignedMarks)->contains('student_id', $student->id))
                         <td>
                             @if($editingMarkId === $student->id)
-                            <input type="number" wire:model.defer="marks.{{ $student->id }}" class="form-control"
+                            <input type="number" wire:model="marks.{{ $student->id }}" class="form-control"
                                 min="0" max="100" />
                             @else
                             {{ collect($assignedMarks)->where('student_id', $student->id)->first()->marks ?? 'N/A' }}
@@ -157,7 +159,7 @@
                             @endif
                         </td>
                         @else
-                        <td><input type="number" wire:model.defer="marks.{{ $student->id }}" class="form-control"
+                        <td><input type="number" wire:model="marks.{{ $student->id }}" class="form-control"
                                 placeholder="Enter marks" min="0" max="100"></td>
                         <td></td>
                         @endif

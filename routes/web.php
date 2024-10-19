@@ -57,6 +57,10 @@ Route::get('/pages/support_team/exams/assign-exam-marks', function () {
     // Pass the examId to the view
     return view('pages.support_team.exams.assign-exam-marks');
 })->name('exams.assignExamMarks');
+Route::get('/pages/support_team/students/promotions_demotions', function () {
+    // Pass the examId to the view
+    return view('pages.support_team.students.promotions_demotions');
+})->name('students.promotions_demotions');
 
 //Route to view class details
 Route::resource('view-class', 'ViewClassController');

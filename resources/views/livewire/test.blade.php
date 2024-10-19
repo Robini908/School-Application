@@ -169,18 +169,18 @@
                 </div>
                 <div class="modal-body">
                     @if($selectedStudent)
-                    <form wire:submit.prevent="updateStudent">
+                    <form wire:submit="updateStudent">
                         <div class="form-group">
                             <label for="name">Name</label>
-                            <input type="text" class="form-control" id="name" wire:model.defer="selectedStudent.user.name" required>
+                            <input type="text" class="form-control" id="name" wire:model="selectedStudent.user.name" required>
                         </div>
                         <div class="form-group">
                             <label for="email">Email</label>
-                            <input type="email" class="form-control" id="email" wire:model.defer="selectedStudent.user.email" required>
+                            <input type="email" class="form-control" id="email" wire:model="selectedStudent.user.email" required>
                         </div>
                         <div class="form-group">
                             <label for="gender">Gender</label>
-                            <select class="form-control" id="gender" wire:model.defer="selectedStudent.user.gender" required>
+                            <select class="form-control" id="gender" wire:model="selectedStudent.user.gender" required>
                                 <option value="">Select Gender</option>
                                 <option value="male">Male</option>
                                 <option value="female">Female</option>
@@ -188,15 +188,15 @@
                         </div>
                         <div class="form-group">
                             <label for="class">Class</label>
-                            <input type="text" class="form-control" id="class" wire:model.defer="selectedStudent.my_class.name" required>
+                            <input type="text" class="form-control" id="class" wire:model="selectedStudent.my_class.name" required>
                         </div>
                         <div class="form-group">
                             <label for="section">Section</label>
-                            <input type="text" class="form-control" id="section" wire:model.defer="selectedStudent.section.name" required>
+                            <input type="text" class="form-control" id="section" wire:model="selectedStudent.section.name" required>
                         </div>
                         <div class="form-group">
                             <label for="status">Status</label>
-                            <select class="form-control" id="status" wire:model.defer="selectedStudent.status" required>
+                            <select class="form-control" id="status" wire:model="selectedStudent.status" required>
                                 <option value="pending">Pending</option>
                                 <option value="approved">Approved</option>
                                 <option value="disapproved">Disapproved</option>

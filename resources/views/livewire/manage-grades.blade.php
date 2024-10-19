@@ -41,7 +41,7 @@
                             <td>
                                 @if ($isEditing[$gradingSystem->id] && $editedGradeIndex === $index && $gradingSystemId
                                 === $gradingSystem->id)
-                                <input wire:model.defer="grades.{{ $gradingSystem->id }}.{{ $editedGradeIndex }}.grade"
+                                <input wire:model="grades.{{ $gradingSystem->id }}.{{ $editedGradeIndex }}.grade"
                                     type="text" class="form-control" />
                                 @else
                                 {{ $grade->grade }}
@@ -50,7 +50,7 @@
                             <td>
                                 @if ($isEditing[$gradingSystem->id] && $editedGradeIndex === $index && $gradingSystemId
                                 === $gradingSystem->id)
-                                <input wire:model.defer="grades.{{ $gradingSystem->id }}.{{ $editedGradeIndex }}.remark"
+                                <input wire:model="grades.{{ $gradingSystem->id }}.{{ $editedGradeIndex }}.remark"
                                     type="text" class="form-control" />
                                 @else
                                 {{ $grade->remark }}
@@ -59,7 +59,7 @@
                             <td>
                                 @if ($isEditing[$gradingSystem->id] && $editedGradeIndex === $index && $gradingSystemId
                                 === $gradingSystem->id)
-                                <input wire:model.defer="grades.{{ $gradingSystem->id }}.{{ $editedGradeIndex }}.gpa"
+                                <input wire:model="grades.{{ $gradingSystem->id }}.{{ $editedGradeIndex }}.gpa"
                                     type="number" step="0.01" class="form-control" />
                                 @else
                                 {{ $grade->gpa }}
@@ -69,7 +69,7 @@
                                 @if ($isEditing[$gradingSystem->id] && $editedGradeIndex === $index && $gradingSystemId
                                 === $gradingSystem->id)
                                 <textarea
-                                    wire:model.defer="grades.{{ $gradingSystem->id }}.{{ $editedGradeIndex }}.description"
+                                    wire:model="grades.{{ $gradingSystem->id }}.{{ $editedGradeIndex }}.description"
                                     class="form-control"></textarea>
                                 @else
                                 {{ $grade->description }}
@@ -79,7 +79,7 @@
                                 @if ($isEditing[$gradingSystem->id] && $editedGradeIndex === $index && $gradingSystemId
                                 === $gradingSystem->id)
                                 <input
-                                    wire:model.defer="grades.{{ $gradingSystem->id }}.{{ $editedGradeIndex }}.range_from"
+                                    wire:model="grades.{{ $gradingSystem->id }}.{{ $editedGradeIndex }}.range_from"
                                     type="number" class="form-control" />
                                 @else
                                 {{ $grade->range_from }}
@@ -90,7 +90,7 @@
                                 @if ($isEditing[$gradingSystem->id] && $editedGradeIndex === $index && $gradingSystemId
                                 === $gradingSystem->id)
                                 <input
-                                    wire:model.defer="grades.{{ $gradingSystem->id }}.{{ $editedGradeIndex }}.range_to"
+                                    wire:model="grades.{{ $gradingSystem->id }}.{{ $editedGradeIndex }}.range_to"
                                     type="number" class="form-control" />
                                 @else
                                 {{ $grade->range_to }}
@@ -101,7 +101,7 @@
                                 @if ($isEditing[$gradingSystem->id] && $editedGradeIndex === $index && $gradingSystemId
                                 === $gradingSystem->id)
                                 <textarea
-                                    wire:model.defer="grades.{{ $gradingSystem->id }}.{{ $editedGradeIndex }}.additional_info"
+                                    wire:model="grades.{{ $gradingSystem->id }}.{{ $editedGradeIndex }}.additional_info"
                                     class="form-control"></textarea>
                                 @else
                                 {{ $grade->additional_info }}
@@ -147,7 +147,7 @@
             </div>
 
             <div class="card-body">
-                <form wire:submit.prevent="saveGrades">
+                <form wire:submit="saveGrades">
                     <!-- Loading Indicator -->
                     @if($loading)
                     <div class="text-center mb-3">
@@ -161,7 +161,7 @@
                     <!-- Grading System Selection -->
                     <div class="form-group">
                         <label for="gradingSystem">Select Grading System</label>
-                        <select id="gradingSystem" wire:model="selectedGradingSystem" class="form-control">
+                        <select id="gradingSystem" wire:model.live="selectedGradingSystem" class="form-control">
                             <option value="">Choose Grading System</option>
                             @foreach ($gradingSystems as $system)
                             <option value="{{ $system->id }}">{{ $system->name }}</option>
@@ -181,7 +181,7 @@
                         <!-- Add Grade Input Section -->
                         <div class="form-group mb-3">
                             <label for="newGrade" class="form-label">Grade</label>
-                            <input id="newGrade" type="text" wire:model="newGrade" class="form-control"
+                            <input id="newGrade" type="text" wire:model.live="newGrade" class="form-control"
                                 placeholder="Enter Grade"
                                 oninput="this.value = this.value.toUpperCase().replace(/\d+/g, '')" />
                             @error('newGrade') <span class="text-danger">{{ $message }}</span> @enderror
@@ -189,7 +189,7 @@
 
                         <div class="form-group mb-3">
                             <label for="newRemark" class="form-label">Remark</label>
-                            <input id="newRemark" type="text" wire:model="newRemark" class="form-control"
+                            <input id="newRemark" type="text" wire:model.live="newRemark" class="form-control"
                                 placeholder="Enter Remark"
                                 oninput="this.value = this.value.toUpperCase().replace(/\d+/g, '')" />
                             @error('newRemark') <span class="text-danger">{{ $message }}</span> @enderror
@@ -197,21 +197,21 @@
 
                         <div class="form-group mb-3">
                             <label for="newGpa" class="form-label">GPA</label>
-                            <input id="newGpa" type="text" wire:model="newGpa" class="form-control"
+                            <input id="newGpa" type="text" wire:model.live="newGpa" class="form-control"
                                 placeholder="Enter GPA" />
                             @error('newGpa') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
 
                         <div class="form-group mb-3">
                             <label for="newDescription" class="form-label">Description</label>
-                            <input id="newDescription" type="text" wire:model="newDescription" class="form-control"
+                            <input id="newDescription" type="text" wire:model.live="newDescription" class="form-control"
                                 placeholder="Enter Description" />
                             @error('newDescription') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
 
                         <div class="form-group mb-3">
                             <label for="newAdditionalInfo" class="form-label">Additional Info</label>
-                            <input id="newAdditionalInfo" type="text" wire:model="newAdditionalInfo"
+                            <input id="newAdditionalInfo" type="text" wire:model.live="newAdditionalInfo"
                                 class="form-control" placeholder="Enter Additional Info" />
                             @error('newAdditionalInfo') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
@@ -219,13 +219,13 @@
                         <!-- Range Input Section -->
                         <div class="form-group mb-3">
                             <label for="newRangeFrom" class="form-label">Range From</label>
-                            <input id="newRangeFrom" type="number" wire:model="newRangeFrom" class="form-control"
+                            <input id="newRangeFrom" type="number" wire:model.live="newRangeFrom" class="form-control"
                                 placeholder="Enter Range From" />
                             @error('newRangeFrom') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
                         <div class="form-group mb-3">
                             <label for="newRangeTo" class="form-label">Range To</label>
-                            <input id="newRangeTo" type="number" wire:model="newRangeTo" class="form-control"
+                            <input id="newRangeTo" type="number" wire:model.live="newRangeTo" class="form-control"
                                 placeholder="Enter Range To" />
                             @error('newRangeTo') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
@@ -248,29 +248,29 @@
                             <li class="list-group-item">
                                 <div class="row">
                                     <div class="col-md-2">
-                                        <input type="text" wire:model.lazy="addedGrade.{{ $index }}.grade"
+                                        <input type="text" wire:model.blur="addedGrade.{{ $index }}.grade"
                                             class="form-control" placeholder="Grade"
                                             oninput="this.value = this.value.toUpperCase().replace(/\d+/g, '')" />
                                     </div>
                                     <div class="col-md-2">
-                                        <input type="text" wire:model.lazy="addedGrade.{{ $index }}.remark"
+                                        <input type="text" wire:model.blur="addedGrade.{{ $index }}.remark"
                                             class="form-control" placeholder="Remark"
                                             oninput="this.value = this.value.toUpperCase().replace(/\d+/g, '')" />
                                     </div>
                                     <div class="col-md-2">
-                                        <input type="text" wire:model.lazy="addedGrade.{{ $index }}.description"
+                                        <input type="text" wire:model.blur="addedGrade.{{ $index }}.description"
                                             class="form-control" placeholder="Description" />
                                     </div>
                                     <div class="col-md-2">
-                                        <input type="text" wire:model.lazy="addedGrade.{{ $index }}.additional_info"
+                                        <input type="text" wire:model.blur="addedGrade.{{ $index }}.additional_info"
                                             class="form-control" placeholder="Additional Info" />
                                     </div>
                                     <div class="col-md-2">
-                                        <input type="number" wire:model.lazy="addedGrade.{{ $index }}.range_from"
+                                        <input type="number" wire:model.blur="addedGrade.{{ $index }}.range_from"
                                             class="form-control" placeholder="Range From" />
                                     </div>
                                     <div class="col-md-2">
-                                        <input type="number" wire:model.lazy="addedGrade.{{ $index }}.range_to"
+                                        <input type="number" wire:model.blur="addedGrade.{{ $index }}.range_to"
                                             class="form-control" placeholder="Range To" />
                                     </div>
                                 </div>

@@ -37,6 +37,13 @@ class MyClass extends Eloquent
         return $this->belongsTo(User::class, 'user_id')->where('user_type', 'teacher');
     }
 
+/*************  ✨ Codeium Command ⭐  *************/
+    /**
+     * Get the class master (teacher) that belongs to the MyClass
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+/******  66f6b0f4-a585-451a-9d6e-f581a3469fd0  *******/
     public function master()
     {
         return $this->belongsTo(User::class, 'master_id')->where('user_type', 'teacher'); // Corrected relation for class master
@@ -45,5 +52,10 @@ class MyClass extends Eloquent
     public function sections(): HasMany
     {
         return $this->hasMany(Section::class, 'my_class_id');
+    }
+
+    public function promotionsDemotions()
+    {
+        return $this->hasMany(StudentPromotionDemotion::class, 'old_class_id')->orWhere('new_class_id', $this->id);
     }
 }
