@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\GradingSystem;
@@ -10,7 +11,7 @@ use App\Models\Subject;
 class GradingManagement extends Component
 {
     use WithPagination;
-
+    use LivewireAlert;
     protected $paginationTheme = 'bootstrap';
 
     public $name, $description, $effective_date, $rules, $selectedSubjects = [];
@@ -66,7 +67,7 @@ class GradingManagement extends Component
 
         $gradingSystem->subjects()->sync($this->selectedSubjects);
 
-        session()->flash('message', 'Grading system created successfully.');
+        $this->alert('success', 'Grading system created successfully.');
         $this->resetForm();
         $this->isCreating = false;
     }
@@ -114,7 +115,7 @@ class GradingManagement extends Component
 
         $gradingSystem->subjects()->sync($this->selectedSubjects);
 
-        session()->flash('message', 'Grading system updated successfully.');
+        $this->alert('success', 'Grading system updated successfully.');
         $this->resetForm();
         $this->isEditing = false;
     }
@@ -125,7 +126,7 @@ class GradingManagement extends Component
         $gradingSystem->subjects()->detach();
         $gradingSystem->delete();
 
-        session()->flash('message', 'Grading system deleted successfully.');
+        $this->alert('success', 'Grading system deleted successfully.');
     }
 
     private function resetForm()

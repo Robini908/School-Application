@@ -6,8 +6,9 @@ use App\User;
 use Eloquent;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Model;
 
-class MyClass extends Eloquent
+class MyClass extends Model
 {
     protected $fillable = ['name', 'session', 'user_id', 'class_type_id', 'subject_id', 'master_id']; // Include master_id
 
@@ -37,13 +38,11 @@ class MyClass extends Eloquent
         return $this->belongsTo(User::class, 'user_id')->where('user_type', 'teacher');
     }
 
-/*************  ✨ Codeium Command ⭐  *************/
     /**
      * Get the class master (teacher) that belongs to the MyClass
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-/******  66f6b0f4-a585-451a-9d6e-f581a3469fd0  *******/
     public function master()
     {
         return $this->belongsTo(User::class, 'master_id')->where('user_type', 'teacher'); // Corrected relation for class master

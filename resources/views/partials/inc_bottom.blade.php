@@ -1,31 +1,31 @@
 <!-- Theme JS files -->
-<script src="{{ asset('global_assets/js/plugins/extensions/jquery-ui.js') }}"></script>
-<script src="{{ asset('global_assets/js/demo_pages/jqueryui_interactions.js') }}"></script>
+
+{{-- <script src="{{ asset('global_assets/js/demo_pages/jqueryui_interactions.js') }}"></script>
 <script src="{{ asset('global_assets/js/plugins/forms/styling/uniform.min.js') }}"></script>
 <script src="{{ asset('global_assets/js/plugins/forms/selects/select2.min.js') }}"></script>
-<script src="{{ asset('global_assets/js/plugins/forms/wizards/steps.min.js') }}"></script> 
+<script src="{{ asset('global_assets/js/plugins/forms/wizards/steps.min.js') }}"></script>   --}}
 
 {{--Forms--}}
 
-<script src="{{ asset('global_assets/js/plugins/forms/styling/uniform.min.js') }}"></script> 
+ <script src="{{ asset('global_assets/js/plugins/forms/styling/uniform.min.js') }}"></script> 
 <script src="{{ asset('global_assets/js/plugins/forms/inputs/inputmask.js') }}"></script>
 <script src="{{ asset('global_assets/js/plugins/forms/validation/validate.min.js') }}"></script>
-<script src="{{ asset('global_assets/js/plugins/extensions/cookie.js') }}"></script>
+<script src="{{ asset('global_assets/js/plugins/extensions/cookie.js') }}"></script> 
 
-{{--Notify--}}
+{{-- Notify--}}
  <script type="text/javascript" src="{{ asset('global_assets/js/plugins/notifications/sweet_alert2.min.js') }}"></script>
 <script type="text/javascript" src="{{ asset('global_assets/js/plugins/notifications/pnotify.min.js') }}"></script> 
 
 
 {{-- Buttons --}}
- <script type="text/javascript" src="{{ asset('global_assets/js/plugins/buttons/hover_dropdown.min.js') }}"></script>
+<script type="text/javascript" src="{{ asset('global_assets/js/plugins/buttons/hover_dropdown.min.js') }}"></script>
 <script type="text/javascript" src="{{ asset('global_assets/js/plugins/buttons/ladda.min.js') }}"></script>
-<script type="text/javascript" src="{{ asset('global_assets/js/plugins/buttons/spin.min.js') }}"></script> 
+<script type="text/javascript" src="{{ asset('global_assets/js/plugins/buttons/spin.min.js') }}"></script>   
 
 
 {{-- Extensions --}}
 {{-- <script type="text/javascript" src="{{ asset('global_assets/js/plugins/extensions/jquery-ui/external/jquery/jquery.js') }}"></script>       --}}
-<script type="text/javascript" src="{{ asset('/global_assets/js/plugins/extensions/jquery-ui/jquery-ui.js') }}"></script>
+{{-- <script type="text/javascript" src="{{ asset('/global_assets/js/plugins/extensions/jquery-ui/jquery-ui.js') }}"></script> --}}
 
 {{--DataTables--}}
  <script src="{{ asset('global_assets/js/plugins/tables/datatables/datatables.min.js') }}"></script>

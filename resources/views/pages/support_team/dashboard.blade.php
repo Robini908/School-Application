@@ -82,9 +82,7 @@
                         <h5 class="card-title mb-0">School Events Calendar</h5>
                     </div>--}}
                     <div class="card-body">
-                        <div class="fullcalendar-basic">
-                            <!-- Your calendar content goes here -->
-                        </div>
+                        <div id='calendar'></div>
                     </div>
                 </div>
             </div>

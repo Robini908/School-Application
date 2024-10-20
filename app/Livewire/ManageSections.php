@@ -3,16 +3,17 @@
 namespace App\Livewire;
 
 use App\User;
+use Exception;
 use App\Models\MyClass;
 use App\Models\Section;
+use App\Models\Subject;
 use Livewire\Component;
 use App\Models\StudentRecord;
-use App\Models\Subject;
+use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Exception;
 
 class ManageSections extends Component
-{
+{   use LivewireAlert;
     public $sections;
     public $my_classes;
     public $teachers;
@@ -52,14 +53,14 @@ class ManageSections extends Component
             $this->sectionDetails = Section::with(['my_class', 'teacher'])->findOrFail($sectionId);
 
             // Fetch students in this section
-            $this->students = StudentRecord::where('section_id', $sectionId)->get();
+            $this->students = StudentRecord::where('section_id', $sectionId)->paginate(10);
 
             // Fetch all subjects from the database
             $this->subjects = Subject::all();
         } catch (ModelNotFoundException $e) {
-            session()->flash('error', 'Section not found.');
+            $this->alert('error', 'Section not found.');
         } catch (Exception $e) {
-            session()->flash('error', 'An error occurred while fetching details.');
+            $this->alert('error', 'An error occurred while fetching details.');
         }
     }
 
@@ -124,9 +125,11 @@ class ManageSections extends Component
             // Check if there are available teachers for this section
             $this->checkAllTeachersAssigned();
         } catch (ModelNotFoundException $e) {
-            session()->flash('error', 'Section not found for editing.');
+           
+            $this->alert('error', 'Section not found for editing.');
         } catch (Exception $e) {
-            session()->flash('error', 'An error occurred while loading the section for editing.');
+           
+            $this->alert('error', 'An error occurred while loading the section for editing.');
         }
     }
 
@@ -145,7 +148,8 @@ class ManageSections extends Component
                 ->exists();
 
             if ($sectionExists) {
-                session()->flash('error', 'There exists a stream with that name.Please use a different unique name');
+                $this->alert('error', 'There exists a stream with that name.Please use a different unique name');
+
                 return;
             }
 
@@ -156,10 +160,10 @@ class ManageSections extends Component
                     'my_class_id' => $this->my_class_id,
                     'teacher_id' => $this->teacher_id,
                 ]);
-                session()->flash('success', 'Section updated successfully.');
+            $this->alert('success', 'Section updated successfully.');
             } else {
                 if ($this->allTeachersAssignedMessage) {
-                    session()->flash('warning', 'All teachers are already assigned.');
+                    $this->alert('warning', 'All teachers are already assigned.');
                     return;
                 }
 
@@ -169,7 +173,7 @@ class ManageSections extends Component
                     ->exists();
 
                 if ($existingTeacher) {
-                    session()->flash('warning', 'This teacher is already assigned to this class.');
+                    $this->alert('warning', 'This teacher is already assigned to this class.');
                     return;
                 }
 
@@ -178,18 +182,18 @@ class ManageSections extends Component
                     'my_class_id' => $this->my_class_id,
                     'teacher_id' => $this->teacher_id,
                 ]);
-                session()->flash('success', 'Section created successfully.');
+                $this->alert('success', 'Section created successfully.');
             }
 
             $this->loadSections();
             $this->resetForm();
             $this->checkAllTeachersAssigned();
         } catch (ModelNotFoundException $e) {
-            session()->flash('error', 'The section could not be found.');
+            $this->alert('error', 'The section could not be found.');
         } catch (\Throwable $e) {
             // Log the error for further analysis
             \Log::error('Error saving section: ' . $e->getMessage(), ['exception' => $e]);
-            session()->flash('error', 'An unexpected error occurred while saving the section.');
+            $this->alert('error', 'An unexpected error occurred while saving the section.');
         }
     }
 
@@ -210,11 +214,11 @@ class ManageSections extends Component
             $this->teacher_id = null;
             $this->checkAllTeachersAssigned();
 
-            session()->flash('success', 'Teacher assigned successfully.');
+            $this->alert('success', 'Teacher assigned successfully.');
         } catch (ModelNotFoundException $e) {
-            session()->flash('error', 'Section not found for assigning teacher.');
+            $this->alert('error', 'Section not found for assigning teacher.');
         } catch (Exception $e) {
-            session()->flash('error', 'An error occurred while assigning the teacher.');
+            $this->alert('error', 'An error occurred while assigning the teacher.');
         }
     }
 
@@ -231,7 +235,7 @@ class ManageSections extends Component
 
             $this->checkAllTeachersAssigned();
         } catch (Exception $e) {
-            session()->flash('error', 'Failed to load teacher change form. ' . $e->getMessage());
+            $this->alert('error', 'Failed to load teacher change form. ' . $e->getMessage());
         }
     }
 
@@ -248,7 +252,7 @@ class ManageSections extends Component
             $this->name = $section->name;
             $this->my_class_id = $section->my_class_id;
         } catch (Exception $e) {
-            session()->flash('error', 'Failed to load teacher assignment form. ' . $e->getMessage());
+            $this->alert('error', 'Failed to load teacher assignment form. ' . $e->getMessage());
         }
     }
 
@@ -281,13 +285,13 @@ class ManageSections extends Component
             $this->deleteSectionId = null;
 
             // Flash success message
-            session()->flash('success', 'Section deleted successfully.');
+            $this->alert('success', 'Section deleted successfully.');
         } catch (ModelNotFoundException $e) {
             // Section was not found for deletion
-            session()->flash('error', 'Section not found for deletion.');
+            $this->alert('error', 'Section not found for deletion.');
         } catch (Exception $e) {
             // Handle any other errors
-            session()->flash('error', 'An error occurred while deleting the section.');
+            $this->alert('error', 'An error occurred while deleting the section.');
         }
     }
 

@@ -2,14 +2,16 @@
 
 namespace App\Livewire;
 
+use App\Models\Subject;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\GradingSystem;
-use App\Models\Subject;
+use Jantinnerezo\LivewireAlert\LivewireAlert;
 
 class ManageGrading extends Component
 {
     use WithPagination;
+    use LivewireAlert;
 
     public $name;
     public $subjects;

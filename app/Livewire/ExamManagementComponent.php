@@ -7,6 +7,7 @@ use App\Models\Mark;
 use App\Models\MyClass;
 use App\Models\Section;
 use App\Models\Subject;
+use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Livewire\Component;
 use App\Models\GradingRange;
 use App\Models\GradingSystem;
@@ -17,6 +18,8 @@ use Livewire\WithPagination;
 
 class ExamManagementComponent extends Component
 {
+
+    use LivewireAlert;
     public $name, $term, $year, $grading_system_id;
     public $examId; // Make sure this is defined
     public $isCreating = false, $isEditing = false;
@@ -227,7 +230,7 @@ class ExamManagementComponent extends Component
         // Your logic to delete the exam using the stored exam ID
         Exam::find($this->examId)->delete();
 
-        session()->flash('message', 'Exam deleted successfully.');
+        $this->alert('success', 'Exam deleted successfully.');
 
         $this->cancelDelete(); // Hide the modal after deletion
         $this->dispatch('examDeleted'); // Optional: Emit an event to refresh the exam list
@@ -310,8 +313,8 @@ class ExamManagementComponent extends Component
             }
         }
 
-        // Flash a success message
-        session()->flash('message', $this->examId ? 'Exam updated successfully.' : 'Exam added successfully.');
+        // Flash a success success
+        $this->alert('success', $this->examId ? 'Exam updated successfully.' : 'Exam added successfully.');
 
         // Reset the form
         $this->resetForm();
@@ -435,7 +438,7 @@ class ExamManagementComponent extends Component
     {
         if ($this->selectAllSections) {
             // Ensure $this->sections is a collection before plucking
-            if ($this->sections instanceof \Illuminate\Support\Collection) {
+            if ($this->sections instanceof Collection) {
                 $this->selectedSections = $this->sections->pluck('id')->toArray();
             }
         } else {

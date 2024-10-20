@@ -6,9 +6,10 @@ use Livewire\Component;
 use App\Models\GradingGrade;
 use App\Models\GradingSystem;
 use Illuminate\Support\Facades\DB;
+use Jantinnerezo\LivewireAlert\LivewireAlert;
 
 class GradeManager extends Component
-{
+{  use LivewireAlert;
     public $gradingSystems;
     public $selectedGradingSystemId = null;
     public $applyToAllSystems = false;
@@ -54,7 +55,7 @@ class GradeManager extends Component
         }
 
         if (!empty($duplicates)) {
-            session()->flash('error', 'The following grades are duplicates and were not applied: ' . implode(', ', $duplicates));
+            $this->alert('error', 'The following grades are duplicates and were not applied: ' . implode(', ', $duplicates));
         }
 
         // Database transaction for updates
@@ -78,7 +79,7 @@ class GradeManager extends Component
 
         $this->loadGrades();
         $this->showForm = false;
-        session()->flash('message', 'Grades applied successfully to all grading systems!');
+        $this->alert('success', 'Grades applied successfully to all grading systems!');
     }
 
     public function loadGrades()
@@ -132,9 +133,9 @@ class GradeManager extends Component
         if (count($this->gradesList) > 1) {
             unset($this->gradesList[$index]);
             $this->gradesList = array_values($this->gradesList); // Re-index the array
-            session()->flash('message', 'Grade removed successfully!'); // Success message
+            $this->alert('success', 'Grade removed successfully!'); // Success success
         } else {
-            session()->flash('error', 'You must have at least one grade.');
+            $this->alert('error', 'You must have at least one grade.');
         }
     }
 
@@ -156,7 +157,7 @@ class GradeManager extends Component
         // Update local state
         $this->gradesList[$index]['isEditing'] = false;
         $this->loadGrades(); // Reload grades to refresh the frontend
-        session()->flash('message', 'Grade updated successfully!');
+        $this->alert('success', 'Grade updated successfully!');
     }
 
     public function saveGrades()
@@ -175,7 +176,7 @@ class GradeManager extends Component
         $this->showForm = false; // Hide the form after saving
         $this->loadGrades(); // Reload grades
 
-        session()->flash('message', 'Grades saved successfully!');
+        $this->alert('success', 'Grades saved successfully!');
     }
 
     public function cancelEdit($index)
@@ -195,9 +196,9 @@ class GradeManager extends Component
             GradingGrade::destroy($this->gradesList[$index]['id']); // Delete from the database
             unset($this->gradesList[$index]); // Remove from list
             $this->gradesList = array_values($this->gradesList); // Re-index the array
-            session()->flash('message', 'Grade deleted successfully!'); // Success message
+            $this->alert('success', 'Grade deleted successfully!'); // Success success
         } else {
-            session()->flash('error', 'Grade not found for deletion.');
+            $this->alert('error', 'Grade not found for deletion.');
         }
     }
 

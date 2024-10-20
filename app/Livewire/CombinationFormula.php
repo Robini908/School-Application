@@ -2,17 +2,19 @@
 
 namespace App\Livewire;
 
+
 use App\Models\Exam;
 use App\Models\MyClass;
 use App\Models\Section;
 use App\Models\Subject;
 use Livewire\Component;
+use Illuminate\Support\Facades\Log;
 use App\Models\GradingGrade;
 use App\Models\GradingRange;
+use Livewire\WithPagination;
 use App\Models\StudentRecord;
 use App\Models\StudentResult;
 use Illuminate\Support\Facades\DB;
-use Livewire\WithPagination;
 
 class CombinationFormula extends Component
 {
@@ -82,11 +84,11 @@ class CombinationFormula extends Component
     {
         $this->loading = true;
 
-        \Log::info("Fetching exam data for exam ID: $examId");
+        Log::info("Fetching exam data for exam ID: $examId");
 
         $exam = Exam::with('gradingSystem.subjects')->find($examId);
         if (!$exam) {
-            \Log::warning("No exam found for ID: $examId");
+            Log::warning("No exam found for ID: $examId");
             $this->resetExamData();
             return;
         }
@@ -100,7 +102,7 @@ class CombinationFormula extends Component
             })
             ->paginate(50); // Load 50 students per page
 
-        \Log::info("Fetched Students Count: " . $this->students->count());
+            Log::info("Fetched Students Count: " . $this->students->total());
 
         $this->subjects = $exam->gradingSystem->subjects;
 
@@ -113,7 +115,7 @@ class CombinationFormula extends Component
 
     private function prepareStudentData($exam)
     {
-        \Log::info("Preparing student data for exam ID: {$exam->id}");
+        Log::info("Preparing student data for exam ID: {$exam->id}");
         $studentData = [];
         DB::beginTransaction(); // Start transaction
 
@@ -174,28 +176,28 @@ class CombinationFormula extends Component
 
         } catch (\Exception $e) {
             DB::rollBack(); // Rollback the transaction if an error occurs
-            \Log::error("Failed to process student data for exam ID: {$exam->id}. Error: {$e->getMessage()}");
+            Log::error("Failed to process student data for exam ID: {$exam->id}. Error: {$e->getMessage()}");
 
             $this->addError('exam_processing', "Failed to process the exam data: " . $e->getMessage());
         }
 
-        \Log::info("Total Students Processed: " . count($studentData));
+        Log::info("Total Students Processed: " . count($studentData));
 
         return $studentData;
     }
 
     private function saveStudentResult($data)
     {
-        \Log::info("Attempting to save student result: " . json_encode($data));
+        Log::info("Attempting to save student result: " . json_encode($data));
 
         try {
             StudentResult::updateOrCreate(
                 ['student_id' => $data['student_id'], 'exam_id' => $data['exam_id']],
                 $data
             );
-            \Log::info("Saved student result for Student ID: {$data['student_id']} in Exam ID: {$data['exam_id']}");
+            Log::info("Saved student result for Student ID: {$data['student_id']} in Exam ID: {$data['exam_id']}");
         } catch (\Exception $e) {
-            \Log::error("Failed to save student result for Student ID: {$data['student_id']} - Error: {$e->getMessage()}");
+            Log::error("Failed to save student result for Student ID: {$data['student_id']} - Error: {$e->getMessage()}");
 
             // Add an error to the Livewire error bag for UI display
             $this->addError('student_save', "Failed to save result for student: {$data['student_name']} - {$e->getMessage()}");
@@ -235,7 +237,7 @@ class CombinationFormula extends Component
 
         // If no grading range found, log the issue and return N/A
         if (!$gradingRange) {
-            \Log::warning("No grading range found for Marks: $marksValue, Grading System ID: $gradingSystemId, Subject ID: $subjectId");
+            Log::warning("No grading range found for Marks: $marksValue, Grading System ID: $gradingSystemId, Subject ID: $subjectId");
 
             return [
                 'grade' => '-', // Explicitly return 'N/A' for grade
@@ -282,7 +284,7 @@ class CombinationFormula extends Component
             // Calculate stream positions
             $this->calculateStreamPositions($studentData);
         } catch (\Exception $e) {
-            \Log::error("Error calculating positions: " . $e->getMessage());
+            Log::error("Error calculating positions: " . $e->getMessage());
             $this->addError('calculatePositions', 'Error calculating positions: ' . $e->getMessage());
         }
 
@@ -382,7 +384,7 @@ class CombinationFormula extends Component
         }
 
         // Finally, retrieve the results
-        $this->students = $this->students->get();
+        $this->students = $this->students->getQuery()->get();
     }
 
 

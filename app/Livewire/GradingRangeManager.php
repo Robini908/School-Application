@@ -7,10 +7,13 @@ use Livewire\Component;
 use App\Models\ExamMarks;
 use App\Models\GradingRange;
 use App\Models\GradingSystem;
+use Jantinnerezo\LivewireAlert\LivewireAlert;
 
 
 class GradingRangeManager extends Component
 {
+
+    use LivewireAlert;
     public $gradingSystems, $subjects, $selectedGradingSystem;
     public $ranges = [];
     public $reuseSubjectId; // Store the selected subject ID for reuse
@@ -43,7 +46,7 @@ class GradingRangeManager extends Component
     {
         // Validate the selected subject for reuse
         if (!$this->reuseSubjectId) {
-            session()->flash('error', 'Please select a subject to reuse grading ranges.');
+            $this->alert('error', 'Please select a subject to reuse grading ranges.');
             return;
         }
 
@@ -52,7 +55,7 @@ class GradingRangeManager extends Component
         $currentSubject = Subject::find($this->subjectId);
 
         if (!$reuseSubject || !$currentSubject) {
-            session()->flash('error', 'Invalid subject selection. Please ensure the selected subjects are correct.');
+            $this->alert('error', 'Invalid subject selection. Please ensure the selected subjects are correct.');
             return;
         }
 
@@ -62,7 +65,7 @@ class GradingRangeManager extends Component
             ->exists();
 
         if ($alreadyExistingRanges) {
-            session()->flash('error', 'Cannot reuse grading ranges from "' . $reuseSubject->subject_name . '" to "' . $currentSubject->subject_name . '" as the current subject already has existing ranges.');
+            $this->alert('error', 'Cannot reuse grading ranges from "' . $reuseSubject->subject_name . '" to "' . $currentSubject->subject_name . '" as the current subject already has existing ranges.');
             return;
         }
 
@@ -73,7 +76,7 @@ class GradingRangeManager extends Component
 
         // Check if the selected grading system has existing ranges
         if (!$existingGradingSystemsWithRanges->contains($this->selectedGradingSystem)) {
-            session()->flash('error', 'The selected grading system does not have any existing grading ranges for reuse.');
+            $this->alert('error', 'The selected grading system does not have any existing grading ranges for reuse.');
             return;
         }
 
@@ -84,7 +87,7 @@ class GradingRangeManager extends Component
 
         // If no ranges found for reuse, show a warning message
         if ($existingRanges->isEmpty()) {
-            session()->flash('warning', 'No grading ranges found for the subject: ' . $reuseSubject->subject_name . '. Please check if the grading ranges exist.');
+            $this->alert('warning', 'No grading ranges found for the subject: ' . $reuseSubject->subject_name . '. Please check if the grading ranges exist.');
             return;
         }
 
@@ -100,10 +103,10 @@ class GradingRangeManager extends Component
         })->toArray();
 
         // Inform the user that grading ranges have been loaded successfully
-        session()->flash('info', 'Grading ranges loaded successfully. You can now adjust them as needed.');
+        $this->alert('info', 'Grading ranges loaded successfully. You can now adjust them as needed.');
 
         // Notify success for the completion of the process
-        session()->flash('success', 'Grading ranges successfully loaded for reuse from "' . $reuseSubject->subject_name . '"!');
+        $this->alert('success', 'Grading ranges successfully loaded for reuse from "' . $reuseSubject->subject_name . '"!');
     }
 
 
@@ -113,7 +116,7 @@ class GradingRangeManager extends Component
     {
         // Validate the selected grading system and subject for reuse
         if (!$this->reuseGradingSystemId || !$this->reuseSubjectFromOtherSystemId) {
-            session()->flash('error', 'Please select both a grading system and a subject to reuse grading ranges.');
+            $this->alert('error', 'Please select both a grading system and a subject to reuse grading ranges.');
             return;
         }
 
@@ -125,7 +128,7 @@ class GradingRangeManager extends Component
 
         // Validate that both the grading systems and subjects exist
         if (!$reuseGradingSystem || !$reuseSubject || !$currentSubject || !$currentGradingSystem) {
-            session()->flash('error', 'Invalid selection for grading system or subject. Please check your selections.');
+            $this->alert('error', 'Invalid selection for grading system or subject. Please check your selections.');
             return;
         }
 
@@ -136,7 +139,7 @@ class GradingRangeManager extends Component
 
         // If no ranges found for the selected subject and grading system, show an error message
         if ($existingRanges->isEmpty()) {
-            session()->flash('error', 'No grading ranges found for the subject "' . $reuseSubject->subject_name . '" in the grading system "' . $reuseGradingSystem->name . '". Please ensure ranges are defined for this subject.');
+            $this->alert('error', 'No grading ranges found for the subject "' . $reuseSubject->subject_name . '" in the grading system "' . $reuseGradingSystem->name . '". Please ensure ranges are defined for this subject.');
             return;
         }
 
@@ -146,7 +149,7 @@ class GradingRangeManager extends Component
             ->exists();
 
         if ($alreadyExistingRanges) {
-            session()->flash('error', 'Cannot reuse grading ranges from "' . $reuseSubject->subject_name . '" in the grading system "' . $reuseGradingSystem->name . '" to "' . $currentSubject->subject_name . '" in the grading system "' . $currentGradingSystem->name . '" as the current subject already has existing ranges.');
+            $this->alert('error', 'Cannot reuse grading ranges from "' . $reuseSubject->subject_name . '" in the grading system "' . $reuseGradingSystem->name . '" to "' . $currentSubject->subject_name . '" in the grading system "' . $currentGradingSystem->name . '" as the current subject already has existing ranges.');
             return;
         }
 
@@ -161,8 +164,8 @@ class GradingRangeManager extends Component
             ];
         })->toArray();
 
-        // Success message with the grading system and subject names
-        session()->flash('success', 'Grading ranges successfully loaded for reuse from the subject "' . $reuseSubject->subject_name . '" in the grading system "' . $reuseGradingSystem->name . '"! You can now adjust them as needed.');
+        // Success  with the grading system and subject names
+        $this->alert('success', 'Grading ranges successfully loaded for reuse from the subject "' . $reuseSubject->subject_name . '" in the grading system "' . $reuseGradingSystem->name . '"! You can now adjust them as needed.');
     }
 
 
@@ -173,7 +176,7 @@ class GradingRangeManager extends Component
 
         // If ranges exist, don't suggest new ones
         if ($existingRanges) {
-            session()->flash('error', 'Grading ranges already exist for the selected grading system.');
+            $this->alert('error', 'Grading ranges already exist for the selected grading system.');
             return;
         }
 
@@ -205,7 +208,7 @@ class GradingRangeManager extends Component
         // Set the generated ranges to the form field
         $this->ranges = $suggestedRanges;
 
-        session()->flash('message', 'New suggested grading ranges have been successfully populated.');
+        $this->alert('info', 'New suggested grading ranges have been successfully populated.');
     }
 
 
@@ -328,7 +331,7 @@ class GradingRangeManager extends Component
             ]);
         }
 
-        session()->flash('message', 'Grading ranges saved successfully!');
+        $this->alert('success', 'Grading ranges saved successfully!');
         $this->reset(['subjectId', 'ranges', 'showForm']); // Reset and hide the form
         $this->loadSubmittedRanges();
         $this->isLoading = false; // Hide loading state
@@ -357,13 +360,13 @@ class GradingRangeManager extends Component
                     'gpa' => $this->ranges[0]['gpa'],
                 ]);
             } else {
-                session()->flash('error', 'Grading range not found for updating.');
+                $this->alert('error', 'Grading range not found for updating.');
             }
         } else {
-            session()->flash('error', 'Invalid index for submitted ranges.');
+            $this->alert('error', 'Invalid index for submitted ranges.');
         }
 
-        session()->flash('message', 'Grading range updated successfully!');
+        $this->alert('success', 'Grading range updated successfully!');
         $this->resetEditingState();
         $this->loadSubmittedRanges();
         $this->isLoading = false; // Hide loading state
@@ -398,7 +401,7 @@ class GradingRangeManager extends Component
     public function deleteRange($id)
     {
         GradingRange::destroy($id);
-        session()->flash('message', 'Grading range deleted successfully!');
+        $this->alert('success', 'Grading range deleted successfully!');
         $this->loadSubmittedRanges(); // Refresh the submitted ranges
     }
 

@@ -21,8 +21,16 @@
 
 <!-- Core JS files -->
 <script src="{{ asset('global_assets/js/main/jquery.min.js') }}"></script>
+
+
+
 <script src="{{ asset('global_assets/js/main/bootstrap.bundle.min.js') }}"></script> <!-- bundle includes popper -->
 <script src="{{ asset('global_assets/js/plugins/loaders/blockui.min.js') }}"></script>
+
+
+
 <!-- Include all JS files from the main and plugins directories -->
+
+
 <script src="{{ asset('global_assets/js/main/trix.js') }}"></script>
 <script src="{{ asset('global_assets/js/main/swiper-bundle.min.js') }}"></script>

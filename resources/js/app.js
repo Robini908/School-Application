@@ -4,6 +4,4 @@
  */
 
 import './bootstrap';
-import Handsontable from 'handsontable';
-import 'handsontable/dist/handsontable.full.min.css';
-import '../css/app.css';
+

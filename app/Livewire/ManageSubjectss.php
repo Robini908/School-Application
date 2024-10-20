@@ -2,14 +2,18 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
-
 use App\Models\Subject;
+
+use Livewire\Component;
 use App\Models\SubjectCategory;
 use Illuminate\Support\Facades\Session;
+use Usernotnull\Toast\Concerns\WireToast;
+use Jantinnerezo\LivewireAlert\LivewireAlert;
 
 class ManageSubjectss extends Component
 {
+    use LivewireAlert;
+    use WireToast;
     public $subjects;
     public $subjectId, $subject_name, $subject_code, $abbreviation, $category_id;
     public $categories = []; // Hold subject categories
@@ -24,7 +28,7 @@ class ManageSubjectss extends Component
 
     public $filteredSubjects;
     public $allSubjects;
-    
+
 
 
     public $editingCategoryId = null;
@@ -32,34 +36,30 @@ class ManageSubjectss extends Component
     public $edit_category = '';
 
 
-   
+
 
     public function loadSubjects()
-{
-    // Load all subjects including those without categories
-    $this->allSubjects = Subject::with('category')->get();
+    {
+        // Load all subjects including those without categories
+        $this->allSubjects = Subject::with('category')->get();
+    }
 
-  
-}
+    public function mount()
+    {
+        $this->loadSubjects();
+        $this->categories = SubjectCategory::all(); // Load all categories
+    }
 
-public function mount()
-{
-    $this->loadSubjects();
-    $this->categories = SubjectCategory::all(); // Load all categories
-}
-
-public function filterByCategory($categoryId)
-{
-    // Filter subjects by selected category and load their categories
-    $this->filteredSubjects = Subject::with('category')
-        ->where('category_id', $categoryId)
-        ->get();
-    
-
-}
+    public function filterByCategory($categoryId)
+    {
+        // Filter subjects by selected category and load their categories
+        $this->filteredSubjects = Subject::with('category')
+            ->where('category_id', $categoryId)
+            ->get();
+    }
 
 
-    
+
 
 
 
@@ -99,7 +99,7 @@ public function filterByCategory($categoryId)
 
     // Initialize the component by loading the subjects and categories
 
-   
+
 
 
     // Show the form for creating a new subject
@@ -111,7 +111,7 @@ public function filterByCategory($categoryId)
         $this->showForm = true;
     }
 
-  
+
 
 
     // Store a new subject
@@ -138,9 +138,11 @@ public function filterByCategory($categoryId)
             $this->showForm = false;
             $this->isCreating = false;
 
-            Session::flash('success', 'Subject created successfully.');
+           
+            $this->alert('success', 'Subject created successfully.');
         } catch (\Exception $e) {
-            Session::flash('error', 'An error occurred while creating the subject: ' . $e->getMessage());
+            
+            $this->alert('error', 'An error occurred while creating the subject: ' . $e->getMessage());
         }
     }
 
@@ -186,10 +188,11 @@ public function filterByCategory($categoryId)
             $this->resetForm();
             $this->showForm = false;
             $this->isEditing = false;
-
-            Session::flash('success', 'Subject updated successfully.');
+            
+            $this->alert('success', 'Subject Edited successfully.');
         } catch (\Exception $e) {
-            Session::flash('error', 'An error occurred while updating the subject: ' . $e->getMessage());
+          
+            $this->alert('error', 'An error occurred while updating the subject: ' . $e->getMessage());
         }
     }
 
@@ -204,9 +207,9 @@ public function filterByCategory($categoryId)
             $subject->delete();
 
             $this->loadSubjects(); // Refresh subjects after deletion
-            Session::flash('success', 'Subject deleted successfully.');
+            $this->alert('success', 'Subject deleted successfully.');
         } catch (\Exception $e) {
-            Session::flash('error', 'An error occurred while deleting the subject: ' . $e->getMessage());
+            $this->alert('error', 'An error occurred while deleting the subject: ' . $e->getMessage());
         }
     }
 
@@ -236,9 +239,9 @@ public function filterByCategory($categoryId)
             $this->categories = SubjectCategory::all(); // Refresh categories
             $this->new_category = ''; // Reset new category input
 
-            Session::flash('success', 'Category added successfully.');
+            $this->alert('success', 'Category added successfully.');
         } catch (\Exception $e) {
-            Session::flash('error', 'An error occurred while adding the category: ' . $e->getMessage());
+            $this->alert('error', 'An error occurred while adding the category: ' . $e->getMessage());
         }
     }
 
@@ -250,9 +253,9 @@ public function filterByCategory($categoryId)
             $category->delete();
             $this->categories = SubjectCategory::all(); // Refresh categories
 
-            Session::flash('success', 'Category removed successfully.');
+            $this->alert('success', 'Category removed successfully.');
         } catch (\Exception $e) {
-            Session::flash('error', 'An error occurred while removing the category: ' . $e->getMessage());
+            $this->alert('error', 'An error occurred while removing the category: ' . $e->getMessage());
         }
     }
     public function cancel()

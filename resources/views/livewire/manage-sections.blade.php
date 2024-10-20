@@ -116,44 +116,50 @@
 
             <h4 class="h5 mt-6 mb-2">Students in this Stream:</h4>
             @if($students->isEmpty())
-            <div class="alert alert-danger">No students are enrolled in this section.</div>
+                <div class="alert alert-danger">No students are enrolled in this section.</div>
             @else
-            <table class="table  table-responsive">
-                <thead class="thead-light">
-                    <tr>
-                        <th>Photo</th>
-                        <th>Admission No</th>
-                        <th>First Name</th>
-                        <th>Middle Name</th>
-                        <th>Last Name</th>
-                        <th>Gender</th>
-                        <th>Email</th>
-                        <th>Year Admitted</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($students as $student)
-                    <tr>
-                        <td>
-                            @if ($student->photo)
-                            <img src="{{ asset($student->photo) }}" alt="Student Photo" class="img-thumbnail"
-                                style="width: 50px; height: 50px;">
-                            @else
-                            <span class="text-muted">No Image</span>
-                            @endif
-                        </td>
-                        <td>{{ $student->adm_no }}</td>
-                        <td>{{ $student->first_name }}</td>
-                        <td>{{ $student->middle_name }}</td>
-                        <td>{{ $student->last_name }}</td>
-                        <td>{{ $student->gender }}</td>
-                        <td>{{ $student->email }}</td>
-                        <td>{{ $student->year_admitted }}</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Photo</th>
+                                <th>Admission No</th>
+                                <th>First Name</th>
+                                <th>Middle Name</th>
+                                <th>Last Name</th>
+                                <th>Gender</th>
+                                <th>Email</th>
+                                <th>Year Admitted</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($students as $student)
+                                <tr>
+                                    <td>
+                                        @if ($student->photo)
+                                            <img src="{{ asset($student->photo) }}" alt="Student Photo" class="img-thumbnail" style="width: 50px; height: 50px;">
+                                        @else
+                                            <span class="text-muted">No Image</span>
+                                        @endif
+                                    </td>
+                                    <td>{{ $student->adm_no }}</td>
+                                    <td>{{ $student->first_name }}</td>
+                                    <td>{{ $student->middle_name }}</td>
+                                    <td>{{ $student->last_name }}</td>
+                                    <td>{{ $student->gender }}</td>
+                                    <td>{{ $student->email }}</td>
+                                    <td>{{ $student->year_admitted }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-2">
+                    {{ $students->links() }}  <!-- This will render the pagination links -->
+                </div>
             @endif
+            
+           
 
 
             <h4 class="h5 mt-6 mb-2">Subjects done in this stream:</h4>

@@ -6,21 +6,39 @@
   "type": "project",
   "require": {
     "php": "^8.2.12",
+    "amphp/amp": "^3.0",
+    "bacon/bacon-qr-code": "^3.0",
     "barryvdh/laravel-dompdf": "^2.0",
+    "brick/math": "^0.12.1",
+    "composer/installers": "^2.3",
+    "doctrine/sql-formatter": "^1.5",
     "fakerphp/faker": "^1.19",
+    "filament/tables": "^3.2",
     "guzzlehttp/guzzle": "^7.5",
     "hashids/hashids": "^4.1.0",
+    "intervention/image": "^3.9",
+    "jantinnerezo/livewire-alert": "^3.0",
     "laravel/framework": "^10.0",
+    "laravel/pint": "^1.18",
     "laravel/tinker": "^2.8",
     "laravel/ui": "^4.0",
     "livewire/livewire": "^3.5",
     "maatwebsite/excel": "^3.1",
     "mckenziearts/laravel-notify": "^2.5",
-    "voku/portable-ascii": "^2.0"
+    "nunomaduro/termwind": "^1.16",
+    "paragonie/random_compat": "^9.99",
+    "phpoffice/phpspreadsheet": "^1.29",
+    "phpstan/phpstan-deprecation-rules": "^1.2",
+    "ramsey/collection": "^2.0",
+    "symfony/security-core": "^7.1",
+    "usernotnull/tall-toasts": "^2.1",
+    "voku/portable-ascii": "^2.0",
+    "wire-elements/modal": "^2.0"
   },
   "require-dev": {
     "barryvdh/laravel-ide-helper": "^2.13",
     "friendsofphp/php-cs-fixer": "*",
+    "larastan/larastan": "^2.9",
     "mockery/mockery": "^1.5.1",
     "nunomaduro/collision": "^7.0",
     "phpunit/phpunit": "^10.0",
@@ -48,7 +66,8 @@
     "sort-packages": true,
     "optimize-autoloader": true,
     "allow-plugins": {
-      "wikimedia/composer-merge-plugin": true
+      "wikimedia/composer-merge-plugin": true,
+      "composer/installers": true
     }
   },
   "minimum-stability": "stable",
