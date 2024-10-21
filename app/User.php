@@ -12,10 +12,12 @@ use App\Models\DormMaster;
 use App\Models\Nationality;
 use App\Models\StaffRecord;
 use App\Models\StudentRecord;
+use App\Models\StudentTransition;
 use App\Models\StudentPromotionDemotion;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Section; // Import Section model
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
@@ -47,14 +49,16 @@ class User extends Authenticatable
         return $this->belongsTo(Lga::class);
     }
 
-    public function promotionsDemotions()
-    {
-        return $this->hasMany(StudentPromotionDemotion::class, 'approved_by');
-    }
+   
 
     public function userType()
     {
         return $this->belongsTo(UserType::class, 'user_type');
+    }
+
+    public function studentTransitions(): HasMany
+    {
+        return $this->hasMany(StudentTransition::class, 'approved_by', 'id');
     }
 
     public function state()

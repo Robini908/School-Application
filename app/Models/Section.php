@@ -33,10 +33,6 @@ class Section extends Model
             ->where('user_type', 'teacher'); // Assuming 'user_type' indicates if the user is a teacher
     }
 
-    public function promotionsDemotions()
-    {
-        return $this->hasMany(StudentPromotionDemotion::class, 'old_section_id')->orWhere('new_section_id', $this->id);
-    }
 
     /**
      * Define the relationship with StudentRecord.
@@ -47,6 +43,12 @@ class Section extends Model
         return $this->hasMany(StudentRecord::class);
     }
 
+    public function transitions()
+    {
+        return $this->hasMany(StudentTransition::class, 'new_section_id', 'id');
+    }
+
+
     /**
      * Define the relationship with Exams.
      * Each section can be linked to multiple exams.
@@ -56,5 +58,4 @@ class Section extends Model
         return $this->belongsToMany(Exam::class, 'exam_class_section', 'section_id', 'exam_id')
             ->withPivot('class_id');
     }
-    
 }

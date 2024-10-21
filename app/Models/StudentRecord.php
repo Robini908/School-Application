@@ -69,10 +69,13 @@ class StudentRecord extends Model
         return $this->belongsTo(MyClass::class);
     }
 
-    public function promotionsDemotions()
-    {
-        return $this->hasMany(StudentPromotionDemotion::class);
-    }
+    public function transitions()
+{
+    return $this->hasMany(StudentTransition::class, 'student_id', 'id');
+}
+
+
+   
 
     /**
      * Get the section that this student belongs to

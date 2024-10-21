@@ -53,8 +53,11 @@ class MyClass extends Model
         return $this->hasMany(Section::class, 'my_class_id');
     }
 
-    public function promotionsDemotions()
-    {
-        return $this->hasMany(StudentPromotionDemotion::class, 'old_class_id')->orWhere('new_class_id', $this->id);
-    }
+    public function transitions()
+{
+    return $this->hasMany(StudentTransition::class, 'new_class_id', 'id');
+}
+
+
+  
 }

@@ -8,21 +8,27 @@ use App\Models\MyClass;
 use App\Models\Section;
 use App\Models\Subject;
 use Livewire\Component;
-use Illuminate\Support\Facades\Log;
 use App\Models\GradingGrade;
 use App\Models\GradingRange;
 use Livewire\WithPagination;
 use App\Models\StudentRecord;
 use App\Models\StudentResult;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class CombinationFormula extends Component
 {
     // Filter properties
     public $selectedClass;
     public $selectedYearAdmitted;
+
     public $selectedExamYear;
     public $selectedSection;
+    public $studentsPerPage = 100; // Number of students to load initially
+    public $studentsTotal = 0; // Total count of students
+    public $studentsLoaded = 0; // Tracks the number of students loaded
+
     public $selectedTerm; // New filter for term
     public $selectedYear; // New filter for year
     public $selectedExam;
@@ -34,6 +40,10 @@ class CombinationFormula extends Component
     public $sections;
     public $position = [];
     public $exams;
+    public $exam;
+    public $examId;
+    public $selectedExamId;
+
 
     public $marks = [];
     public $subjects = [];
@@ -93,6 +103,7 @@ class CombinationFormula extends Component
             return;
         }
 
+        // Fetch students with chunking (initial load)
         $this->students = StudentRecord::with(['examMarks' => function ($query) use ($examId) {
             $query->where('exam_id', $examId);
         }, 'section'])
@@ -100,24 +111,71 @@ class CombinationFormula extends Component
             ->when($this->selectedSection, function ($query) {
                 $query->where('section_id', $this->selectedSection);
             })
-            ->paginate(50); // Load 50 students per page
+            ->take($this->studentsPerPage)
+            ->get(); // Load the first set of students
 
-            Log::info("Fetched Students Count: " . $this->students->total());
+        $this->studentsLoaded = $this->students->count(); // Track the number of loaded students
+
+        $this->studentsTotal = StudentRecord::where('my_class_id', $this->selectedClass)
+            ->when($this->selectedSection, function ($query) {
+                $query->where('section_id', $this->selectedSection);
+            })
+            ->count(); // Get total count
 
         $this->subjects = $exam->gradingSystem->subjects;
 
+        // Prepare and calculate student data
         $studentData = $this->prepareStudentData($exam);
-
         $this->marks = $this->calculatePositions($studentData);
 
         $this->loading = false;
     }
+    public function loadMoreStudents()
+    {
+        $this->loading = true;
+
+        // Ensure that $this->selectedExamId and $this->exam are defined.
+        if (!$this->selectedExamId || !$this->exam) {
+            Log::error("Exam ID or exam data is missing.");
+            $this->loading = false; // Reset loading state
+            return;
+        }
+
+        // Fetch more students using $this->selectedExamId for the exam ID
+        $moreStudents = StudentRecord::with(['examMarks' => function ($query) {
+            $query->where('exam_id', $this->selectedExamId);
+        }, 'section'])
+            ->where('my_class_id', $this->selectedClass)
+            ->when($this->selectedSection, function ($query) {
+                $query->where('section_id', $this->selectedSection);
+            })
+            ->skip($this->studentsLoaded)  // Skip previously loaded students
+            ->take($this->studentsPerPage) // Load a chunk of students
+            ->get();
+
+        // Check if more students were found before merging
+        if ($moreStudents->isEmpty()) {
+            Log::info("No more students to load.");
+            $this->loading = false; // Reset loading state
+            return;
+        }
+
+        // Merge the newly loaded students with the existing ones
+        $this->students = $this->students->merge($moreStudents);
+        $this->studentsLoaded += $moreStudents->count(); // Update loaded student count
+
+        // Recalculate positions and data
+        $studentData = $this->prepareStudentData($this->exam);
+        $this->marks = $this->calculatePositions($studentData);
+
+        $this->loading = false; // Reset loading state
+    }
+
 
     private function prepareStudentData($exam)
     {
         Log::info("Preparing student data for exam ID: {$exam->id}");
         $studentData = [];
-        DB::beginTransaction(); // Start transaction
 
         try {
             foreach ($this->students as $student) {
@@ -167,15 +225,12 @@ class CombinationFormula extends Component
             // Calculate overall and stream positions
             $studentData = $this->calculatePositions($studentData);
 
-            // Save each student's result with positions
-            foreach ($studentData as $studentResult) {
-                $this->saveStudentResult($studentResult);
-            }
+            // Cache the student data instead of saving it to the database
+            $cacheKey = "exam_{$exam->id}_class_{$this->selectedClass}_section_{$this->selectedSection}";
+            Cache::put($cacheKey, $studentData, now()->addMinutes(60)); // Cache for 60 minutes
 
-            DB::commit(); // Commit transaction if all student data is processed successfully
-
+            Log::info("Student data cached successfully under key: $cacheKey");
         } catch (\Exception $e) {
-            DB::rollBack(); // Rollback the transaction if an error occurs
             Log::error("Failed to process student data for exam ID: {$exam->id}. Error: {$e->getMessage()}");
 
             $this->addError('exam_processing', "Failed to process the exam data: " . $e->getMessage());
@@ -186,23 +241,11 @@ class CombinationFormula extends Component
         return $studentData;
     }
 
-    private function saveStudentResult($data)
-    {
-        Log::info("Attempting to save student result: " . json_encode($data));
+    //retreiving the data from cache 
+    //     $cacheKey = "exam_{$exam->id}_class_{$this->selectedClass}_section_{$this->selectedSection}";
+    // $studentData = Cache::get($cacheKey);
 
-        try {
-            StudentResult::updateOrCreate(
-                ['student_id' => $data['student_id'], 'exam_id' => $data['exam_id']],
-                $data
-            );
-            Log::info("Saved student result for Student ID: {$data['student_id']} in Exam ID: {$data['exam_id']}");
-        } catch (\Exception $e) {
-            Log::error("Failed to save student result for Student ID: {$data['student_id']} - Error: {$e->getMessage()}");
 
-            // Add an error to the Livewire error bag for UI display
-            $this->addError('student_save', "Failed to save result for student: {$data['student_name']} - {$e->getMessage()}");
-        }
-    }
 
 
 

@@ -20,30 +20,7 @@
 <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/resource-timeline@6.1.6/index.global.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/resource-timeline@6.1.6/index.global.min.js"></script>
 
-<!-- Your existing script -->
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    var calendarEl = document.getElementById('calendar');
-    var calendar = new FullCalendar.Calendar(calendarEl, {
-      initialView: 'resourceTimelineWeek',
-      headerToolbar: {
-        left: 'prev,next today',
-        center: 'title',
-        right: 'resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth'
-      },
-      resources: [
-        { id: 'a', title: 'Room A' },
-        { id: 'b', title: 'Room B' },
-        { id: 'c', title: 'Room C' }
-      ],
-      events: [
-        { id: '1', resourceId: 'a', title: 'Meeting', start: '2024-10-20T10:00:00', end: '2024-10-20T12:00:00' },
-        { id: '2', resourceId: 'b', title: 'Conference', start: '2024-10-21T13:00:00', end: '2024-10-21T15:00:00' }
-      ]
-    });
-    calendar.render();
-  });
-</script>
+
 
 
     @livewireStyles
@@ -56,7 +33,7 @@
 
 <body
     class="{{ in_array(Route::currentRouteName(), ['payments.invoice', 'marks.tabulation', 'marks.show', 'ttr.manage', 'ttr.show']) ? 'sidebar-xs' : '' }}">
-
+    <livewire:toasts />
     @include('partials.top_menu')
 
 
@@ -91,6 +68,8 @@
     @livewireScripts
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <x-livewire-alert::scripts />
+    <x-toaster-hub />
+
 </body>
 
 </html>

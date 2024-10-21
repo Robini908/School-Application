@@ -5,6 +5,8 @@ namespace App\Livewire;
 use App\Models\Subject;
 
 use Livewire\Component;
+use Usernotnull\Toast\Toast;
+use Masmerise\Toaster\Toaster;
 use App\Models\SubjectCategory;
 use Illuminate\Support\Facades\Session;
 use Usernotnull\Toast\Concerns\WireToast;
@@ -138,10 +140,10 @@ class ManageSubjectss extends Component
             $this->showForm = false;
             $this->isCreating = false;
 
-           
+
             $this->alert('success', 'Subject created successfully.');
         } catch (\Exception $e) {
-            
+
             $this->alert('error', 'An error occurred while creating the subject: ' . $e->getMessage());
         }
     }
@@ -188,10 +190,16 @@ class ManageSubjectss extends Component
             $this->resetForm();
             $this->showForm = false;
             $this->isEditing = false;
-            
-            $this->alert('success', 'Subject Edited successfully.');
+
+             $this->alert('success', 'Subject Edited successfully.');
+
+            // toast()
+            //     ->success('Subject Updated successfully.')
+            //     ->push();
+
+            // Toaster::success(' Subject Updated successfully!'); 
         } catch (\Exception $e) {
-          
+
             $this->alert('error', 'An error occurred while updating the subject: ' . $e->getMessage());
         }
     }

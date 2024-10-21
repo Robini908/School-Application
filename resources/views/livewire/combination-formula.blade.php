@@ -32,8 +32,8 @@
                         <div class="col-md-4 mb-2">
                             <label for="yearAdmitted">Year Admitted:</label>
                             <div class="input-group">
-                                <input type="number" wire:model.live.debounce.500ms="selectedYearAdmitted" id="yearAdmitted"
-                                    class="form-control" placeholder="Enter Year Admitted">
+                                <input type="number" wire:model.live.debounce.500ms="selectedYearAdmitted"
+                                    id="yearAdmitted" class="form-control" placeholder="Enter Year Admitted">
                                 <div wire:loading wire:target="selectedYearAdmitted" class="input-group-append">
                                     <span class="input-group-text">
                                         <div class="spinner-border spinner-border-sm" role="status"></div>
@@ -271,7 +271,8 @@
 
                     <div class="position-relative" style="pointer-events: none;">
                         <!-- Table behind caution -->
-                        <div class="table-responsive" style="opacity: 0.4;">
+                        <div class="table-responsive" style="opacity: 0.4;" x-data="{ loading: false }"
+                            @scroll.window="if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight) { $wire.loadMoreStudents(); }">
                             <table class="table table-bordered" style="width: 100%; border-radius: 5px;">
                                 <thead>
                                     <tr class="table-primary">
@@ -344,15 +345,24 @@
                                     @endforelse
                                 </tbody>
                             </table>
+                            <div class="text-center mt-4">
+                                @if ($studentsLoaded < $studentsTotal) <button wire:click="loadMoreStudents"
+                                    class="btn btn-primary" x-show="!loading">Load More</button>
+                                    @endif
+                                    <div x-show="loading" class="spinner-border text-primary" role="status">
+                                        <span class="sr-only">Loading...</span>
+                                    </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-               
+
             </div>
 
             @else
             <!-- Table without caution -->
-            <div class="table-responsive">
+            <div class=" table table-responsive" x-data="{ loading: false }"
+                @scroll.window="if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight) { $wire.loadMoreStudents(); }">
 
                 <table class="table table-bordered" style="width: 100%; border-radius: 5px;">
                     <thead>
@@ -363,18 +373,18 @@
                                 Stream</th>
                             <th colspan="{{ count($subjects) }}" class="text-center"
                                 style="font-family: 'Roboto', sans-serif;">Subjects</th>
-                            <th rowspan="2" class="align-middle text-center"
-                                style="font-family: 'Roboto', sans-serif;">Total Marks</th>
-                            <th rowspan="2" class="align-middle text-center"
-                                style="font-family: 'Roboto', sans-serif;">Total Points</th>
-                            <th rowspan="2" class="align-middle text-center"
-                                style="font-family: 'Roboto', sans-serif;">Class Position</th>
-                            <th rowspan="2" class="align-middle text-center"
-                                style="font-family: 'Roboto', sans-serif;">Stream Position</th>
-                            <th rowspan="2" class="align-middle text-center"
-                                style="font-family: 'Roboto', sans-serif;">Mean Score</th>
-                            <th rowspan="2" class="align-middle text-center"
-                                style="font-family: 'Roboto', sans-serif;">Mean Grade</th>
+                            <th rowspan="2" class="align-middle text-center" style="font-family: 'Roboto', sans-serif;">
+                                Total Marks</th>
+                            <th rowspan="2" class="align-middle text-center" style="font-family: 'Roboto', sans-serif;">
+                                Total Points</th>
+                            <th rowspan="2" class="align-middle text-center" style="font-family: 'Roboto', sans-serif;">
+                                Class Position</th>
+                            <th rowspan="2" class="align-middle text-center" style="font-family: 'Roboto', sans-serif;">
+                                Stream Position</th>
+                            <th rowspan="2" class="align-middle text-center" style="font-family: 'Roboto', sans-serif;">
+                                Mean Score</th>
+                            <th rowspan="2" class="align-middle text-center" style="font-family: 'Roboto', sans-serif;">
+                                Mean Grade</th>
                         </tr>
                         <tr class="table-secondary">
                             @foreach ($subjects as $subject)
@@ -426,7 +436,15 @@
                         @endforelse
                     </tbody>
                 </table>
-                {{ $students->links() }}
+                <div class="text-center mt-4">
+                    @if ($studentsLoaded < $studentsTotal) <button wire:click="loadMoreStudents" class="btn btn-primary"
+                        x-show="!loading">Load More</button>
+                        @endif
+                        <div x-show="loading" class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                </div>
+
             </div>
             @endif
 

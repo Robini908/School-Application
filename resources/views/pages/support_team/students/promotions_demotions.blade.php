@@ -9,7 +9,7 @@
     </div>
 
     <div class="card-body">
-        @livewire('manage_promotions_demotions')
+        @livewire('manage_promotions')
     </div>
 </div>
 
