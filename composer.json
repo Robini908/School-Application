@@ -27,6 +27,7 @@
     "masmerise/livewire-toaster": "^2.0",
     "mckenziearts/laravel-notify": "^2.5",
     "nunomaduro/termwind": "^1.16",
+    "nwidart/laravel-modules": "10.0.6",
     "paragonie/random_compat": "^9.99",
     "phpoffice/phpspreadsheet": "^1.29",
     "phpstan/phpstan-deprecation-rules": "^1.2",
