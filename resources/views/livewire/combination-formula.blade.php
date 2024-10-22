@@ -437,12 +437,13 @@
                     </tbody>
                 </table>
                 <div class="text-center mt-4">
-                    @if ($studentsLoaded < $studentsTotal) <button wire:click="loadMoreStudents" class="btn btn-primary"
+                    {{-- @if ($studentsLoaded < $studentsTotal) <button wire:click="loadMoreStudents" class="btn btn-primary"
                         x-show="!loading">Load More</button>
                         @endif
                         <div x-show="loading" class="spinner-border text-primary" role="status">
                             <span class="sr-only">Loading...</span>
-                        </div>
+                        </div> --}}
+                        {{$students->links()}}
                 </div>
 
             </div>
@@ -461,8 +462,6 @@
             @endif
         </div>
     </div>
-
-
 </div>
 </div>
 </div>

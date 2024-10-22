@@ -6,6 +6,7 @@ use App\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Str;
 
 class StudentTransition extends Model
 {
@@ -18,21 +19,29 @@ class StudentTransition extends Model
 
     // Fillable fields
     protected $fillable = [
-        'transition_uid',
+        'id',                // Manually filled
+        'transition_uid',    // Add this line
         'student_id',
         'new_class_id',
         'new_section_id',
         'transition_type',
         'reason',
         'event_date',
-        'repetition_count',
         'academic_year',
         'next_academic_year',
-        'completion_status',
         'approved_by',
-        'approved_at',
         'remarks',
     ];
+
+    // Automatically generate UUID for the 'id' field on creation
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($model) {
+            $model->id = (string) Str::uuid();
+            $model->transition_uid = (string) Str::uuid(); // Generate transition_uid here
+        });
+    }
 
     /**
      * Define the relationship with StudentRecord.

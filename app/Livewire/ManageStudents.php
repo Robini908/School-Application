@@ -453,7 +453,7 @@ class ManageStudents extends Component
     {
         $email = $student->email ?? $student->parent_detail->email; // Assuming parent_detail has an email
         if ($email) {
-            \Mail::to($email)->send(new DisapprovalNotification($student, $this->disapprovalReason));
+            Mail::to($email)->send(new DisapprovalNotification($student, $this->disapprovalReason));
         }
     }
 

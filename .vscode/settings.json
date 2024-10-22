@@ -1,3 +1,7 @@
 {
-    "editor.bracketPairColorization.enabled": true
+    "editor.bracketPairColorization.enabled": true,
+    "editor.guides.bracketPairs": true,
+    "editor.guides.indentation": true,
+    
+    "intelliphp.inlineSuggestionsEnabled" : true
 }
