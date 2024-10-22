@@ -5,41 +5,54 @@
             <h4>Step 1: Filter and Select Students</h4>
         </div>
         <div class="card-body">
+            <!-- Alert for already promoted streams -->
+            @if (!empty($promotedStreams))
+            <div class="alert alert-warning">
+                <strong>Warning!</strong> Promotion has already been done for the following streams:
+                <ul>
+                    @foreach($promotedStreams as $stream)
+                    <li>{{ $stream }}</li>
+                    @endforeach
+                </ul>
+                <p>Number of students not promoted in the current section: <strong>{{ $notPromotedCount }}</strong></p>
+            </div>
+            @endif
 
+            <!-- Filter Form -->
+            <form wire:submit.prevent="selectStudents" @submit.prevent="step = 2">
+                <div class="row">
+                    <!-- Class Selection -->
+                    <div class="col-md-6 form-group" style="margin-bottom: 15px;">
+                        <label for="class">Select Class</label>
+                        <select wire:model.live="selectedClass" class="form-control">
+                            <option value="">Choose Class</option>
+                            @foreach($classes as $class)
+                            <option value="{{ $class->id }}">{{ $class->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('selectedClass')
+                        <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
 
-            <!-- Step 1 Form: Filter by Class, Section, and Select Students -->
-            <form wire:submit.prevent="selectStudents" @submit="step = 2">
-                <!-- Class Selection -->
-                <div class="form-group">
-                    <label for="class">Select Class</label>
-                    <select wire:model.live="selectedClass" class="form-control">
-                        <option value="">Choose Class</option>
-                        @foreach($classes as $class)
-                        <option value="{{ $class->id }}">{{ $class->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('selectedClass')
-                    <span class="text-danger">{{ $message }}</span>
-                    @enderror
+                    <!-- Section Selection -->
+                    @if (!empty($sections))
+                    <div class="col-md-6 form-group" style="margin-bottom: 15px;">
+                        <label for="section">Select Section</label>
+                        <select wire:model.live="selectedSection" class="form-control">
+                            <option value="">Choose Section</option>
+                            @foreach($sections as $section)
+                            <option value="{{ $section->id }}">{{ $section->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('selectedSection')
+                        <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
+                    @endif
                 </div>
 
-                <!-- Section Selection (conditional) -->
-                @if (!empty($sections))
-                <div class="form-group">
-                    <label for="section">Select Section</label>
-                    <select wire:model.live="selectedSection" class="form-control">
-                        <option value="">Choose Section</option>
-                        @foreach($sections as $section)
-                        <option value="{{ $section->id }}">{{ $section->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('selectedSection')
-                    <span class="text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
-                @endif
-
-                <!-- Student Selection (conditional) -->
+                <!-- Student Selection -->
                 @if (!empty($students))
                 <div class="form-group" x-data="{
                     search: '',
@@ -53,192 +66,172 @@
                         }
                     }
                 }">
-                    <label for="student">Select Students</label>
-
-                    <!-- Search Input -->
-                    <input type="text" placeholder="Search students..." class="form-control mb-3" x-model="search" />
-
-                    <!-- Select All Checkbox -->
-                    <div class="form-check mb-3 d-flex align-items-center">
-                        <input type="checkbox" class="form-check-input" id="selectAll" x-model="selectAll"
-                            @click="toggleSelectAll()">
-                        <label class="form-check-label ms-2" for="selectAll">Select All</label>
-
-                        <!-- Show Spinner when "Select All" is being processed -->
-                        <div wire:loading wire:target="selectAllStudents" class="spinner-border spinner-border-sm ms-2"
-                            role="status"></div>
+                    <!-- Search Box -->
+                    <div class="input-group mb-3" style="max-width: 400px;">
+                        <input type="text" class="form-control" placeholder="Search students..." x-model.debounce.500ms="search"
+                            style="padding: 0.5rem; font-size: 0.9rem;">
+                        <div class="input-group-append">
+                            <span class="input-group-text" style="background-color: #f1f1f1;">
+                                <i class="fas fa-search"></i> <!-- Font Awesome search icon -->
+                            </span>
+                        </div>
                     </div>
 
-                    <div class="border rounded p-3" style="max-height: 400px; overflow-y: auto;">
-                        <!-- List of Students -->
+                   
+                    <div class="form-check mb-3 d-flex align-items-center">
+                        <input type="checkbox" class="form-check-input" id="selectAll" x-model="selectAll" @click="toggleSelectAll()">
+                        <label class="form-check-label ms-2" for="selectAll">Select All</label>
+                    
+                        <!-- Optimized Loading Spinner for Bulk Operation -->
+                        <div wire:loading wire:target="selectAllStudents" class="spinner-border spinner-border-sm ms-2" role="status"></div>
+                    </div>
+                    
+                    <!-- Student Selection Box with Optimized Search and Rendering -->
+                    <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto; background-color: #f8f9fa;">
+                        <!-- Search Input with Debounce -->
+                    
                         <div class="row">
                             @foreach($students as $student)
-                            <div class="col-md-3"
-                                x-show="search === '' || '{{ $student->first_name }} {{ $student->last_name }}'.toLowerCase().includes(search.toLowerCase())">
+                            <div class="col-md-3 mb-2" 
+                                 x-show="search === '' || '{{ $student->first_name }} {{ $student->last_name }}'.toLowerCase().includes(search.toLowerCase())">
                                 <div class="form-check">
-                                    <!-- Individual checkboxes for students -->
-                                    <input type="checkbox" wire:model.live="selectedStudents" value="{{ $student->id }}"
-                                        class="form-check-input">
+                                    <!-- Student Checkbox with Debounced Livewire Update -->
+                                    <input type="checkbox" wire:model.defer="selectedStudents" value="{{ $student->id }}" class="form-check-input">
                                     <label class="form-check-label">
                                         {{ $student->first_name }} {{ $student->last_name }}
                                     </label>
-
-                                    <!-- Show Spinner when the specific student is being processed -->
-                                    <div wire:loading wire:target="selectedStudents.{{ $student->id }}"
-                                        class="spinner-border spinner-border-sm ms-2" role="status"></div>
+                    
+                                    <!-- Show Spinner for Individual Student Loading -->
+                                    <div wire:loading wire:target="selectedStudents.{{ $student->id }}" class="spinner-border spinner-border-sm ms-2" role="status"></div>
                                 </div>
                             </div>
                             @endforeach
                         </div>
                     </div>
-
+                    
                     @error('selectedStudents')
                     <span class="text-danger">{{ $message }}</span>
                     @enderror
                 </div>
-
                 @endif
 
                 <!-- Next Button -->
-                <button type="submit" class="btn btn-primary" {{ empty($students) ? 'disabled' : '' }}>
+                <button type="submit" class="btn btn-primary mt-3" {{ empty($students) ? 'disabled' : '' }}>
                     Next
-                    <!-- Show Spinner when promoting students -->
                     <div wire:loading wire:target="selectStudents" class="spinner-border spinner-border-sm ms-2"
                         role="status"></div>
                 </button>
             </form>
         </div>
-
-        <div class="card-header">
-            <h4>Students Not Promoted</h4>
-        </div>
-        {{-- <div class="card-body">
-            @if ($notPromotedStudents->isEmpty())
-            <div class="alert alert-warning">No students found who were not promoted.</div>
-            @else
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover">
-                    <thead class="table-primary">
-                        <tr>
-                            <th>#</th>
-                            <th>First Name</th>
-                            <th>Last Name</th>
-                            <th>Class</th>
-                            <th>Section</th>
-                            <th>Reason for Not Promotion</th>
-                            <th>Actions</th> <!-- New column for actions -->
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($notPromotedStudents as $index => $student)
-                        <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>{{ $student->first_name }}</td>
-                            <td>{{ $student->last_name }}</td>
-                            <td>{{ $student->class->name ?? 'N/A' }}</td>
-                            <td>{{ $student->section->name ?? 'N/A' }}</td>
-                            <td>{{ $student->not_promotion_reason }}</td>
-                            <td>
-                                <!-- Placeholder buttons for demote and repeat actions -->
-                                <button wire:click="demoteStudent({{ $student->id }})" class="btn btn-danger btn-sm"
-                                    title="Demote Student">
-                                    Demote
-                                </button>
-                                <button wire:click="repeatStudent({{ $student->id }})" class="btn btn-warning btn-sm"
-                                    title="Repeat Student">
-                                    Repeat
-                                </button>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-            @endif
-        </div>
-        --}}
     </div>
+
 
 
     <!-- Step 2: Choose New Class, Section, and Academic Year -->
-    <div class="card" x-show="step === 2">
-        <div class="card-header">
-            <h4>Step 2: Choose New Class, Section, and Academic Year</h4>
-        </div>
+    <div class="card" x-show="step === 2" style="background-color: #f9f9f9;">
+       
         <div class="card-body">
+            <div class="alert alert-info">
+                <h4 class="">Step 2: Choose New Class, Section, and Academic Year</h4>
+            </div>
             <form wire:submit.prevent="promoteStudents">
-                <!-- New Class Selection -->
-                <div class="form-group">
-                    <label for="new_class">Select New Class</label>
-                    <select wire:model.live="newClass" class="form-control">
-                        <option value="">Choose Class</option>
-                        @foreach($classes as $class)
-                        <option value="{{ $class->id }}">{{ $class->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('newClass')
-                    <span class="text-danger">{{ $message }}</span>
-                    @enderror
-
-                    @if ($suggestedClass)
-                    <small class="text-success">
-                        Suggested Next Class: {{ $classes->find($suggestedClass)->name }}
-                    </small>
-                    @endif
+                <div class="container">
+                    <!-- First Row -->
+                    <div class="row mb-3">
+                        <!-- New Class Selection -->
+                        <div class="col-md-4">
+                            <div class="form-group bg-light p-3 rounded">
+                                <label for="new_class">Select New Class</label>
+                                <select wire:model.live="newClass" class="form-control">
+                                    <option value="">Choose Class</option>
+                                    @foreach($classes as $class)
+                                    <option value="{{ $class->id }}">{{ $class->name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('newClass')
+                                <span class="text-danger">{{ $message }}</span>
+                                @enderror
+                                @if ($suggestedClass)
+                                <small class="text-success">
+                                    Suggested Next Class: {{ $classes->find($suggestedClass)->name }}
+                                </small>
+                                @endif
+                            </div>
+                        </div>
+    
+                        <!-- New Section Selection (conditional) -->
+                        @if (!empty($newSections))
+                        <div class="col-md-4">
+                            <div class="form-group bg-light p-3 rounded">
+                                <label for="new_section">Select New Section</label>
+                                <select wire:model.live="newSection" class="form-control">
+                                    <option value="">Choose Section</option>
+                                    @foreach($newSections as $section)
+                                    <option value="{{ $section->id }}">{{ $section->name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('newSection')
+                                <span class="text-danger">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        </div>
+                        @endif
+    
+                        <!-- Promotion Date -->
+                        <div class="col-md-4">
+                            <div class="form-group bg-light p-3 rounded">
+                                <label for="eventDate">Promotion Date</label>
+                                <input type="date" wire:model="eventDate" class="form-control">
+                                @error('eventDate')
+                                <span class="text-danger">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+    
+                    <!-- Second Row -->
+                    <div class="row mb-3">
+                        <!-- Current Academic Year -->
+                        <div class="col-md-4">
+                            <div class="form-group bg-light p-3 rounded">
+                                <label for="academicYear">Current Academic Year</label>
+                                <input type="text" wire:model="academicYear" class="form-control" readonly>
+                            </div>
+                        </div>
+    
+                        <!-- Next Academic Year -->
+                        <div class="col-md-4">
+                            <div class="form-group bg-light p-3 rounded">
+                                <label for="nextAcademicYear">Next Academic Year</label>
+                                <input type="text" wire:model="nextAcademicYear" class="form-control" readonly>
+                            </div>
+                        </div>
+    
+                        <!-- Reason for Promotion -->
+                        <div class="col-md-4">
+                            <div class="form-group bg-light p-3 rounded">
+                                <label for="reason">Reason for Promotion</label>
+                                <textarea wire:model="reason" class="form-control"></textarea>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <!-- Third Row (Buttons) -->
+                    <div class="row">
+                        <div class="col-md-12 ">
+                            <!-- Submit and Back Buttons -->
+                            <button type="submit" class="btn btn-success">
+                                Promote Students
+                                <!-- Show Spinner when promoting students -->
+                                <div wire:loading wire:target="promoteStudents" class="spinner-border spinner-border-sm ms-2"
+                                    role="status"></div>
+                            </button>
+                            <button type="button" class="btn btn-secondary ms-2" @click="step = 1">Back</button>
+                        </div>
+                    </div>
                 </div>
-
-                <!-- New Section Selection (conditional) -->
-                @if (!empty($newSections))
-                <div class="form-group">
-                    <label for="new_section">Select New Section</label>
-                    <select wire:model.live="newSection" class="form-control">
-                        <option value="">Choose Section</option>
-                        @foreach($newSections as $section)
-                        <option value="{{ $section->id }}">{{ $section->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('newSection')
-                    <span class="text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
-                @endif
-
-                <!-- Promotion Date -->
-                <div class="form-group">
-                    <label for="eventDate">Promotion Date</label>
-                    <input type="date" wire:model.live="eventDate" class="form-control">
-                    @error('eventDate')
-                    <span class="text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <!-- Academic Years -->
-                <div class="form-group">
-                    <label for="academicYear">Current Academic Year</label>
-                    <input type="text" wire:model.live="academicYear" class="form-control" readonly>
-                </div>
-
-                <div class="form-group">
-                    <label for="nextAcademicYear">Next Academic Year</label>
-                    <input type="text" wire:model.live="nextAcademicYear" class="form-control" readonly>
-                </div>
-
-                <!-- Reason for Promotion -->
-                <div class="form-group">
-                    <label for="reason">Reason for Promotion</label>
-                    <textarea wire:model.live="reason" class="form-control"></textarea>
-                </div>
-
-                <!-- Submit and Back Buttons -->
-                <button type="submit" class="btn btn-success">
-                    Promote Students
-                    <!-- Show Spinner when promoting students -->
-                    <div wire:loading wire:target="promoteStudents" class="spinner-border spinner-border-sm ms-2"
-                        role="status"></div>
-                </button>
-                <button type="button" class="btn btn-secondary" @click="step = 1">Back</button>
-
             </form>
         </div>
     </div>
+    
 </div>

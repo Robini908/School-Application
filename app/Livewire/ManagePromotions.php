@@ -20,7 +20,8 @@ class ManagePromotions extends Component
 
     public $classes;
     public $sections = [];
-
+    public $promotedStreams = [];
+    public $notPromotedCount = 0;
     public $notPromotedStudents = [];
     public $students;
     public $newSections = [];
@@ -70,16 +71,47 @@ class ManagePromotions extends Component
         $this->suggestedClass = $this->getSuggestedClass($classId);
     }
 
+    // public function updatedSelectedSection($sectionId)
+    // {
+    //     $this->students = collect(); // Initialize as an empty collection
+
+    //     StudentRecord::where('section_id', $sectionId)->chunk(100, function ($records) {
+    //         $this->students = $this->students->merge($records); // Merge each chunk
+    //     });
+
+    //     $this->selectedStudents = [];
+    // }
     public function updatedSelectedSection($sectionId)
     {
-        $this->students = collect(); // Initialize as an empty collection
+        // Initialize students collection for the selected section
+        $this->students = collect();
 
+        // Fetch students in the selected section
         StudentRecord::where('section_id', $sectionId)->chunk(100, function ($records) {
-            $this->students = $this->students->merge($records); // Merge each chunk
+            $this->students = $this->students->merge($records);
         });
 
+        // Fetch IDs of already promoted students for the current academic year in this section
+        $promotedStudents = StudentTransition::where('new_section_id', $sectionId)
+            ->where('academic_year', $this->academicYear)
+            ->pluck('student_id')
+            ->toArray();
+
+        // Filter out students who have already been promoted from the total list
+        $this->students = $this->students->filter(function ($student) use ($promotedStudents) {
+            return !in_array($student->id, $promotedStudents);
+        });
+
+        // Get promoted streams (sections) by the section ID
+        $this->promotedStreams = Section::whereIn('id', $promotedStudents)->pluck('name')->toArray();
+
+        // Calculate the number of students not yet promoted
+        $this->notPromotedCount = $this->students->count();
+
+        // Reset selected students
         $this->selectedStudents = [];
     }
+
 
 
     public function selectStudents()
@@ -100,17 +132,19 @@ class ManagePromotions extends Component
     public function selectAllStudents($isSelected)
     {
         if ($isSelected) {
-            // Select all student IDs from the currently loaded students
+            // Use a more efficient query to fetch and select all student IDs at once
             $this->selectedStudents = $this->students->pluck('id')->toArray();
         } else {
-            // Clear the selected students array
+            // Clear the selected students in one go
             $this->selectedStudents = [];
         }
     }
 
 
+
     public function promoteStudents()
     {
+        // Validate input fields
         $this->validate([
             'selectedClass' => 'required',
             'selectedSection' => 'required',
@@ -121,19 +155,29 @@ class ManagePromotions extends Component
 
         $oldClass = MyClass::find($this->selectedClass);
         $newClass = MyClass::find($this->newClass);
+        $newSection = Section::find($this->newSection);
 
+        // Scenario 1: Prevent promotion to the same class
         if ($newClass->id === $oldClass->id) {
             $this->alert('error', 'Cannot promote students to the same class.');
             return;
         }
 
+        // Scenario 2: Prevent promotion to a lower class
         if ($newClass->id < $oldClass->id) {
-            $this->alert('error', 'Cannot promote to a class below the current class.');
+            $this->alert('error', 'Cannot promote students to a class below the current class.');
             return;
         }
 
-        if ($this->newSection && $this->hasDuplicatePromotions()) {
-            $this->alert('error', 'Some students are already in the new class or section.');
+        // **New Scenario 3: Ensure promotion is only to the next class in sequence**
+        if ($newClass->id !== ($oldClass->id + 1)) {
+            $this->alert('error', 'Students can only be promoted to the next sequential class.');
+            return;
+        }
+
+        // Advanced Scenario 4: Prevent duplicate promotions
+        if ($this->hasDuplicatePromotions()) {
+            $this->alert('error', 'Some students are already promoted to the new class or section.');
             return;
         }
 
@@ -143,11 +187,19 @@ class ManagePromotions extends Component
         try {
             foreach (array_chunk($this->selectedStudents, 50) as $studentBatch) {
                 foreach ($studentBatch as $studentId) {
+                    // Check if student is already promoted this year to avoid multiple promotions
                     if ($this->isStudentAlreadyPromoted($studentId)) {
                         $skippedStudents[] = $studentId;
                         continue;
                     }
 
+                    // Validate student to prevent repeated promotions within the same class but different sections
+                    if ($this->isStudentPromotedToSameClassDifferentSection($studentId, $this->newClass, $this->newSection)) {
+                        $skippedStudents[] = $studentId;
+                        continue;
+                    }
+
+                    // Promote the student by creating a transition record
                     StudentTransition::create([
                         'student_id' => $studentId,
                         'new_class_id' => $this->newClass,
@@ -164,28 +216,21 @@ class ManagePromotions extends Component
                 }
             }
 
-            if (count($promotedStudents) === count($this->selectedStudents)) {
-                $this->alert('success', 'All selected students were promoted successfully!');
-            } elseif (count($promotedStudents) > 0) {
-                $this->alert('warning', 'Some students were promoted successfully, but the following were already promoted: ' . implode(', ', $skippedStudents));
-            } else {
-                $this->alert('error', 'No students were promoted as they were already promoted to the new class or section.');
-            }
+            // Handle post-promotion results
+            $this->handlePromotionResults($promotedStudents, $skippedStudents);
 
-            // Reset after successful promotion
+            // Reset form and progress step
             $this->resetInput();
             $this->step = 1;
-        }
-        
-        catch (QueryException $e) {
+        } catch (QueryException $e) {
             Log::error('SQL Error promoting students: ' . $e->getMessage());
             $this->alert('error', 'A database error occurred while promoting students: ' . $e->getMessage());
-        } 
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             Log::error('Error promoting students: ' . $e->getMessage());
             $this->alert('error', 'An error occurred while promoting students. Please try again later.');
         }
     }
+
 
     public function filterUnpromotedStudents($classId, $sectionId, $academicYear)
     {
@@ -219,13 +264,37 @@ class ManagePromotions extends Component
 
 
 
-    private function hasDuplicatePromotions()
+    // private function hasDuplicatePromotions()
+    // {
+    //     return StudentRecord::where('my_class_id', $this->newClass)
+    //         ->where('section_id', $this->newSection)
+    //         ->whereIn('id', $this->selectedStudents)
+    //         ->exists();
+    // }
+
+
+    public function handlePromotionResults($promotedStudents, $skippedStudents)
     {
-        return StudentRecord::where('my_class_id', $this->newClass)
-            ->where('section_id', $this->newSection)
-            ->whereIn('id', $this->selectedStudents)
-            ->exists();
+        if (count($promotedStudents) === count($this->selectedStudents)) {
+            $this->alert('success', 'All selected students were promoted successfully!');
+        } elseif (count($promotedStudents) > 0) {
+            $this->alert('warning', 'Some students were promoted successfully, but the following were already promoted: ' . implode(', ', $skippedStudents));
+        } else {
+            $this->alert('error', 'No students were promoted as they were already promoted to the new class or section.');
+        }
     }
+
+
+    public function hasDuplicatePromotions()
+    {
+        foreach ($this->selectedStudents as $studentId) {
+            if ($this->isStudentAlreadyPromoted($studentId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     private function isStudentAlreadyPromoted($studentId)
     {
@@ -234,6 +303,18 @@ class ManagePromotions extends Component
             ->where('new_section_id', $this->newSection)
             ->exists();
     }
+
+
+
+
+    public function isStudentPromotedToSameClassDifferentSection($studentId, $newClassId, $newSectionId)
+    {
+        return StudentTransition::where('student_id', $studentId)
+            ->where('new_class_id', $newClassId)
+            ->where('new_section_id', '<>', $newSectionId)
+            ->exists();
+    }
+
 
     private function getSuggestedClass($classId)
     {
