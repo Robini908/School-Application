@@ -24,33 +24,53 @@
                     <!-- Class Selection -->
                     <div class="col-md-6 form-group" style="margin-bottom: 15px;">
                         <label for="class">Select Class</label>
-                        <select wire:model.live="selectedClass" class="form-control">
-                            <option value="">Choose Class</option>
-                            @foreach($classes as $class)
-                            <option value="{{ $class->id }}">{{ $class->name }}</option>
-                            @endforeach
-                        </select>
+                        
+                        <div class="d-flex align-items-center">
+                            <select wire:model.live="selectedClass" class="form-control">
+                                <option value="">Choose Class</option>
+                                @foreach($classes as $class)
+                                    <option value="{{ $class->id }}">{{ $class->name }}</option>
+                                @endforeach
+                            </select>
+                
+                            <!-- Spinner placed outside the select field -->
+                            <div wire:loading wire:target="selectedClass" class="ml-2">
+                                <i class="fas fa-spinner fa-spin text-primary" style="font-size: 1.2rem;"></i>
+                            </div>
+                        </div>
+                        
                         @error('selectedClass')
-                        <span class="text-danger">{{ $message }}</span>
+                            <span class="text-danger">{{ $message }}</span>
                         @enderror
                     </div>
-
+                    
                     <!-- Section Selection -->
                     @if (!empty($sections))
-                    <div class="col-md-6 form-group" style="margin-bottom: 15px;">
-                        <label for="section">Select Section</label>
-                        <select wire:model.live="selectedSection" class="form-control">
-                            <option value="">Choose Section</option>
-                            @foreach($sections as $section)
-                            <option value="{{ $section->id }}">{{ $section->name }}</option>
-                            @endforeach
-                        </select>
-                        @error('selectedSection')
-                        <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
+                        <div class="col-md-6 form-group" style="margin-bottom: 15px;">
+                            <label for="section">Select Section</label>
+                            
+                            <div class="d-flex align-items-center">
+                                <select wire:model.live="selectedSection" class="form-control">
+                                    <option value="">Choose Section</option>
+                                    @foreach($sections as $section)
+                                        <option value="{{ $section->id }}">{{ $section->name }}</option>
+                                    @endforeach
+                                </select>
+                
+                                <!-- Spinner placed outside the select field -->
+                                <div wire:loading wire:target="selectedSection" class="ml-2">
+                                    <i class="fas fa-spinner fa-spin text-primary" style="font-size: 1.2rem;"></i>
+                                </div>
+                            </div>
+                
+                            @error('selectedSection')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
                     @endif
                 </div>
+                
+
 
                 <!-- Student Selection -->
                 @if (!empty($students))
@@ -131,7 +151,7 @@
     <div class="card" x-show="step === 2" style="background-color: #f9f9f9;">
        
         <div class="card-body">
-            <div class="alert alert-info">
+            <div class="alert alert-info ">
                 <h4 class="">Step 2: Choose New Class, Section, and Academic Year</h4>
             </div>
             <form wire:submit.prevent="promoteStudents">
@@ -142,40 +162,60 @@
                         <div class="col-md-4">
                             <div class="form-group bg-light p-3 rounded">
                                 <label for="new_class">Select New Class</label>
-                                <select wire:model.live="newClass" class="form-control">
-                                    <option value="">Choose Class</option>
-                                    @foreach($classes as $class)
-                                    <option value="{{ $class->id }}">{{ $class->name }}</option>
-                                    @endforeach
-                                </select>
+                                
+                                <div class="d-flex align-items-center">
+                                    <select wire:model.live="newClass" class="form-control">
+                                        <option value="">Choose Class</option>
+                                        @foreach($classes as $class)
+                                            <option value="{{ $class->id }}">{{ $class->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    
+                                    <!-- Spinner placed outside the select field -->
+                                    <div wire:loading wire:target="newClass" class="ml-2">
+                                        <i class="fas fa-spinner fa-spin text-primary" style="font-size: 1.2rem;"></i>
+                                    </div>
+                                </div>
+                                
                                 @error('newClass')
-                                <span class="text-danger">{{ $message }}</span>
+                                    <span class="text-danger">{{ $message }}</span>
                                 @enderror
+                                
                                 @if ($suggestedClass)
-                                <small class="text-success">
-                                    Suggested Next Class: {{ $classes->find($suggestedClass)->name }}
-                                </small>
+                                    <small class="text-success">
+                                        Suggested Next Class: {{ $classes->find($suggestedClass)->name }}
+                                    </small>
                                 @endif
                             </div>
                         </div>
-    
+                        
                         <!-- New Section Selection (conditional) -->
                         @if (!empty($newSections))
-                        <div class="col-md-4">
-                            <div class="form-group bg-light p-3 rounded">
-                                <label for="new_section">Select New Section</label>
-                                <select wire:model.live="newSection" class="form-control">
-                                    <option value="">Choose Section</option>
-                                    @foreach($newSections as $section)
-                                    <option value="{{ $section->id }}">{{ $section->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('newSection')
-                                <span class="text-danger">{{ $message }}</span>
-                                @enderror
+                            <div class="col-md-4">
+                                <div class="form-group bg-light p-3 rounded">
+                                    <label for="new_section">Select New Section</label>
+                        
+                                    <div class="d-flex align-items-center">
+                                        <select wire:model.live="newSection" class="form-control">
+                                            <option value="">Choose Section</option>
+                                            @foreach($newSections as $section)
+                                                <option value="{{ $section->id }}">{{ $section->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        
+                                        <!-- Spinner placed outside the select field -->
+                                        <div wire:loading wire:target="newSection" class="ml-2">
+                                            <i class="fas fa-spinner fa-spin text-primary" style="font-size: 1.2rem;"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    @error('newSection')
+                                        <span class="text-danger">{{ $message }}</span>
+                                    @enderror
+                                </div>
                             </div>
-                        </div>
                         @endif
+                        
     
                         <!-- Promotion Date -->
                         <div class="col-md-4">

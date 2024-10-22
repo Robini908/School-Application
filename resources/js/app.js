@@ -3,7 +3,7 @@
  * which includes Alpine.js, Livewire, and other libraries.
  */
 
-// import './bootstrap';
+import './bootstrap';
 
 
 import '../../vendor/masmerise/livewire-toaster/resources/js'; // 
