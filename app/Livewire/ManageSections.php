@@ -9,6 +9,7 @@ use App\Models\Section;
 use App\Models\Subject;
 use Livewire\Component;
 use App\Models\StudentRecord;
+use Illuminate\Support\Facades\Log;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
@@ -192,7 +193,7 @@ class ManageSections extends Component
             $this->alert('error', 'The section could not be found.');
         } catch (\Throwable $e) {
             // Log the error for further analysis
-            \Log::error('Error saving section: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Error saving section: ' . $e->getMessage(), ['exception' => $e]);
             $this->alert('error', 'An unexpected error occurred while saving the section.');
         }
     }

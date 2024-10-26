@@ -1,4 +1,4 @@
-<div class="sidebar sidebar-dark sidebar-main sidebar-expand-md fixed-top">
+<div wire:replace class="sidebar sidebar-dark sidebar-main sidebar-expand-md fixed-top">
     <!-- Sidebar mobile toggler -->
     <div class="sidebar-mobile-toggler text-center">
         <a href="#" class="sidebar-mobile-main-toggle">
@@ -66,7 +66,7 @@
                     <ul class="nav nav-group-sub" data-submenu-title="Manage Students">
                         {{--Manage Classes--}}
                         <li class="nav-item">
-                            <a href="{{ route('classes.index') }}"
+                            <a  href="{{ route('classes.index') }}"
                                 class="nav-link {{ in_array(Route::currentRouteName(), ['classes.index','classes.edit']) ? 'active' : '' }}"><span>
                                     Classes</span></a>
                         </li>
@@ -84,7 +84,7 @@
                         {{--Admit Student--}}
                         @if(Qs::userIsTeamSA())
                         <li class="nav-item">
-                            <a href="{{ route('students.create') }}"
+                            <a  href="{{ route('students.create') }}"
                                 class="nav-link {{ (Route::is('students.create')) ? 'active' : '' }}">Manage
                                 Students</a>
                         </li>

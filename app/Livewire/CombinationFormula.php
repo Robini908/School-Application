@@ -130,46 +130,7 @@ class CombinationFormula extends Component
 
         $this->loading = false;
     }
-    public function loadMoreStudents()
-    {
-        $this->loading = true;
-
-        // Ensure that $this->selectedExamId and $this->exam are defined.
-        if (!$this->selectedExamId || !$this->exam) {
-            Log::error("Exam ID or exam data is missing.");
-            $this->loading = false; // Reset loading state
-            return;
-        }
-
-        // Fetch more students using $this->selectedExamId for the exam ID
-        $moreStudents = StudentRecord::with(['examMarks' => function ($query) {
-            $query->where('exam_id', $this->selectedExamId);
-        }, 'section'])
-            ->where('my_class_id', $this->selectedClass)
-            ->when($this->selectedSection, function ($query) {
-                $query->where('section_id', $this->selectedSection);
-            })
-            ->skip($this->studentsLoaded)  // Skip previously loaded students
-            ->take($this->studentsPerPage) // Load a chunk of students
-            ->get();
-
-        // Check if more students were found before merging
-        if ($moreStudents->isEmpty()) {
-            Log::info("No more students to load.");
-            $this->loading = false; // Reset loading state
-            return;
-        }
-
-        // Merge the newly loaded students with the existing ones
-        $this->students = $this->students->merge($moreStudents);
-        $this->studentsLoaded += $moreStudents->count(); // Update loaded student count
-
-        // Recalculate positions and data
-        $studentData = $this->prepareStudentData($this->exam);
-        $this->marks = $this->calculatePositions($studentData);
-
-        $this->loading = false; // Reset loading state
-    }
+    
 
 
     private function prepareStudentData($exam)

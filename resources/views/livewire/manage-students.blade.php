@@ -427,12 +427,12 @@
         </div>
         <x-data-table id="studentTable" title="Student List" message="List of registered students"
             :columns="['Admission', 'Student Photo', 'Name', 'Gender', 'Class', 'Section', 'Status', 'Parent Name', 'Parent Contact', 'Actions']">
-            @if($noResults)
+            @if($students->isEmpty())
             <tr>
                 <td colspan="9" class="text-center">No students found for the selected filters.</td>
             </tr>
             @else
-            @foreach($this->mystudents as $student)
+            @foreach($students as $student)
             <tr @if($student->is_suspended) style="background-color: #f8d7da;" @endif>
                 <td>{{ $student->adm_no }}</td>
                 <td>
@@ -527,6 +527,9 @@
             @endforeach
             @endif
         </x-data-table>
+        <div class="mt-4">
+            {{ $students->links() }}
+        </div>
     </div>
 
 

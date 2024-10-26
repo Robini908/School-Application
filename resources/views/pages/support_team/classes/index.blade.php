@@ -9,7 +9,8 @@
     </div>
 
     
-@livewire('class-management')
+
+<livewire:class-management lazy/>
    
 </div>
 

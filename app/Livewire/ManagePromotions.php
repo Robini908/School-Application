@@ -7,13 +7,16 @@ use App\Models\MyClass;
 use App\Models\Section;
 use Livewire\Component;
 use App\Models\StudentRecord;
+use Livewire\Attributes\Lazy;
 use App\Models\StudentTransition;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Database\QueryException;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
 
+
+// #[Lazy]
 class ManagePromotions extends Component
 {
     use LivewireAlert;

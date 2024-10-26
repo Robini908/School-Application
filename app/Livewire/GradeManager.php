@@ -205,7 +205,7 @@ class GradeManager extends Component
     private function validateGrade($index)
     {
         return $this->validate([
-            'gradesList.' . $index . '.grade' => 'required|string|max:2|in:A,A-,B+,B,B-,C+,C,C-,D+,D,D-,E',
+            'gradesList.' . $index . '.grade' => 'required|string|unique:grading_grades,grade,except,id|max:2|in:A,A-,B+,B,B-,C+,C,C-,D+,D,D-,E',
             'gradesList.' . $index . '.remark' => 'nullable|string',
             'gradesList.' . $index . '.gpa' => 'required|numeric|max:13.00', // Updated max to allow decimals
             'gradesList.' . $index . '.range_from' => 'required|numeric',

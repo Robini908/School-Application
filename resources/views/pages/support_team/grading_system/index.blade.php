@@ -4,7 +4,8 @@
 
 <div class="card">
     <div class="card-body">
-        <ul class="nav nav-tabs nav-tabs-highlight p-3" style="margin-bottom: 1rem;"> <!-- Added margin-bottom -->
+        <ul class="nav nav-tabs nav-tabs-highlight p-3" style="margin-bottom: 1rem;">
+            <!-- Added margin-bottom -->
             <li class="nav-item">
                 <a href="#grading-management" class="nav-link active" data-toggle="tab">Manage Grading Systems</a>
             </li>
@@ -16,14 +17,15 @@
         <div class="tab-content">
             <!-- Grading Management Tab -->
             <div class="tab-pane fade show active" id="grading-management">
-                @livewire('grading-management')
+
+                <livewire:grading-management lazy />
             </div>
             <div class="tab-pane fade p-1" id="grading-range">
-                <livewire:grading-range-manager />
+                <livewire:grading-range-manager lazy />
             </div>
         </div>
     </div>
-    
+
 </div>
 
 @endsection

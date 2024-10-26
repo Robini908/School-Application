@@ -6,13 +6,14 @@ use App\Models\MyClass;
 use App\Models\Section;
 use App\User;
 use App\Models\StudentRecord;
+use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class ClassManagement extends Component
 {
     use WithPagination;
-
+    use LivewireAlert;
     // Class Properties
     public $name;
     public $session;
@@ -41,7 +42,7 @@ class ClassManagement extends Component
     // Students Data
     public $students = [];
     public $stream;
-   
+
     public $selectedStreamEntries = []; // to store the entries data
     public $isLoadingAssign = false;
     public $isLoadingEdit = false;
@@ -56,7 +57,7 @@ class ClassManagement extends Component
     public $modalStudents = [];
     public $modalStudentsCount = 0;
     public $modalStreamName = '';
-    
+
     public $assignedTeacher; // To hold the assigned teacher
     public $assignedSession; // To hold the assigned session
     public $viewClassMasterMode = false; // Toggle to show
@@ -123,7 +124,7 @@ class ClassManagement extends Component
         $this->editMode = false;
     }
 
-    
+
 
     public function assignStreamTeacher($streamId)
     {
@@ -215,7 +216,7 @@ class ClassManagement extends Component
             $this->streams = $class->sections->toArray();
         } else {
             // Adding New Class
-           
+
         }
     }
 
@@ -253,10 +254,10 @@ class ClassManagement extends Component
             }
 
             // Display success message
-            session()->flash('message', $this->editMode ? 'Class updated successfully.' : 'Class created successfully.');
+            $this->alert('success', $this->editMode ? 'Class updated successfully.' : 'Class created successfully.');
         } catch (\Exception $e) {
             // Handle any errors
-            session()->flash('error', 'An error occurred: ' . $e->getMessage());
+            $this->alert('error', 'An error occurred: ' . $e->getMessage());
         } finally {
             // End loading and reset form
             $this->loading = false;
@@ -281,7 +282,7 @@ class ClassManagement extends Component
         $this->streamAdded = true;
 
         // Flash a success message to notify the user
-        session()->flash('message', 'Stream added successfully.');
+        $this->alert('success', 'Stream added successfully.');
     }
 
     // Edit a selected stream
@@ -294,7 +295,7 @@ class ClassManagement extends Component
             $this->selectedStream = $index;
             $this->streamName = $this->streams[$index]['name']; // Load the stream name into the input
         } else {
-            session()->flash('error', 'The selected stream does not exist.');
+            $this->alert('error', 'The selected stream does not exist.');
         }
     }
 
@@ -317,9 +318,9 @@ class ClassManagement extends Component
             $this->streamName = '';
 
             // Flash a success message to notify the user
-            session()->flash('message', 'Stream updated successfully.');
+            $this->alert('success', 'Stream updated successfully.');
         } else {
-            session()->flash('error', 'The selected stream could not be updated.');
+            $this->alert('error', 'The selected stream could not be updated.');
         }
     }
 
@@ -335,9 +336,9 @@ class ClassManagement extends Component
             $this->streams = array_values($this->streams);
 
             // Flash a success message to notify the user
-            session()->flash('message', 'Stream removed successfully.');
+            $this->alert('success', 'Stream removed successfully.');
         } else {
-            session()->flash('error', 'The stream could not be found.');
+            $this->alert('error', 'The stream could not be found.');
         }
     }
 
@@ -398,9 +399,9 @@ class ClassManagement extends Component
             $class->session = $this->session; // Save the session
             $class->save(); // Save changes
 
-            session()->flash('message', 'Class Master assigned successfully.');
+            $this->alert('success', 'Class Master assigned successfully.');
         } else {
-            session()->flash('error', 'Class not found.');
+            $this->alert('error', 'Class not found.');
         }
 
         // Close the form and reset
@@ -419,7 +420,7 @@ class ClassManagement extends Component
             $this->streamTeacher = $teacher->id;
             // Populate any other fields as needed
         } else {
-            session()->flash('error', 'Teacher not found.');
+            $this->alert('error', 'Teacher not found.');
         }
     }
 
@@ -430,7 +431,7 @@ class ClassManagement extends Component
     {
         $class = MyClass::findOrFail($classId);
         $class->delete();
-        session()->flash('message', 'Class deleted successfully.');
+        $this->alert('success', 'Class deleted successfully.');
         $this->resetForm();
     }
 
@@ -440,7 +441,7 @@ class ClassManagement extends Component
         $stream = Section::findOrFail($streamId);
         $classId = $stream->my_class_id;
         $stream->delete();
-        session()->flash('message', 'Stream deleted successfully.');
+        $this->alert('success', 'Stream deleted successfully.');
         $this->viewStreams($classId);
     }
     // Your Livewire Component
@@ -456,7 +457,7 @@ class ClassManagement extends Component
         }
     }
 
-    
+
 
     public function viewStreamStudents($streamId)
     {

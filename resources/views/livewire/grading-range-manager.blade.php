@@ -234,18 +234,6 @@
             </button>
     </div>
 
-    <!-- Loading spinner -->
-    <div x-show="isLoading" class="text-center my-4" x-cloak>
-        <div class="spinner-border text-primary" role="status">
-            <span class="sr-only">Loading...</span>
-        </div>
-        <p class="mt-2">Saving... Please wait.</p>
-    </div>
-
-
-
-
-
 
     @if($submittedRanges->isEmpty())
     <div class="alert alert-warning">No grading ranges submitted for this subject and grading system.<br><br>Consider

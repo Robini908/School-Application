@@ -1,4 +1,4 @@
-<div class="p-4">
+a<div class="p-4">
     <h2 class="text-lg font-semibold mb-4">Assign Marks</h2>
 
     @if (session()->has('message'))

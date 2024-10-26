@@ -6,6 +6,7 @@ use App\Models\Exam;
 use App\Models\MyClass;
 use App\Models\Section;
 use App\Models\Subject;
+use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Livewire\Component;
 use App\Models\ExamMarks;
 use Livewire\WithPagination;
@@ -15,10 +16,11 @@ use Illuminate\Support\Facades\DB;
 class AssignExamsSubjectwise extends Component
 {
     use WithPagination;
+    use LivewireAlert;
 
     public $selectedClass;
     public $selectedExamName;
-    public $marksMessage = null; // Add a public property to store the message
+    public $marksMessage = null; // Add a public property to store the success
     public $selectedExam;
     public $selectedSubject;
     public $selectedSection;
@@ -177,19 +179,19 @@ class AssignExamsSubjectwise extends Component
 
             // Set messages based on the results
             if ($insertedCount > 0 || $updatedCount > 0) {
-                session()->flash('success', "Marks assigned successfully! ");
+                $this->alert('success', "Marks assigned successfully! ");
             }
 
             if ($skippedCount > 0) {
-                session()->flash('warning', "{$skippedCount} students were skipped due to null marks.");
+                $this->alert('warning', "{$skippedCount} students were skipped due to null marks.");
             }
 
             if ($errorCount > 0) {
-                session()->flash('error', "{$errorCount} errors occurred while assigning marks. Please check the logs for details.");
+                $this->alert('error', "{$errorCount} errors occurred while assigning marks. Please check the logs for details.");
             }
 
             if ($insertedCount == 0 && $updatedCount == 0 && $skippedCount == 0 && $errorCount == 0) {
-                session()->flash('info', "No changes were made. All marks remained the same.");
+                $this->alert('info', "No changes were made. All marks remained the same.");
             }
 
             // Refresh the assigned marks
@@ -198,10 +200,10 @@ class AssignExamsSubjectwise extends Component
             // Reset only the marks array, keeping other selections intact
             $this->marks = [];
         } catch (\Illuminate\Validation\ValidationException $e) {
-            session()->flash('error', 'Validation failed: ' . implode(', ', $e->errors()));
+            $this->alert('error', 'Validation failed: ' . implode(', ', $e->errors()));
         } catch (\Exception $e) {
             DB::rollBack();
-            session()->flash('error', 'An unexpected error occurred: ' . $e->getMessage());
+            $this->alert('error', 'An unexpected error occurred: ' . $e->getMessage());
             \Log::error("Error in assignMarks: " . $e->getMessage());
         }
     }
@@ -248,7 +250,7 @@ class AssignExamsSubjectwise extends Component
                 $examMark->marks = $this->marks[$studentId];
                 $examMark->save();
 
-                session()->flash('message', 'Marks updated successfully!');
+                $this->alert('success', 'Marks updated successfully!');
             }
 
             $this->editingMarkId = null; // Reset editing state

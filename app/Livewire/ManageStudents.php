@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\MyClass;
 use App\Models\Section;
+use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Livewire\Component;
 use App\Models\ParentDetail;
 use Livewire\WithPagination;
@@ -20,6 +21,7 @@ class ManageStudents extends Component
 {
     use WithPagination;
     use WithFileUploads;
+    use LivewireAlert;
 
     public $selectedStudent;
     public $mystudents;
@@ -28,7 +30,7 @@ class ManageStudents extends Component
     public $notificationContent; // For rich text editor content
 
     public $showDeleteModal = false;
-    
+
     protected $mystudent; // Change to protected
     protected $filePath; // Change to protected
     public $formFilter = '';
@@ -91,7 +93,7 @@ class ManageStudents extends Component
         $this->reset();
 
         // Optionally, you can also use a session message to notify the user
-        session()->flash('info', 'Expulsion process cancelled.');
+        $this->alert('info', 'Expulsion process cancelled.');
     }
 
     public function nextStep()
@@ -142,10 +144,10 @@ class ManageStudents extends Component
             });
 
             // If email sent successfully, notify user
-            session()->flash('success', 'Email sent successfully with attachment.');
+            $this->alert('success', 'Email sent successfully with attachment.');
         } catch (\Exception $e) {
             // Handle any errors that occur during email sending
-            session()->flash('error', 'Failed to send email: ' . $e->getMessage());
+            $this->alert('error', 'Failed to send email: ' . $e->getMessage());
         }
     }
 
@@ -168,6 +170,7 @@ class ManageStudents extends Component
         $this->loadStudents();
     }
 
+    // Inside your Livewire component
     public function loadStudents()
     {
         // Start the query with eager loading of related models
@@ -191,12 +194,19 @@ class ManageStudents extends Component
             $query->where('status', $this->statusFilter);
         }
 
-        // Execute the query and get the results
-        $this->mystudents = $query->get(); // Fetch all student records
-
-        // Check if no results found
-        $this->noResults = $this->mystudents->isEmpty();
+        // Return the paginated results directly in the view
+        return $query->paginate(20);
     }
+
+    public function render()
+    {
+        return view('livewire.manage-students', [
+            
+            'students' => $this->loadStudents(), // Pass paginated results directly to the view
+        ]);
+    }
+
+
 
     public function getStudentsWithSuspensionInfo()
     {
@@ -251,14 +261,12 @@ class ManageStudents extends Component
 
         // Check if student exists
         if (!$this->selectedStudent) {
-            session()->flash('error', 'Student not found.'); // Set session error message
+            $this->alert('error', 'Student not found.'); // Set session error message
             return;
         }
 
         // Set flags for expulsion process
         $this->isExpellingStudent = true;
-
-      
     }
 
     public function studentSuspension($studentId)
@@ -268,7 +276,7 @@ class ManageStudents extends Component
 
         // Check if student exists
         if (!$this->selectedStudent) {
-            session()->flash('error', 'Student not found.'); // Set session error message
+            $this->alert('error', 'Student not found.'); // Set session error message
             return;
         }
 
@@ -335,7 +343,7 @@ class ManageStudents extends Component
         $this->resetSuspension();
 
         // Set a success message
-        session()->flash('success', 'Student suspended successfully.');
+        $this->alert('success', 'Student suspended successfully.');
     }
 
     public function resetSuspension()
@@ -376,7 +384,7 @@ class ManageStudents extends Component
 
         // Check if student exists
         if (!$this->selectedStudent) {
-            session()->flash('error', 'Student not found.'); // Set session error message
+            $this->alert('error', 'Student not found.'); // Set session error message
             return;
         }
 
@@ -385,7 +393,7 @@ class ManageStudents extends Component
 
         // Verify student information (you can customize these checks as needed)
         if (empty($this->selectedStudent->first_name) || empty($this->selectedStudent->last_name) || empty($this->selectedStudent->parent_id_no)) {
-            session()->flash('error', 'Please ensure all required student information is filled out.');
+            $this->alert('error', 'Please ensure all required student information is filled out.');
             return;
         }
     }
@@ -394,7 +402,7 @@ class ManageStudents extends Component
     public function confirmApproval()
     {
         if (!$this->selectedStudent) {
-            session()->flash('error', 'No student selected for approval.');
+            $this->alert('error', 'No student selected for approval.');
             return;
         }
 
@@ -403,7 +411,7 @@ class ManageStudents extends Component
         $this->selectedStudent->save();
 
         // Notify user of successful approval
-        session()->flash('message', 'Student approved successfully.');
+        $this->alert('success', 'Student approved successfully.');
 
         // Refresh students list
         $this->loadStudents();
@@ -419,13 +427,13 @@ class ManageStudents extends Component
     {
         // Ensure a selected student exists
         if (!$this->selectedStudent) {
-            session()->flash('error', 'No student selected for disapproval.');
+            $this->alert('error', 'No student selected for disapproval.');
             return;
         }
 
         // Ensure that the reason is provided
         if (empty($this->disapprovalReason)) {
-            session()->flash('error', 'Please provide a reason for disapproval.');
+            $this->alert('error', 'Please provide a reason for disapproval.');
             return;
         }
 
@@ -442,7 +450,7 @@ class ManageStudents extends Component
         $this->isApproving = false;
 
         // Notify the user
-        session()->flash('message', 'Student disapproved successfully.');
+        $this->alert('success', 'Student disapproved successfully.');
 
         // Refresh student list
         $this->loadStudents();
@@ -544,7 +552,7 @@ class ManageStudents extends Component
         $this->isEditingStudent = false;
 
         // Flash a success message
-        session()->flash('message', 'Student record updated successfully!');
+        $this->alert('success', 'Student record updated successfully!');
     }
 
 
@@ -559,14 +567,7 @@ class ManageStudents extends Component
 
     // Add other action methods like viewStudent, studentExpulsion, suspendStudent, etc.
 
-    public function render()
-    {
-        return view('livewire.manage-students', [
-            'noResults' => $this->mystudents->isEmpty(),
-
-            'students' => $this->mystudents,
-        ]);
-    }
+    
 
     // Helper method to reset all flags except the current one
     protected function resetOtherFlags($currentFlag)

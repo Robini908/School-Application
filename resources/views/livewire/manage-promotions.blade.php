@@ -1,4 +1,4 @@
-<div x-data="{ step: 1, search: '', selectAll: false }" class="container mt-5">
+<div x-data="{ step: 1, search: '', selectAll: false }" class="container ">
     <!-- Step 1: Filter and Select Students -->
     <div class="card" x-show="step === 1">
         <div class="card-header">

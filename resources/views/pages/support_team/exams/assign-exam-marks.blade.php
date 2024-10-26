@@ -79,35 +79,36 @@
         <div class="tab-content">
             <!-- Bulk Marks Allocation Tab -->
             <div class="tab-pane active" id="bulk-exam">
-                <livewire:assign-batch-marks lazy="on-load" />
+                <livewire:assign-batch-marks lazy />
             </div>
 
             <!-- Assign Marks Subject-wise Tab -->
             <div class="tab-pane" id="subject-wise-exam" style="display: none;">
-                <livewire:assign-exams-subjectwise />
+                <livewire:assign-exams-subjectwise lazy />
             </div>
 
             <!-- Manage Marks List Tab -->
             <div class="tab-pane" id="mark-list-management" style="display: none;">
-                <livewire:mark-list-management />
+                <livewire:mark-list-management lazy/>
             </div>
 
             <!-- Exam Analysis Tab -->
             <div class="tab-pane" id="exam-analysis" style="display: none;">
-                @livewire('combination-formula') 
+                
+                <livewire:combination-formula lazy/> 
             </div>
 
             <!-- Subject Champions Tab -->
             <div class="tab-pane" id="subject-champions" style="display: none;">
-                <livewire:subject-champions />
+                <livewire:subject-champions lazy />
             </div>
 
             <!-- Subject Analysis Tab -->
             <div class="tab-pane" id="subject-analysis" style="display: none;">
-                <livewire:subject-analysis />
+                <livewire:subject-analysis lazy />
             </div>
             <div class="tab-pane" id="class-analysis" style="display: none;">
-                <livewire:class-analysis />
+                <livewire:class-analysis lazy/>
             </div>
         </div>
     </div>

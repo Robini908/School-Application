@@ -19,15 +19,8 @@
    <!-- FullCalendar Resource Timeline CSS and JS -->
 <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/resource-timeline@6.1.6/index.global.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/resource-timeline@6.1.6/index.global.min.js"></script>
-
-
-
-
     @livewireStyles
-
-
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
     @include('partials.inc_top')
 </head>
 
@@ -35,11 +28,8 @@
     class="{{ in_array(Route::currentRouteName(), ['payments.invoice', 'marks.tabulation', 'marks.show', 'ttr.manage', 'ttr.show']) ? 'sidebar-xs' : '' }}">
     <livewire:toasts />
     @include('partials.top_menu')
-
-
     <div class="page-content">
         @include('partials.menu')
-
         <div class="content-wrapper">
             @include('notify::components.notify')
 
@@ -53,9 +43,7 @@
                     @endforeach
                 </div>
                 @endif
-
                 <div id="ajax-alert" style="display: none"></div>
-
                 @yield('content')
             </div>
         </div>
@@ -68,8 +56,7 @@
     @livewireScripts
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <x-livewire-alert::scripts />
-    <x-toaster-hub />
-
+    {{-- <x-toaster-hub /> --}}
 </body>
 
 </html>

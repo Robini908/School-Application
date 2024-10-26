@@ -9,7 +9,7 @@
     </div>
 
     <div class="card-body">
-@livewire('manage-subjectss')
+        <livewire:manage-subjectss lazy />
     </div>
 </div>
 

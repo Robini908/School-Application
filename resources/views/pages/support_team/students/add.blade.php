@@ -33,22 +33,25 @@
         <div class="tab-content" style="margin-top:-50px;">
             <!-- Manage Students Tab Content -->
             <div x-show="activeTab === 'manage-students'" class="p-4">
-                @livewire('manage-students')
+
+                <livewire:manage-students lazy/>
             </div>
 
             <!-- Admit New Student Tab Content -->
             <div x-show="activeTab === 'admit-student'" class="p-4">
-                @livewire('admit-student')
+              
+                <livewire:admit-student lazy/>
             </div>
 
             <!-- Bulk Admit Tab Content -->
             <div x-show="activeTab === 'bulk-admit'" class="p-4">
-                @livewire('manage-suspensions')
+                <livewire:manage-suspensions lazy/>
             </div>
 
             <!-- Add Bulk Tab Content -->
             <div x-show="activeTab === 'addbulk'" class="p-4">
-                @livewire('addbulk')
+
+                <livewire:addbulk lazy/>
             </div>
         </div>
     </div>

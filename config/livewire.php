@@ -50,7 +50,8 @@ return [
     |
     */
 
-    'lazy_placeholder' => null,
+    'lazy_placeholder' => 'livewire.placeholder',
+
 
     /*
     |---------------------------------------------------------------------------

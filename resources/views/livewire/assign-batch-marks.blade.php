@@ -8,9 +8,8 @@
         <label for="class">Select Class:</label>
         <div wire:loading wire:target="selectedClass">
             <div class="d-flex justify-content-center my-3">
-                <div class="spinner-border" role="status">
-                    <span class="sr-only">Loading...</span>
-                </div>
+                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                    
             </div>
         </div>
         <div wire:loading.remove>
@@ -37,9 +36,8 @@
         <label for="exam">Select Exam:</label>
         <div wire:loading wire:target="selectedExam">
             <div class="d-flex justify-content-center my-3">
-                <div class="spinner-border" role="status">
-                    <span class="sr-only">Loading...</span>
-                </div>
+                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                  
             </div>
         </div>
         <div wire:loading.remove>
@@ -57,9 +55,7 @@
     @if ($selectedExam)
     <div wire:loading wire:target="selectedSection">
         <div class="d-flex justify-content-center my-3">
-            <div class="spinner-border" role="status">
-                <span class="sr-only">Loading...</span>
-            </div>
+           =<div class="spinner-border spinner-border-sm text-primary" role="status"></div>
         </div>
     </div>
 
@@ -81,9 +77,7 @@
         @if ($selectedSection)
         <div wire:loading wire:target="assignMarks">
             <div class="d-flex justify-content-center my-3">
-                <div class="spinner-border" role="status">
-                    <span class="sr-only">Loading...</span>
-                </div>
+                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
             </div>
         </div>
         <div class="mt-3">

@@ -3,11 +3,13 @@
 namespace App\Livewire;
 
 use App\Models\StudentRecord;
+use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Livewire\Component;
 use Carbon\Carbon;
 
 class ManageSuspensions extends Component
 {
+    use LivewireAlert;
     public $suspendedStudents = [];
     public $isReinstating = false;
     public $showForm = false;
@@ -87,10 +89,10 @@ class ManageSuspensions extends Component
             $student->suspension_end_date = null; // Clear the end date
             $student->save();
 
-            session()->flash('message', 'Student reinstated successfully.');
+            $this->alert('success', 'Student reinstated successfully.');
             $this->fetchSuspendedStudents(); // Fetch updated list of suspended students
         } else {
-            session()->flash('error', 'Failed to reinstate student. Please try again.');
+            $this->alert('error', 'Failed to reinstate student. Please try again.');
         }
 
         $this->resetFields();
@@ -105,7 +107,7 @@ class ManageSuspensions extends Component
 
         // Check if the student is set
         if (!$this->student) {
-            session()->flash('error', 'Student not found.');
+            $this->alert('error', 'Student not found.');
             return;
         }
 
@@ -124,7 +126,7 @@ class ManageSuspensions extends Component
                 $this->student->suspension_end_date = $newEndDate; // Update to new end date
             }
         } else {
-            session()->flash('error', 'Student is not currently suspended.');
+            $this->alert('error', 'Student is not currently suspended.');
             return;
         }
 
@@ -132,7 +134,7 @@ class ManageSuspensions extends Component
         $this->student->save();
 
         // Set a success message in the session
-        session()->flash('message', 'Suspension extended successfully.');
+        $this->alert('success', 'Suspension extended successfully.');
         $this->fetchSuspendedStudents(); // Fetch updated list of suspended students
 
         // Reset fields after processing
