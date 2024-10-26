@@ -3,8 +3,9 @@
 namespace App\Models;
 
 use Eloquent;
+use Illuminate\Database\Eloquent\Model;
 
-class State extends Eloquent
+class State extends Model
 {
     public function ministry()
     {

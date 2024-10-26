@@ -264,9 +264,7 @@
                         <th>Grade</th>
                         <th>Remark</th>
                         <th>GPA</th>
-                        <th>Mean Score</th>
-                        <th>Mean Grade</th>
-                        <th>Total Points</th>
+                        
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -278,25 +276,34 @@
                         <td>{{ $submittedRange->grade }}</td>
                         <td>{{ $submittedRange->remark }}</td>
                         <td>{{ $submittedRange->gpa }}</td>
-                        <td>{{ number_format($submittedRange->mean_score, 2) }}</td> <!-- Display Mean Score -->
-                        <td>{{ $submittedRange->mean_grade }}</td> <!-- Display Mean Grade -->
-                        <td>{{ number_format($submittedRange->total_points, 2) }}</td> <!-- Display Total Points -->
-                        <td>
-                            <button wire:click="editSubmittedRange({{ $submittedRange->id }})"
-                                class="btn btn-warning btn-sm" wire:loading.attr="disabled">
-                                Edit
-                                <span wire:loading wire:target="editSubmittedRange({{ $submittedRange->id }})">
-                                    <i class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></i>
-                                </span>
-                            </button>
-                            <button wire:click="deleteRange({{ $submittedRange->id }})" class="btn btn-danger btn-sm"
-                                wire:loading.attr="disabled">
-                                Delete
-                                <span wire:loading wire:target="deleteRange({{ $submittedRange->id }})">
-                                    <i class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></i>
-                                </span>
-                            </button>
+                        <td class="text-center">
+                            <div class="d-flex justify-content-center">
+                                <!-- Edit Icon Button -->
+                                <button wire:click="editSubmittedRange({{ $submittedRange->id }})"
+                                    class="btn btn-light btn-sm mx-2"
+                                    data-toggle="tooltip"
+                                    data-placement="top"
+                                    title="Edit range">
+                                    <i class="fas fa-edit"></i>
+                                    <span wire:loading wire:target="editSubmittedRange({{ $submittedRange->id }})">
+                                        <i class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></i>
+                                    </span>
+                                </button>
+                        
+                                <!-- Delete Icon Button -->
+                                <button wire:click="deleteRange({{ $submittedRange->id }})"
+                                    class="btn btn-danger btn-sm mx-2"
+                                    data-toggle="tooltip"
+                                    data-placement="top"
+                                    title="Remove range">
+                                    <i class="fas fa-trash-alt"></i>
+                                    <span wire:loading wire:target="deleteRange({{ $submittedRange->id }})">
+                                        <i class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></i>
+                                    </span>
+                                </button>
+                            </div>
                         </td>
+                        
                     </tr>
                     @endforeach
                 </tbody>

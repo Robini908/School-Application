@@ -5,8 +5,9 @@ namespace App\Models;
 use App\User;
 use Eloquent;
 use App\Models\DormMaster;
+use Illuminate\Database\Eloquent\Model;
 
-class Dorm extends Eloquent
+class Dorm extends Model
 {
     protected $fillable = ['name', 'capacity','user_id','session'];
 

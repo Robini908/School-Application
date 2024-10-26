@@ -14,11 +14,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js" defer></script>
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <!-- Handsontable -->
 
-   <!-- FullCalendar Resource Timeline CSS and JS -->
-<link href="https://cdn.jsdelivr.net/npm/@fullcalendar/resource-timeline@6.1.6/index.global.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/resource-timeline@6.1.6/index.global.min.js"></script>
     @livewireStyles
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('partials.inc_top')
@@ -26,7 +22,7 @@
 
 <body
     class="{{ in_array(Route::currentRouteName(), ['payments.invoice', 'marks.tabulation', 'marks.show', 'ttr.manage', 'ttr.show']) ? 'sidebar-xs' : '' }}">
-    <livewire:toasts />
+    
     @include('partials.top_menu')
     <div class="page-content">
         @include('partials.menu')

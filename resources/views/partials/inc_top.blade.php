@@ -21,6 +21,7 @@
     <link href="{{ asset('assets/css/qs.css') }}" rel="stylesheet" type="text/css">
     <link href="{{ asset('assets/css/trix.css') }}" rel="stylesheet" type="text/css">
     <link href="{{ asset('assets/css/jquery-datatables.css') }}" rel="stylesheet" type="text/css">
+    <link href="{{ asset('assets/css/placeholder.css') }}" rel="stylesheet" type="text/css">
 
     <!-- Core JS files -->
     <script src="{{ asset('global_assets/js/main/jquery.min.js') }}"></script>
