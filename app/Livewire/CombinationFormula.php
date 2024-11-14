@@ -111,8 +111,7 @@ class CombinationFormula extends Component
             ->when($this->selectedSection, function ($query) {
                 $query->where('section_id', $this->selectedSection);
             })
-            ->take($this->studentsPerPage)
-            ->paginate(50); // Load the first set of students
+            ->get();
 
         $this->studentsLoaded = $this->students->count(); // Track the number of loaded students
 

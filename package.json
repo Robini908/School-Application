@@ -8,6 +8,7 @@
         "autoprefixer": "^10.4.20",
         "axios": "*",
         "cross-env": "*",
+        "dotenv": "^16.4.5",
         "laravel-vite-plugin": "^1.0.5",
         "lodash": "*",
         "postcss": "^8.4.47",

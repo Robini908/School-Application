@@ -348,10 +348,10 @@
                                 
                             </table>
                         
-                            <!-- Pagination links -->
+                            {{-- <!-- Pagination links -->
                             <div>
                                 {{ $paginatedStudents->links() }} <!-- Updated variable for pagination links -->
-                            </div>
+                            </div> --}}
                             
                         </div>
                         
@@ -438,10 +438,10 @@
                     
                 </table>
                 
-                <!-- Pagination links -->
+                {{-- <!-- Pagination links -->
                 <div>
                     {{ $paginatedStudents->links() }} <!-- This will now work correctly -->
-                </div>
+                </div> --}}
                 
             </div>
             

@@ -34,7 +34,7 @@ class StudentRecordSeeder extends Seeder
         }
 
         // Define total number of students
-        $totalStudents = 25000;  // Modify as needed
+        $totalStudents = 250;  // Modify as needed
         $studentsPerClass = (int) ($totalStudents / $classes->count());
 
         // Prepare an array for batch insert

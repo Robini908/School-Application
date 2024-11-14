@@ -2,9 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Subject;
 use App\Models\SubjectCategory;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Log;
 
 class SubjectSeeder extends Seeder
 {
@@ -43,7 +44,7 @@ class SubjectSeeder extends Seeder
                 ]);
             } else {
                 // Optionally, log an error or handle the missing category case
-                \Log::error("Category '$categoryName' not found for subject '$subjectName'.");
+                Log::error("Category '$categoryName' not found for subject '$subjectName'.");
             }
         }
     }

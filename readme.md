@@ -112,3 +112,13 @@ After seeding. Login details as follows:
 - Library Resources/Study Materials Upload for Students
 
 
+
+
+to solve the cache path missing error messages run the following commands 
+mkdir storage/app
+mkdir storage/framework
+mkdir storage/framework/cache
+mkdir storage/framework/sessions
+mkdir storage/framework/testing
+mkdir storage/framework/views
+mkdir storage/logs

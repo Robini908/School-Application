@@ -13,7 +13,7 @@ class ParentDetailsTableSeeder extends Seeder
         $faker = Faker::create();
 
         // Create 20,000 ParentDetail records
-        for ($i = 0; $i < 20000; $i++) {
+        for ($i = 0; $i < 200; $i++) {
             $parentIdNo = $faker->unique()->numerify('PARENT#####'); // Unique parent ID
             
             // Create ParentDetail

@@ -18,13 +18,15 @@ class DatabaseSeeder extends Seeder
         $this->call(MyClassesTableSeeder::class);
         $this->call(UsersTableSeeder::class);
         $this->call(SettingsTableSeeder::class);
-        $this->call(DormsTableSeeder::class);
         $this->call(SectionsTableSeeder::class);
+        $this->call(ParentDetailsTableSeeder::class);
         $this->call(StudentRecordSeeder::class);
+        $this->call(SubjectCategorySeeder::class);
+        $this->call(SubjectSeeder::class);
+        $this->call(GradingSystemSeeder::class);
+        $this->call(ExamSeeder::class);
+        $this->call(DormsTableSeeder::class);
         $this->call(ExamMarksSeeder::class);
         $this->call(LgasTableSeeder::class);
-        $this->call(SubjectCategorySeeder::class); 
-        $this->call(SubjectSeeder::class); 
-        $this->call(GradingSystemSeeder::class); 
     }
 }
