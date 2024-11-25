@@ -1,9 +1,9 @@
 <!-- Theme JS files -->
 
-{{-- <script src="{{ asset('global_assets/js/demo_pages/jqueryui_interactions.js') }}"></script>
+<script src="{{ asset('global_assets/js/demo_pages/jqueryui_interactions.js') }}"></script>
 <script src="{{ asset('global_assets/js/plugins/forms/styling/uniform.min.js') }}"></script>
 <script src="{{ asset('global_assets/js/plugins/forms/selects/select2.min.js') }}"></script>
-<script src="{{ asset('global_assets/js/plugins/forms/wizards/steps.min.js') }}"></script>   --}}
+<script src="{{ asset('global_assets/js/plugins/forms/wizards/steps.min.js') }}"></script>  
 
 {{--Forms--}}
 

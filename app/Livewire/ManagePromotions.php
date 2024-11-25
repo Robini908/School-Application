@@ -74,16 +74,7 @@ class ManagePromotions extends Component
         $this->suggestedClass = $this->getSuggestedClass($classId);
     }
 
-    // public function updatedSelectedSection($sectionId)
-    // {
-    //     $this->students = collect(); // Initialize as an empty collection
-
-    //     StudentRecord::where('section_id', $sectionId)->chunk(100, function ($records) {
-    //         $this->students = $this->students->merge($records); // Merge each chunk
-    //     });
-
-    //     $this->selectedStudents = [];
-    // }
+   
     public function updatedSelectedSection($sectionId)
     {
         // Initialize students collection for the selected section
@@ -162,25 +153,54 @@ class ManagePromotions extends Component
 
         // Scenario 1: Prevent promotion to the same class
         if ($newClass->id === $oldClass->id) {
-            $this->alert('error', 'Cannot promote students to the same class.');
+           
+            $this->alert('info', 'Cannot promote students to the same class.', [
+                'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
+                'showConfirmButton' => true, // Show a confirmation button
+                'confirmButtonText' => 'OK', // Text on the confirm button
+                'reverseButtons' => true, // Reverse the order of buttons
+                'timer' => 30000, // Time before it automatically closes
+                'toast' => false, // If you want it to be a toast notification or a modal
+            ]);
             return;
         }
 
         // Scenario 2: Prevent promotion to a lower class
         if ($newClass->id < $oldClass->id) {
-            $this->alert('error', 'Cannot promote students to a class below the current class.');
+            $this->alert('info', 'Cannot promote students to a class below the current class.', [
+                'position' => 'top', 
+                'showConfirmButton' => true,
+                'confirmButtonText' => 'OK',
+                'reverseButtons' => true,
+                'timer' => 30000,
+                'toast' => false,
+            ]);
             return;
         }
 
         // **New Scenario 3: Ensure promotion is only to the next class in sequence**
         if ($newClass->id !== ($oldClass->id + 1)) {
-            $this->alert('error', 'Students can only be promoted to the next sequential class.');
+            $this->alert('info', 'Students can only be promoted to the next sequential class.', [
+                'position' => 'top', 
+                'showConfirmButton' => true,
+                'confirmButtonText' => 'OK',
+                'reverseButtons' => true,
+                'timer' => 30000,
+                'toast' => false,
+            ]);
             return;
         }
 
         // Advanced Scenario 4: Prevent duplicate promotions
         if ($this->hasDuplicatePromotions()) {
-            $this->alert('error', 'Some students are already promoted to the new class or section.');
+            $this->alert('info', 'Some students are already promoted to the new class or section.', [
+                'position' => 'top', 
+                'showConfirmButton' => true,
+                'confirmButtonText' => 'OK',
+                'reverseButtons' => true,
+                'timer' => 30000,
+                'toast' => false,
+            ]);
             return;
         }
 
@@ -267,23 +287,36 @@ class ManagePromotions extends Component
 
 
 
-    // private function hasDuplicatePromotions()
-    // {
-    //     return StudentRecord::where('my_class_id', $this->newClass)
-    //         ->where('section_id', $this->newSection)
-    //         ->whereIn('id', $this->selectedStudents)
-    //         ->exists();
-    // }
-
 
     public function handlePromotionResults($promotedStudents, $skippedStudents)
     {
         if (count($promotedStudents) === count($this->selectedStudents)) {
-            $this->alert('success', 'All selected students were promoted successfully!');
+            $this->alert('success', 'All selected students were promoted successfully!', [
+                'position' => 'top', 
+                'showConfirmButton' => true,
+                'confirmButtonText' => 'OK',
+                'reverseButtons' => true,
+                'timer' => 30000,
+                'toast' => false,
+            ]);
         } elseif (count($promotedStudents) > 0) {
-            $this->alert('warning', 'Some students were promoted successfully, but the following were already promoted: ' . implode(', ', $skippedStudents));
+             $this->alert('info', 'Some students were promoted successfully, but the following were already promoted: ' . implode(', ', $skippedStudents), [
+                'position' => 'top', 
+                'showConfirmButton' => true,
+                'confirmButtonText' => 'OK',
+                'reverseButtons' => true,
+                'timer' => 30000,
+                'toast' => false,
+            ]);
         } else {
-            $this->alert('error', 'No students were promoted as they were already promoted to the new class or section.');
+             $this->alert('info', 'No students were promoted as they were already promoted to the new class or section.', [
+                'position' => 'top', 
+                'showConfirmButton' => true,
+                'confirmButtonText' => 'OK',
+                'reverseButtons' => true,
+                'timer' => 30000,
+                'toast' => false,
+            ]);
         }
     }
 

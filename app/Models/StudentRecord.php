@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class StudentRecord extends Model
 {
@@ -62,7 +63,13 @@ class StudentRecord extends Model
     {
         return $this->belongsTo(ParentDetail::class, 'parent_id_no', 'parent_id_no');
     }
-    
+
+    public function subjects()
+    {
+        return $this->belongsToMany(Subject::class, 'student_subject', 'student_id', 'subject_id');
+    }
+
+
 
     public function my_class()
     {
@@ -70,12 +77,19 @@ class StudentRecord extends Model
     }
 
     public function transitions()
-{
-    return $this->hasMany(StudentTransition::class, 'student_id', 'id');
-}
+    {
+        return $this->hasMany(StudentTransition::class, 'student_id', 'id');
+    }
 
+    public function getCurrentClass($academicYear)
+    {
+        $latestTransition = $this->transitions()
+            ->where('academic_year', $academicYear)
+            ->latest('event_date')
+            ->first();
 
-   
+        return $latestTransition ? $latestTransition->newClass : null;
+    }
 
     /**
      * Get the section that this student belongs to
@@ -94,7 +108,7 @@ class StudentRecord extends Model
 
     public function examMarks()
     {
-        return $this->hasMany(ExamMarks::class, 'student_id'); 
+        return $this->hasMany(ExamMarks::class, 'student_id');
     }
 
     public function marks(): HasMany
@@ -104,8 +118,6 @@ class StudentRecord extends Model
 
     public function studentResults(): HasMany
     {
-        return $this->hasMany(StudentResult::class, 'student_id', 'id'); 
+        return $this->hasMany(StudentResult::class, 'student_id', 'id');
     }
-    
 }
-

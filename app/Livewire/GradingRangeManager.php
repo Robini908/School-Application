@@ -31,6 +31,10 @@ class GradingRangeManager extends Component
     public $reuseGradingSystemId;
     public $reuseSubjectFromOtherSystemId;
 
+    protected $listeners = [
+        'deleteRange'
+    ];
+
 
 
     public function mount()
@@ -46,7 +50,16 @@ class GradingRangeManager extends Component
     {
         // Validate the selected subject for reuse
         if (!$this->reuseSubjectId) {
-            $this->alert('error', 'Please select a subject to reuse grading ranges.');
+            
+            $this->alert('error', 'Please select a subject to reuse grading ranges.', [
+                'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
+                'showConfirmButton' => true, // Show a confirmation button
+                'confirmButtonText' => 'OK', // Text on the confirm button
+               
+                'reverseButtons' => true, // Reverse the order of buttons
+                'timer' => 30000, // Time before it automatically closes
+                'toast' => false, // If you want it to be a toast notification or a modal
+            ]);
             return;
         }
 
@@ -55,7 +68,15 @@ class GradingRangeManager extends Component
         $currentSubject = Subject::find($this->subjectId);
 
         if (!$reuseSubject || !$currentSubject) {
-            $this->alert('error', 'Invalid subject selection. Please ensure the selected subjects are correct.');
+            $this->alert('error', 'Invalid subject selection. Please ensure the selected subjects are correct.', [
+                'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
+                'showConfirmButton' => true, // Show a confirmation button
+                'confirmButtonText' => 'OK', // Text on the confirm button
+             
+                'reverseButtons' => true, // Reverse the order of buttons
+                'timer' => 30000, // Time before it automatically closes
+                'toast' => false, // If you want it to be a toast notification or a modal
+            ]);
             return;
         }
 
@@ -65,7 +86,15 @@ class GradingRangeManager extends Component
             ->exists();
 
         if ($alreadyExistingRanges) {
-            $this->alert('error', 'Cannot reuse grading ranges from "' . $reuseSubject->subject_name . '" to "' . $currentSubject->subject_name . '" as the current subject already has existing ranges.');
+            $this->alert('error', 'Cannot reuse grading ranges from "' . $reuseSubject->subject_name . '" to "' . $currentSubject->subject_name . '" as the current subject already has existing ranges.', [
+                'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
+                'showConfirmButton' => true, // Show a confirmation button
+                'confirmButtonText' => 'OK', // Text on the confirm button
+              
+                'reverseButtons' => true, // Reverse the order of buttons
+                'timer' => 30000, // Time before it automatically closes
+                'toast' => false, // If you want it to be a toast notification or a modal
+            ]);
             return;
         }
 
@@ -76,7 +105,16 @@ class GradingRangeManager extends Component
 
         // Check if the selected grading system has existing ranges
         if (!$existingGradingSystemsWithRanges->contains($this->selectedGradingSystem)) {
-            $this->alert('error', 'The selected grading system does not have any existing grading ranges for reuse.');
+          
+            $this->alert('error', 'The selected grading system does not have any existing grading ranges for reuse.', [
+                'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
+                'showConfirmButton' => true, // Show a confirmation button
+                'confirmButtonText' => 'OK', // Text on the confirm button
+                
+                'reverseButtons' => true, // Reverse the order of buttons
+                'timer' => 30000, // Time before it automatically closes
+                'toast' => false, // If you want it to be a toast notification or a modal
+            ]);
             return;
         }
 
@@ -87,7 +125,16 @@ class GradingRangeManager extends Component
 
         // If no ranges found for reuse, show a warning message
         if ($existingRanges->isEmpty()) {
-            $this->alert('warning', 'No grading ranges found for the subject: ' . $reuseSubject->subject_name . '. Please check if the grading ranges exist.');
+            
+            $this->alert('error', 'No grading ranges found for the subject: ' . $reuseSubject->subject_name . '. Please check if the grading ranges exist.', [
+                'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
+                'showConfirmButton' => true, // Show a confirmation button
+                'confirmButtonText' => 'OK', // Text on the confirm button
+                'showCancelButton' => true, // Show a cancel button
+               
+                'timer' => 30000, // Time before it automatically closes
+                'toast' => false, // If you want it to be a toast notification or a modal
+            ]);
             return;
         }
 
@@ -103,10 +150,27 @@ class GradingRangeManager extends Component
         })->toArray();
 
         // Inform the user that grading ranges have been loaded successfully
-        $this->alert('info', 'Grading ranges loaded successfully. You can now adjust them as needed.');
+        $this->alert('error', 'Grading ranges loaded successfully. You can now adjust them as needed.', [
+            'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
+            'showConfirmButton' => true, // Show a confirmation button
+            'confirmButtonText' => 'OK', // Text on the confirm button
+            'showCancelButton' => true, // Show a cancel button
+           
+            'timer' => 30000, // Time before it automatically closes
+            'toast' => false, // If you want it to be a toast notification or a modal
+        ]);
 
         // Notify success for the completion of the process
-        $this->alert('success', 'Grading ranges successfully loaded for reuse from "' . $reuseSubject->subject_name . '"!');
+        $this->alert('error', 'Grading ranges successfully loaded for reuse from "' . $reuseSubject->subject_name . '"!', [
+            'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
+            'showConfirmButton' => true, // Show a confirmation button
+            'confirmButtonText' => 'OK', // Text on the confirm button
+           
+            'reverseButtons' => true, // Reverse the order of buttons
+            'timer' => 30000, // Time before it automatically closes
+            'toast' => false, // If you want it to be a toast notification or a modal
+        ]);
+
     }
 
 
@@ -116,7 +180,15 @@ class GradingRangeManager extends Component
     {
         // Validate the selected grading system and subject for reuse
         if (!$this->reuseGradingSystemId || !$this->reuseSubjectFromOtherSystemId) {
-            $this->alert('error', 'Please select both a grading system and a subject to reuse grading ranges.');
+            $this->alert('error', 'Please select both a grading system and a subject to reuse grading ranges.', [
+                'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
+                'showConfirmButton' => true, // Show a confirmation button
+                'confirmButtonText' => 'OK', // Text on the confirm button
+              
+                'reverseButtons' => true, // Reverse the order of buttons
+                'timer' => 30000, // Time before it automatically closes
+                'toast' => false, // If you want it to be a toast notification or a modal
+            ]);
             return;
         }
 
@@ -128,7 +200,15 @@ class GradingRangeManager extends Component
 
         // Validate that both the grading systems and subjects exist
         if (!$reuseGradingSystem || !$reuseSubject || !$currentSubject || !$currentGradingSystem) {
-            $this->alert('error', 'Invalid selection for grading system or subject. Please check your selections.');
+            $this->alert('error', 'Invalid selection for grading system or subject. Please check your selections.', [
+                'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
+                'showConfirmButton' => true, // Show a confirmation button
+                'confirmButtonText' => 'OK', // Text on the confirm button
+                
+                'reverseButtons' => true, // Reverse the order of buttons
+                'timer' => 30000, // Time before it automatically closes
+                'toast' => false, // If you want it to be a toast notification or a modal
+            ]);
             return;
         }
 
@@ -139,7 +219,15 @@ class GradingRangeManager extends Component
 
         // If no ranges found for the selected subject and grading system, show an error message
         if ($existingRanges->isEmpty()) {
-            $this->alert('error', 'No grading ranges found for the subject "' . $reuseSubject->subject_name . '" in the grading system "' . $reuseGradingSystem->name . '". Please ensure ranges are defined for this subject.');
+            $this->alert('error', 'No grading ranges found for the subject "' . $reuseSubject->subject_name . '" in the grading system "' . $reuseGradingSystem->name . '". Please ensure ranges are defined for this subject.', [
+                'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
+                'showConfirmButton' => true, // Show a confirmation button
+                'confirmButtonText' => 'OK', // Text on the confirm button
+                
+                'reverseButtons' => true, // Reverse the order of buttons
+                'timer' => 30000, // Time before it automatically closes
+                'toast' => false, // If you want it to be a toast notification or a modal
+            ]);
             return;
         }
 
@@ -149,7 +237,15 @@ class GradingRangeManager extends Component
             ->exists();
 
         if ($alreadyExistingRanges) {
-            $this->alert('error', 'Cannot reuse grading ranges from "' . $reuseSubject->subject_name . '" in the grading system "' . $reuseGradingSystem->name . '" to "' . $currentSubject->subject_name . '" in the grading system "' . $currentGradingSystem->name . '" as the current subject already has existing ranges.');
+            $this->alert('error', 'Cannot reuse grading ranges from "' . $reuseSubject->subject_name . '" in the grading system "' . $reuseGradingSystem->name . '" to "' . $currentSubject->subject_name . '" in the grading system "' . $currentGradingSystem->name . '" as the current subject already has existing ranges.', [
+                'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
+                'showConfirmButton' => true, // Show a confirmation button
+                'confirmButtonText' => 'OK', // Text on the confirm button
+                
+                'reverseButtons' => true, // Reverse the order of buttons
+                'timer' => 30000, // Time before it automatically closes
+                'toast' => false, // If you want it to be a toast notification or a modal
+            ]);
             return;
         }
 
@@ -165,7 +261,16 @@ class GradingRangeManager extends Component
         })->toArray();
 
         // Success  with the grading system and subject names
-        $this->alert('success', 'Grading ranges successfully loaded for reuse from the subject "' . $reuseSubject->subject_name . '" in the grading system "' . $reuseGradingSystem->name . '"! You can now adjust them as needed.');
+        $this->alert('sucess', 'Grading ranges successfully loaded for reuse from the subject "' . $reuseSubject->subject_name . '" in the grading system "' . $reuseGradingSystem->name . '"! You can now adjust them as needed.', [
+            'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
+            'showConfirmButton' => true, // Show a confirmation button
+            'confirmButtonText' => 'OK', // Text on the confirm button
+          
+           
+            'reverseButtons' => true, // Reverse the order of buttons
+            'timer' => 30000, // Time before it automatically closes
+            'toast' => false, // If you want it to be a toast notification or a modal
+        ]);
     }
 
 
@@ -176,7 +281,16 @@ class GradingRangeManager extends Component
 
         // If ranges exist, don't suggest new ones
         if ($existingRanges) {
-            $this->alert('error', 'Grading ranges already exist for the selected grading system.');
+            $this->alert('error', 'Grading ranges already exist for the selected grading system.', [
+                'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
+                'showConfirmButton' => true, // Show a confirmation button
+                'confirmButtonText' => 'OK', // Text on the confirm button
+                
+                
+                'reverseButtons' => true, // Reverse the order of buttons
+                'timer' => 30000, // Time before it automatically closes
+                'toast' => false, // If you want it to be a toast notification or a modal
+            ]);
             return;
         }
 
@@ -208,7 +322,14 @@ class GradingRangeManager extends Component
         // Set the generated ranges to the form field
         $this->ranges = $suggestedRanges;
 
-        $this->alert('info', 'New suggested grading ranges have been successfully populated.');
+        $this->alert('success', 'New suggested grading ranges have been successfully populated.', [
+            'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
+            'showConfirmButton' => true, // Show a confirmation button
+            'confirmButtonText' => 'OK', // Text on the confirm button
+            'reverseButtons' => true, // Reverse the order of buttons
+            'timer' => 30000, // Time before it automatically closes
+            'toast' => false, // If you want it to be a toast notification or a modal
+        ]);
     }
 
 
@@ -402,8 +523,33 @@ class GradingRangeManager extends Component
     {
         GradingRange::destroy($id);
         $this->alert('success', 'Grading range deleted successfully!');
+        
         $this->loadSubmittedRanges(); // Refresh the submitted ranges
     }
+
+    // public function confirmDelete($id)
+    // {
+    //     $this->alert('warning', 'Are you sure you want to delete this grading range?', [
+    //         'position' => 'top',
+    //         'showConfirmButton' => true,
+    //         'confirmButtonText' => 'Yes, Delete',
+    //         'showCancelButton' => true,
+    //         'cancelButtonText' => 'No, Keep',
+    //         'reverseButtons' => true,
+    //         'timer' => null, // Keeps alert open until confirmed or canceled
+    //         'toast' => false,
+    //         'onConfirmed' => "deleteConfirmed({$id})", // Use the ID directly in the method call
+    //     ]);
+    // }
+    
+
+    // public function deleteConfirmed($id)
+    // {
+    //     GradingRange::destroy($id);
+    //     $this->alert('success', 'Grading range deleted successfully!');
+    //     $this->loadSubmittedRanges(); // Refresh the submitted ranges
+    // }
+    
 
     protected function validateRanges()
     {

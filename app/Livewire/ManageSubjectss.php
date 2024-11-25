@@ -52,6 +52,28 @@ class ManageSubjectss extends Component
         $this->categories = SubjectCategory::all(); // Load all categories
     }
 
+    public function updateType($subjectId, $type)
+    {
+        $subject = Subject::find($subjectId);
+
+        if ($subject) {
+            $subject->type = $type;
+            $subject->save();
+
+            // Show success alert using LivewireAlert
+            $this->alert('info', 'Saved', [
+                'position' => 'top-end',
+                'timer' => 1500,
+                'toast' => true,
+                'showConfirmButton' => false,
+            ]);
+
+            // Optionally, you can emit an event to handle UI updates
+            $this->dispatch('typeUpdated', $subjectId);
+        }
+    }
+
+
     public function filterByCategory($categoryId)
     {
         // Filter subjects by selected category and load their categories
@@ -191,7 +213,7 @@ class ManageSubjectss extends Component
             $this->showForm = false;
             $this->isEditing = false;
 
-             $this->alert('success', 'Subject Edited successfully.');
+            $this->alert('success', 'Subject Edited successfully.');
 
             // toast()
             //     ->success('Subject Updated successfully.')

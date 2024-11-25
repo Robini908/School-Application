@@ -35,7 +35,6 @@ class AssignBatchMarks extends Component
     {
         $this->classes = MyClass::all();
         $this->subjects = Subject::all();
-        
     }
 
     public function updatedSelectedClass($classId)
@@ -72,12 +71,12 @@ class AssignBatchMarks extends Component
 
     public function updatedSelectedSection($sectionId)
     {
-        $this->students = StudentRecord::with('section')
+        $this->students = StudentRecord::with(['section', 'subjects'])
             ->where('my_class_id', $this->selectedClass)
             ->where('section_id', $sectionId)
             ->get();
 
-        // Load existing marks
+        // Load existing marks and identify students not enrolled in each subject
         $this->loadExistingMarks();
     }
 
@@ -90,15 +89,17 @@ class AssignBatchMarks extends Component
                     'exam_id' => $this->selectedExam,
                     'subject_id' => $subject->id,
                 ])->first();
-                
+
                 if ($examMark) {
                     $this->marks[$student->id][$subject->id] = $examMark->marks;
+                } else {
+                    $this->marks[$student->id][$subject->id] = null; // Initialize as null if no marks exist
                 }
             }
         }
     }
 
-    
+
 
     public function saveMarks($marks)
     {
@@ -113,19 +114,23 @@ class AssignBatchMarks extends Component
         try {
             foreach ($this->students as $student) {
                 foreach ($this->subjects as $subject) {
-                    $marks = $this->marks[$student->id][$subject->id] ?? null;
+                    // Only process the subjects that the student is enrolled in
+                    if ($this->isStudentEnrolledInSubject($student->id, $subject->id)) {
+                        $marks = $this->marks[$student->id][$subject->id] ?? null;
 
-                    ExamMarks::updateOrCreate(
-                        [
-                            'student_id' => $student->id,
-                            'exam_id' => $this->selectedExam,
-                            'subject_id' => $subject->id,
-                        ],
-                        [
-                            'grading_range_id' => null,
-                            'marks' => $marks,
-                        ]
-                    );
+                        // Update or create the exam mark record for the student and subject
+                        ExamMarks::updateOrCreate(
+                            [
+                                'student_id' => $student->id,
+                                'exam_id' => $this->selectedExam,
+                                'subject_id' => $subject->id,
+                            ],
+                            [
+                                'grading_range_id' => null,
+                                'marks' => $marks,
+                            ]
+                        );
+                    }
                 }
             }
 
@@ -143,16 +148,28 @@ class AssignBatchMarks extends Component
         $rules = [];
         foreach ($this->students as $student) {
             foreach ($this->subjects as $subject) {
-                $rules["marks.{$student->id}.{$subject->id}"] = [
-                    'required',
-                    'integer',
-                    'min:0',
-                    'max:100',
-                ];
+                // Only validate marks for enrolled subjects
+                if ($this->isStudentEnrolledInSubject($student->id, $subject->id)) {
+                    $rules["marks.{$student->id}.{$subject->id}"] = [
+                        'required',
+                        'integer',
+                        'min:0',
+                        'max:100',
+                    ];
+                }
             }
         }
         $this->validate($rules);
     }
+
+    private function isStudentEnrolledInSubject($studentId, $subjectId)
+    {
+        return StudentRecord::find($studentId)
+            ? StudentRecord::find($studentId)->subjects->contains('id', $subjectId)
+            : false;
+    }
+
+
 
     private function resetForm()
     {
@@ -182,53 +199,57 @@ class AssignBatchMarks extends Component
 
     public $editable = []; // To track which students are editable
 
-public function editMarks($studentId)
-{
-    // Toggle the editable state for the specific student
-    if (isset($this->editable[$studentId])) {
+    public function editMarks($studentId)
+    {
+        // Toggle the editable state for the specific student
+        if (isset($this->editable[$studentId])) {
+            unset($this->editable[$studentId]);
+        } else {
+            $this->editable[$studentId] = true;
+        }
+    }
+
+    public function updateMarks($studentId)
+    {
+        $this->validateMarksForStudent($studentId); // Validate for the specific student
+
+        foreach ($this->subjects as $subject) {
+            // Only update marks if the student is enrolled in the subject
+            if ($this->isStudentEnrolledInSubject($studentId, $subject->id)) {
+                ExamMarks::updateOrCreate(
+                    [
+                        'student_id' => $studentId,
+                        'exam_id' => $this->selectedExam,
+                        'subject_id' => $subject->id,
+                    ],
+                    [
+                        'grading_range_id' => null,
+                        'marks' => $this->marks[$studentId][$subject->id] ?? null,
+                    ]
+                );
+            }
+        }
+
+        // Remove the editable state after updating
         unset($this->editable[$studentId]);
-    } else {
-        $this->editable[$studentId] = true;
-    }
-}
 
-public function updateMarks($studentId)
-{
-    $this->validateMarksForStudent($studentId); // You can create a method to validate for a specific student
-
-    foreach ($this->subjects as $subject) {
-        ExamMarks::updateOrCreate(
-            [
-                'student_id' => $studentId,
-                'exam_id' => $this->selectedExam,
-                'subject_id' => $subject->id,
-            ],
-            [
-                'grading_range_id' => null,
-                'marks' => $this->marks[$studentId][$subject->id] ?? null,
-            ]
-        );
+        session()->flash('message', 'Marks successfully updated for student ' . $studentId . '!');
     }
 
-    // Remove the editable state after updating
-    unset($this->editable[$studentId]);
-    
-    session()->flash('message', 'Marks successfully updated for ' . $studentId . '!');
-}
 
-private function validateMarksForStudent($studentId)
-{
-    $rules = [];
-    foreach ($this->subjects as $subject) {
-        $rules["marks.{$studentId}.{$subject->id}"] = [
-            'required',
-            'integer',
-            'min:0',
-            'max:100',
-        ];
+    private function validateMarksForStudent($studentId)
+    {
+        $rules = [];
+        foreach ($this->subjects as $subject) {
+            $rules["marks.{$studentId}.{$subject->id}"] = [
+                'required',
+                'integer',
+                'min:0',
+                'max:100',
+            ];
+        }
+        $this->validate($rules);
     }
-    $this->validate($rules);
-}
 
 
     public function render()

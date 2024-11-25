@@ -10,15 +10,15 @@ import axios from 'axios';
  */
 window._ = _;
 window.Popper = Popper;
-window.$ = window.jQuery = $;
+// window.$ = window.jQuery = $;
 
 // Ensure jQuery is ready
-$(function() {
-    console.log('jQuery is ready!');
+// $(function() {
+//     console.log('jQuery is ready!');
     
-    // Additional jQuery code can go here
-    // For example, setting up Bootstrap modals or event listeners
-});
+//     // Additional jQuery code can go here
+//     // For example, setting up Bootstrap modals or event listeners
+// });
 
 /**
  * Set up Axios for HTTP requests

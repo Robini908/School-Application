@@ -301,6 +301,19 @@
                                         <i class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></i>
                                     </span>
                                 </button>
+
+                                {{-- <button wire:click="confirmDelete({{ $submittedRange->id }})"
+                                    class="btn btn-danger btn-sm mx-2"
+                                    data-toggle="tooltip"
+                                    data-placement="top"
+                                    title="Remove range">
+                                <i class="fas fa-trash-alt"></i>
+                                <span wire:loading wire:target="deleteRange({{ $submittedRange->id }})">
+                                    <i class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></i>
+                                </span>
+                            </button> --}}
+                            
+                            
                             </div>
                         </td>
                         

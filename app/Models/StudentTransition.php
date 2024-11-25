@@ -78,4 +78,10 @@ class StudentTransition extends Model
     {
         return $this->belongsTo(User::class, 'approved_by', 'id');
     }
+
+    public function scopeCurrentYear($query, $academicYear)
+    {
+        return $query->where('academic_year', $academicYear)
+            ->whereNull('next_academic_year'); // Ensures they haven't been promoted yet
+    }
 }

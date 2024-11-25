@@ -61,92 +61,93 @@
 
     <div wire:loading.remove>
         @if ($sections->isNotEmpty())
-        <div class="form-group mt-3">
-            <label>Select Section:</label>
-            <div class="d-flex flex-wrap">
-                @foreach ($sections as $section)
-                <div class="form-check me-3">
-                    <input type="radio" class="form-check-input" wire:model.lazy="selectedSection"
-                        value="{{ $section->id }}" id="section-{{ $section->id }}" />
-                    <label class="form-check-label" for="section-{{ $section->id }}">{{ $section->name }}</label>
+            <div class="form-group mt-3">
+                <label>Select Section:</label>
+                <div class="d-flex flex-wrap">
+                    @foreach ($sections as $section)
+                        <div class="form-check me-3">
+                            <input type="radio" class="form-check-input" wire:model.lazy="selectedSection"
+                                value="{{ $section->id }}" id="section-{{ $section->id }}" />
+                            <label class="form-check-label" for="section-{{ $section->id }}">{{ $section->name }}</label>
+                        </div>
+                    @endforeach
                 </div>
-                @endforeach
             </div>
-        </div>
-        <!-- Marks Assignment Form -->
-        @if ($selectedSection)
-        <div wire:loading wire:target="assignMarks">
-            <div class="d-flex justify-content-center my-3">
-                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-            </div>
-        </div>
-        <div class="mt-3">
-            <div class="alert alert-info">
-               <b class="text-lg text-semibold"> {{ count($students) }}</b> students found in this stream.
-            </div>
-        </div>
-
-        <!-- Success alert -->
-        <div id="success-alert" class="alert alert-success" style="display: none;">
-            All marks have been assigned successfully!
-        </div>
-
-        <form wire:submit.prevent="assignMarks" class="mt-3" id="marks-form">
-            <div class="table-responsive" style="overflow-x: auto;">
-                <table class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th style="width: 50px;">S/N</th>
-                            <th style="width: 200px;">Student Name</th>
-                            <th style="width: 150px;">Admission No</th>
-                            @foreach ($subjects as $subject)
-                            <th style="width: 150px;">{{ $subject->subject_name }}</th>
-                            @endforeach
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if ($students->isEmpty())
-                        <tr>
-                            <td colspan="{{ count($subjects) + 3 }}" class="text-danger text-center">
-                                No students available for this section.
-                            </td>
-                        </tr>
-                        @else
-                        @foreach ($students as $index => $student)
-                        <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>{{ $student->first_name }} {{ $student->last_name }}</td>
-                            <td>{{ $student->adm_no }}</td>
-                            @foreach ($subjects as $subject)
-                            <td style="width: 150px;">
-                                <input type="number" class="form-control mark-input" style="width: 150px;"
-                                    wire:model.defer="marks.{{ $student->id }}.{{ $subject->id }}" min="0" max="100"
-                                    data-bs-toggle="tooltip" data-bs-placement="top"
-                                    title="{{ $student->first_name }} {{ $student->last_name }} ({{ $student->adm_no }})">
-                                @error("marks.{$student->id}.{$subject->id}")
-                                <div class="text-danger">{{ $message }}</div>
-                                @enderror
-                            </td>
-                            @endforeach
-                        </tr>
-                        @endforeach
-                        @endif
-                    </tbody>
-                </table>
-            </div>
-
-            <button type="submit" class="btn btn-primary mt-3">
-                {{ $buttonText }}
-            </button>
-        </form>
-
+    
+            @if ($selectedSection)
+                <div class="mt-3">
+                    <div class="alert alert-info">
+                        <b class="text-lg text-semibold">{{ count($students) }}</b> students found in this section.
+                    </div>
+                </div>
+    
+                <form wire:submit.prevent="assignMarks" class="mt-3" id="marks-form">
+                    <div class="table-responsive" style="overflow-x: auto;">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">S/N</th>
+                                    <th style="width: 200px;">Student Name</th>
+                                    <th style="width: 150px;">Admission No</th>
+                                    @foreach ($subjects as $subject)
+                                        <th style="width: 150px;">{{ $subject->subject_name }}</th>
+                                    @endforeach
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if ($students->isEmpty())
+                                    <tr>
+                                        <td colspan="{{ count($subjects) + 3 }}" class="text-danger text-center">
+                                            No students available for this section.
+                                        </td>
+                                    </tr>
+                                @else
+                                    @foreach ($students as $index => $student)
+                                        <tr>
+                                            <td>{{ $index + 1 }}</td>
+                                            <td>{{ $student->first_name }} {{ $student->last_name }}</td>
+                                            <td>{{ $student->adm_no }}</td>
+                                            @foreach ($subjects as $subject)
+                                            <td style="width: 150px;">
+                                                @if ($student->subjects->contains($subject->id))
+                                                    <input type="number" class="form-control"
+                                                        style="background-color: #d1f7d6; border-color: #28a745; width: 150px;"
+                                                        wire:model.defer="marks.{{ $student->id }}.{{ $subject->id }}"
+                                                        min="0" max="100"
+                                                        placeholder="Enter marks">
+                                                    @error("marks.{$student->id}.{$subject->id}")
+                                                        <div class="text-danger">{{ $message }}</div>
+                                                    @enderror
+                                                @else
+                                                    <div style="position: relative;">
+                                                        <input type="text" class="form-control"
+                                                            style="background-color: #f8d7da; border-color: #dc3545; color: #721c24; width: 150px; opacity: 0.5; cursor: not-allowed;"
+                                                            value="Not Enrolled" disabled>
+                                                        
+                                                    </div>
+                                                @endif
+                                            </td>
+                                            
+                                            @endforeach
+                                        </tr>
+                                    @endforeach
+                                @endif
+                            </tbody>
+                        </table>
+                    </div>
+    
+                    <button type="submit" class="btn btn-primary mt-3">
+                        {{ $buttonText }}
+                    </button>
+                </form>
+            @else
+                <p class="text-danger mt-3">You have not selected any section. Please select a section to proceed.</p>
+            @endif
         @else
-        <p class="text-danger mt-3">You have not selected any section. Please select a section to proceed.</p>
-        @endif
-        @else
-        <p class="text-danger mt-3">No sections available for this class and exam combination.</p>
+            <p class="text-danger mt-3">No sections available for this class and exam combination.</p>
         @endif
     </div>
+    
     @endif
     @push('scripts')
     <script>

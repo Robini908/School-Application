@@ -22,6 +22,26 @@ class MyClass extends Model
         return $this->belongsTo(ClassType::class);
     }
 
+    public function studentTransitions()
+    {
+        return $this->hasManyThrough(
+            StudentTransition::class,  // Final model
+            StudentRecord::class,      // Intermediate model
+            'my_class_id',             // Foreign key on StudentRecord table
+            'student_id',              // Foreign key on StudentTransition table
+            'id',                      // Local key on MyClass table
+            'id'                       // Local key on StudentRecord table
+        );
+    }
+
+    public function subjectSelectionSetting()
+    {
+        return $this->hasOne(SubjectSelectionSetting::class, 'class_id');
+    }
+
+
+
+
     public function student_record()
     {
         return $this->hasMany(StudentRecord::class);
@@ -54,10 +74,7 @@ class MyClass extends Model
     }
 
     public function transitions()
-{
-    return $this->hasMany(StudentTransition::class, 'new_class_id', 'id');
-}
-
-
-  
+    {
+        return $this->hasMany(StudentTransition::class, 'new_class_id', 'id');
+    }
 }

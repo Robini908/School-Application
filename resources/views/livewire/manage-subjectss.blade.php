@@ -1,5 +1,4 @@
 <div class="container mt-0">
-    <x-flash-messages />
     @if ($showForm)
     <!-- Show Form for Creating or Editing -->
     <div class="card " style="border: 1px solid #007bff;">
@@ -189,6 +188,7 @@
                         <th scope="col">Code</th>
                         <th scope="col">Abbreviation</th>
                         <th scope="col">Category</th>
+                        <th scope="col">Type</th> <!-- Added type column -->
                         <th scope="col">Actions</th>
                     </tr>
                 </thead>
@@ -204,9 +204,24 @@
                             <td>{{ $subject->subject_code }}</td>
                             <td>{{ $subject->abbreviation }}</td>
                             <td>{{ optional($subject->category)->name ?? 'No Category' }}</td>
+    
+                            <!-- Type dropdown -->
+                            <td class="relative">
+                                <!-- Type dropdown -->
+                                <select wire:change="updateType({{ $subject->id }}, $event.target.value)" class="form-control" wire:model="subject.type">
+                                    <option value="compulsory" @if($subject->type === 'compulsory') selected @endif>Compulsory</option>
+                                    <option value="elective" @if($subject->type === 'elective') selected @endif>Elective</option>
+                                </select>
                             
+                                <!-- Success message when the type is saved -->
+                                @if(session()->has('type_saved_{{ $subject->id }}'))
+                                    <div class="absolute right-0 top-0 mt-2 mr-2 text-sm text-green-500">
+                                        Saved
+                                    </div>
+                                @endif
+                            </td>
                             
-
+    
                             <td class="text-center">
                                 <button wire:click="edit({{ $subject->id }})" class="btn btn-link p-0" wire:loading.attr="disabled" data-toggle="tooltip" data-placement="top" title="Edit">
                                     <i class="fas fa-edit"></i> <!-- Edit icon -->
@@ -217,9 +232,6 @@
                                     <div wire:loading wire:target="delete({{ $subject->id }})" class="spinner-border spinner-border-sm ms-2" role="status"></div>
                                 </button>
                             </td>
-                            
-                            
-                            
                         </tr>
                     @endforeach
                 </tbody>

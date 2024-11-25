@@ -15,29 +15,30 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
-    @livewireStyles
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('partials.inc_top')
+    @livewireStyles
 </head>
 
 <body
     class="{{ in_array(Route::currentRouteName(), ['payments.invoice', 'marks.tabulation', 'marks.show', 'ttr.manage', 'ttr.show']) ? 'sidebar-xs' : '' }}">
-    
+
     @include('partials.top_menu')
     <div class="page-content">
         @include('partials.menu')
         <div class="content-wrapper">
-            @include('notify::components.notify')
+
 
             <div class="content">
                 {{-- Error Alert Area --}}
-                @if($errors->any())
-                <div class="alert alert-danger border-0 alert-dismissible">
-                    <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-                    @foreach($errors->all() as $error)
-                    <span><i class="icon-arrow-right5"></i> {{ $error }}</span><br>
-                    @endforeach
-                </div>
+                @if ($errors->any())
+                    <div class="alert alert-danger border-0 alert-dismissible">
+                        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+                        @foreach ($errors->all() as $error)
+                            <span><i class="icon-arrow-right5"></i> {{ $error }}</span><br>
+                        @endforeach
+                    </div>
                 @endif
                 <div id="ajax-alert" style="display: none"></div>
                 @yield('content')

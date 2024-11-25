@@ -2,7 +2,6 @@
 
 namespace App\Livewire;
 
-
 use App\Models\Exam;
 use App\Models\MyClass;
 use App\Models\Section;
@@ -10,7 +9,6 @@ use App\Models\Subject;
 use Livewire\Component;
 use App\Models\GradingGrade;
 use App\Models\GradingRange;
-use Livewire\WithPagination;
 use App\Models\StudentRecord;
 use App\Models\StudentResult;
 use Illuminate\Support\Facades\DB;
@@ -22,13 +20,8 @@ class CombinationFormula extends Component
     // Filter properties
     public $selectedClass;
     public $selectedYearAdmitted;
-
     public $selectedExamYear;
     public $selectedSection;
-    public $studentsPerPage = 100; // Number of students to load initially
-    public $studentsTotal = 0; // Total count of students
-    public $studentsLoaded = 0; // Tracks the number of students loaded
-
     public $selectedTerm; // New filter for term
     public $selectedYear; // New filter for year
     public $selectedExam;
@@ -40,10 +33,6 @@ class CombinationFormula extends Component
     public $sections;
     public $position = [];
     public $exams;
-    public $exam;
-    public $examId;
-    public $selectedExamId;
-
 
     public $marks = [];
     public $subjects = [];
@@ -52,7 +41,6 @@ class CombinationFormula extends Component
     public $terms; // New property for terms
     public $students; // This will be a Collection
     public $examResults = []; // Store subjects and scores for selected exam
-    use WithPagination;
 
 
     public function mount()
@@ -103,7 +91,6 @@ class CombinationFormula extends Component
             return;
         }
 
-        // Fetch students with chunking (initial load)
         $this->students = StudentRecord::with(['examMarks' => function ($query) use ($examId) {
             $query->where('exam_id', $examId);
         }, 'section'])
@@ -113,57 +100,63 @@ class CombinationFormula extends Component
             })
             ->get();
 
-        $this->studentsLoaded = $this->students->count(); // Track the number of loaded students
-
-        $this->studentsTotal = StudentRecord::where('my_class_id', $this->selectedClass)
-            ->when($this->selectedSection, function ($query) {
-                $query->where('section_id', $this->selectedSection);
-            })
-            ->count(); // Get total count
+        Log::info("Fetched Students Count: " . $this->students->count());
 
         $this->subjects = $exam->gradingSystem->subjects;
 
-        // Prepare and calculate student data
         $studentData = $this->prepareStudentData($exam);
+
         $this->marks = $this->calculatePositions($studentData);
 
         $this->loading = false;
     }
-    
-
 
     private function prepareStudentData($exam)
     {
         Log::info("Preparing student data for exam ID: {$exam->id}");
+
+        // Invalidate cache if data has changed
+        $cacheKey = "exam_{$exam->id}_student_data";
+        Cache::forget($cacheKey); // Remove any old cached data if it's out of date
+
         $studentData = [];
+        $updatedStudents = StudentRecord::with('subjects', 'section')->get(); // Always fetch latest student data
 
         try {
-            foreach ($this->students as $student) {
+            foreach ($updatedStudents as $student) {
                 $studentMarks = [];
                 $studentGrades = [];
-                $totalMarks = 0;  // Ensure this is an integer
-                $totalPoints = 0;  // Ensure this is an integer
+                $totalMarks = 0;
+                $totalPoints = 0;
+                $enrolledSubjectIds = $student->subjects->pluck('id')->toArray(); // Get enrolled subjects
+
+                // Initialize enrolled subjects for passing to the view
+                $studentMarks['enrolled_subject_ids'] = $enrolledSubjectIds;
 
                 foreach ($this->subjects as $subject) {
-                    $marksValue = $this->getStudentMarks($student, $subject);
+                    // Check if the student is enrolled in this subject
+                    if (in_array($subject->id, $enrolledSubjectIds)) {
+                        // Student is enrolled in this subject, proceed with marks and grades
+                        $marksValue = $this->getStudentMarks($student, $subject);
+                        $marksValue = (int) $marksValue;
 
-                    // Cast marksValue to integer, in case it's a string
-                    $marksValue = (int)$marksValue;
+                        $gradeData = $this->getGradeData($marksValue, $exam->gradingSystem->id, $subject->id);
 
-                    // Get grade data, and ensure points are treated correctly
-                    $gradeData = $this->getGradeData($marksValue, $exam->gradingSystem->id, $subject->id);
+                        $studentMarks[$subject->id] = $marksValue;
+                        $points = isset($gradeData['points']) ? (int) $gradeData['points'] : 0;
+                        $studentGrades[$subject->id] = $points > 0 ? $gradeData['grade'] : '-';
 
-                    $studentMarks[$subject->id] = $marksValue;
-                    // Ensure points are handled safely
-                    $points = isset($gradeData['points']) ? (int)$gradeData['points'] : 0; // Cast to int
-                    $studentGrades[$subject->id] = $points > 0 ? $gradeData['grade'] : '-';
-
-                    // Perform the arithmetic operations safely
-                    $totalMarks += $marksValue;
-                    $totalPoints += $points;
+                        $totalMarks += $marksValue;
+                        $totalPoints += $points;
+                    } else {
+                        // Student is not enrolled in this subject, assign hyphen and skip grade calculation
+                        $studentMarks[$subject->id] = '--';  // Double hyphen for un-enrolled subjects
+                        $studentGrades[$subject->id] = '--';
+                    }
                 }
 
-                $meanScore = count($this->subjects) ? $totalMarks / count($this->subjects) : 0;
+                // Only calculate mean score for enrolled subjects
+                $meanScore = count($enrolledSubjectIds) ? $totalMarks / count($enrolledSubjectIds) : 0;
                 $meanGrade = $this->getMeanGrade($totalPoints, $exam->gradingSystem->id);
 
                 $studentResult = [
@@ -182,32 +175,24 @@ class CombinationFormula extends Component
                 $studentData[] = $studentResult;
             }
 
-            // Calculate overall and stream positions
+            // Calculate positions
             $studentData = $this->calculatePositions($studentData);
 
-            // Cache the student data instead of saving it to the database
-            $cacheKey = "exam_{$exam->id}_class_{$this->selectedClass}_section_{$this->selectedSection}";
-            Cache::put($cacheKey, $studentData, now()->addMinutes(60)); // Cache for 60 minutes
+            // Synchronize and store the results in cache
+            Cache::put($cacheKey, $studentData, now()->addHours(2)); // Store for 2 hours
 
-            Log::info("Student data cached successfully under key: $cacheKey");
+            Log::info("Student data for exam ID: {$exam->id} has been cached successfully.");
         } catch (\Exception $e) {
-            Log::error("Failed to process student data for exam ID: {$exam->id}. Error: {$e->getMessage()}");
-
+            Log::error("Error processing student data: {$e->getMessage()}");
             $this->addError('exam_processing', "Failed to process the exam data: " . $e->getMessage());
         }
-
-        Log::info("Total Students Processed: " . count($studentData));
 
         return $studentData;
     }
 
-    //retreiving the data from cache 
-    //     $cacheKey = "exam_{$exam->id}_class_{$this->selectedClass}_section_{$this->selectedSection}";
-    // $studentData = Cache::get($cacheKey);
 
 
-
-
+    //retrieving the data from cache 
 
     private function resetExamData()
     {
@@ -218,42 +203,39 @@ class CombinationFormula extends Component
 
 
     // Get student marks for a specific subject
+
     private function getStudentMarks($student, $subject)
     {
         $mark = $student->examMarks->firstWhere('subject_id', $subject->id);
-        return $mark ? $mark->marks : 0; // Return marks or 0 if not available
+        return $mark ? $mark->marks : null; // Return null if no marks exist
     }
+
+
 
     // Get both grade and points based on the grading system and subject marks
     private function getGradeData($marksValue, $gradingSystemId, $subjectId)
     {
-        if ($marksValue === '-' || $marksValue === null) {
-            return ['grade' => '-', 'points' => '-']; // Handle undefined marks
+        if ($marksValue === null) {
+            return ['grade' => '-', 'points' => '-']; // Return hyphen for undefined marks
         }
 
-        // Fetch the grading range that corresponds to the marks
         $gradingRange = GradingRange::where('grading_system_id', $gradingSystemId)
             ->where('subject_id', $subjectId)
             ->where('range_from', '<=', $marksValue)
             ->where('range_to', '>=', $marksValue)
             ->first();
 
-        // If no grading range found, log the issue and return N/A
         if (!$gradingRange) {
-            Log::warning("No grading range found for Marks: $marksValue, Grading System ID: $gradingSystemId, Subject ID: $subjectId");
-
-            return [
-                'grade' => '-', // Explicitly return 'N/A' for grade
-                'points' => '-' // Default points
-            ];
+            return ['grade' => 'N/A', 'points' => 'N/A']; // Show "N/A" if range is missing
         }
 
-        // Return both grade and points (GPA)
         return [
             'grade' => $gradingRange->grade,
-            'points' => $gradingRange->gpa ?? '-' // Points (GPA)
+            'points' => $gradingRange->gpa ?? 'N/A',
         ];
     }
+
+
 
     // Calculate positions and sort the student data with tie-breaking logic
     private function calculatePositions($studentData)
@@ -364,6 +346,27 @@ class CombinationFormula extends Component
             $this->students->where('section_id', $this->selectedSection);
         }
 
+
+
+        // if (!$this->examId) {
+        //     $this->errorMessage = 'Please select an exam to view champions.';
+        //     return;
+        // }
+
+        // $query = ExamMarks::with(['student', 'subject'])->where('exam_id', $this->examId);
+
+        // if ($this->classId) {
+        //     $query->whereHas('student', function ($q) {
+        //         $q->where('my_class_id', $this->classId);
+        //     });
+        // }
+
+        // if ($this->streamId) {
+        //     $query->whereHas('student', function ($q) {
+        //         $q->where('section_id', $this->streamId);
+        //     });
+        // }
+
         if ($this->selectedYearAdmitted) {
             $this->students->where('year_admitted', $this->selectedYearAdmitted);
         }
@@ -387,7 +390,7 @@ class CombinationFormula extends Component
         }
 
         // Finally, retrieve the results
-        $this->students = $this->students->getQuery()->get();
+        $this->students = $this->students->get();
     }
 
 
