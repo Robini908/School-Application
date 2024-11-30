@@ -1,5 +1,5 @@
-<div class="container mt-2">
-    <div class="card">
+<div class="card  p-3 shadow-lg border rounded" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
+    
         <div class="card-header">
             <h2 class="h5">Champion Leaderboard</h2>
         </div>
@@ -65,13 +65,15 @@
             </div>
 
             <!-- Get Champions Button -->
+            @if($examId)
             <button wire:click="getChampions" class="btn btn-primary d-flex align-items-center">
                 Get Champions
                 <div wire:loading wire:target="getChampions" class="spinner-border spinner-border-sm text-light ms-2"
                     role="status"></div>
             </button>
+            @endif
 
-            @if($errorMessage)
+            @if($errorMessage && $classId && $examId)
             <div class="text-danger mt-2">{{ $errorMessage }}</div> <!-- Display error message -->
             @endif
 
@@ -118,19 +120,5 @@
             <div class="mt-4 text-muted">No champions found for the selected criteria.</div>
             @endif
         </div>
-    </div>
+    
 </div>
-
-<script>
-    $(document).ready(function() {
-        // Initialize DataTable only if champions are present
-        if ($('#championsTable tbody tr').length > 0) {
-            $('#championsTable').DataTable({
-                dom: 'Bfrtip',
-                buttons: [
-                    'copy', 'excel', 'pdf', 'print'
-                ]
-            });
-        }
-    });
-</script>

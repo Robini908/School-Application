@@ -91,19 +91,7 @@
                         @endif
 
                         {{--Student Information--}}
-                        <li
-                            class="nav-item nav-item-submenu {{ in_array(Route::currentRouteName(), ['students.list', 'students.edit', 'students.show']) ? 'nav-item-expanded' : '' }}">
-                            <a href="#"
-                                class="nav-link {{ in_array(Route::currentRouteName(), ['students.list', 'students.edit', 'students.show']) ? 'active' : '' }}">Student
-                                Information</a>
-                            <ul class="nav nav-group-sub">
-                                @foreach(App\Models\MyClass::orderBy('name')->get() as $c)
-                                <li class="nav-item"><a href="{{ route('students.list', $c->id) }}" class="nav-link ">{{
-                                        $c->name }}</a></li>
-                                @endforeach
-                            </ul>
-                        </li>
-
+                        
                         @if(Qs::userIsTeamSA())
 
                         {{--Student Promotion--}}
@@ -115,9 +103,7 @@
 
 
                         {{--Student Graduated--}}
-                        <li class="nav-item"><a href="{{ route('students.graduated') }}"
-                                class="nav-link {{ in_array(Route::currentRouteName(), ['students.graduated' ]) ? 'active' : '' }}">Students
-                                Graduated</a></li>
+                       
                         @endif
 
                     </ul>
@@ -139,11 +125,7 @@
 
                         </li>
                         {{--Grades list--}}
-                        <li class="nav-item">
-                            <a href="{{ route('grades.index') }}"
-                                class="nav-link {{ in_array(Route::currentRouteName(), ['grades.index', 'grades.edit']) ? 'active' : '' }}">
-                                <span></span>Grading</a>
-                        </li>
+                        
 
 
                         {{--Grades list--}}

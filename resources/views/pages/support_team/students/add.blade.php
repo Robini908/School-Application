@@ -3,7 +3,7 @@
 @section('content')
 
 <div class="card">
-    <div class="card-body" x-data="{ activeTab: 'manage-students' }">
+    <div  x-data="{ activeTab: 'manage-students' }">
         <ul class="nav nav-tabs nav-tabs-highlight p-3">
             <!-- Manage Admissions Tab -->
             <li class="nav-item">

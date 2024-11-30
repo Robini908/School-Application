@@ -1,7 +1,7 @@
-<div class="card">
+<div class="card shadow-lg border rounded" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
+
     <div class="card-body">
-        <!-- Flash Message for Error -->
-        <x-flash-messages />
+        
         <!-- Toggle Between Forms and List -->
         @if ($isCreating || $isEditing || $showGradingSystemForm || $showGradingSystemDetails)
         <!-- Show Form -->
@@ -132,7 +132,7 @@
             @else
 
             <!-- Exam Form -->
-            <div class="card">
+            <div class="card  p-3 shadow-lg border rounded" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
                 <div class="card-body">
                     <form wire:submit="store" class="mt-4">
                         <!-- Exam Name -->
@@ -277,17 +277,17 @@
     </div>
     @else
     <!-- Show List -->
-    <div>
-        <button wire:click="create" class="btn btn-primary">Add Exam</button>
-        {{-- <a href="{{ route('exams.assignExamMarks') }}" class="btn btn-info ml-2">Assign Marks</a> --}}
+    <div class="row d-flex">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Exam List</h5>
+        </div>
+    
+        <div class="justify-items-end">
+            <button wire:click="create" class="btn btn-primary">Add Exam</button>
+        </div>
     </div>
-
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Exam List</h5>
-
-
-    </div>
-    <div class="mb-4" style="background-color: #f8f9fa;">
+    
+    <div class="mb-1" style="background-color: #f8f9fa;">
         <div class="form-row mt-4 mx-2">
             <!-- Filter by Name -->
             <div class="col-md-3 mb-3">

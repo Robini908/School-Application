@@ -54,7 +54,7 @@ class ManageSections extends Component
             $this->sectionDetails = Section::with(['my_class', 'teacher'])->findOrFail($sectionId);
 
             // Fetch students in this section
-            $this->students = StudentRecord::where('section_id', $sectionId)->paginate(10);
+            $this->students = StudentRecord::where('section_id', $sectionId)->get();
 
             // Fetch all subjects from the database
             $this->subjects = Subject::all();

@@ -18,12 +18,7 @@
                 <button class="dropdown-item" type="button" wire:click="$set('activeAction', 'selectDeadline')">
                     <i class="icon-pencil"></i> Set Deadline (Subject selection end date)
                 </button>
-                <button class="dropdown-item" type="button" wire:click="$set('activeAction', 'suggest')">
-                    <i class="icon-lightbulb"></i> Suggest Grading Ranges
-                </button>
-                <button class="dropdown-item" type="button" wire:click="$set('activeAction', 'reuseDifferent')">
-                    <i class="icon-undo"></i> Re-use Grading Ranges (Different Grading System)
-                </button>
+                
             </div>
         </div>
     </div>

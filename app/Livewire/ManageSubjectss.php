@@ -61,12 +61,7 @@ class ManageSubjectss extends Component
             $subject->save();
 
             // Show success alert using LivewireAlert
-            $this->alert('info', 'Saved', [
-                'position' => 'top-end',
-                'timer' => 1500,
-                'toast' => true,
-                'showConfirmButton' => false,
-            ]);
+            $this->alert('info', 'Saved');
 
             // Optionally, you can emit an event to handle UI updates
             $this->dispatch('typeUpdated', $subjectId);

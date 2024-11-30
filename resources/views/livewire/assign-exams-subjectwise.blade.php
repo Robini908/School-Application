@@ -4,7 +4,7 @@
 
 
     {{-- Filter Selection --}}
-    <div class="card">
+    <div class="card  p-1 shadow-lg border rounded" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
         <div class="card-body">
             <h4 class="h5 text-muted">Filters for Viewing and Assigning Marks</h4>
 
@@ -30,6 +30,7 @@
                 </div>
 
                 <!-- Exam Selection -->
+                @if ($selectedClass)
                 <div class="col-md-4">
                     <label for="exam">Select Exam:</label>
                     <div class="input-group">
@@ -47,8 +48,10 @@
                         </div>
                     </div>
                 </div>
+                @endif
 
                 <!-- Subject Selection -->
+                @if ($selectedExam)
                 <div class="col-md-4">
                     <label for="subject">Select Subject:</label>
                     <div class="input-group">
@@ -66,14 +69,15 @@
                         </div>
                     </div>
                 </div>
+                @endif
             </div>
         </div>
     </div>
 
     <!-- Stream and Students Selection -->
     @if ($selectedClass && $selectedExam && $selectedSubject)
-        <div class="card mt-4">
-            <div class="card-body">
+    <div class="card  p-1 shadow-lg border rounded" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
+        <div class="card-body">
                 <h4 class="h5 text-muted">Marks Assignment for {{ $selectedSubjectName }}</h4>
 
                 <div class="form-group mb-4 alert alert-info">

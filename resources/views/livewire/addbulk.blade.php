@@ -1,4 +1,4 @@
-<div class="card container">
+<div class="card mt-4 col-12 p-3 shadow-lg border rounded" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
     <form method="POST" action="" enctype="multipart/form-data">
         @csrf     
         <div class="row g-3 align-items-center m-1">                      

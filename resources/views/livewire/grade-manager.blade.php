@@ -1,8 +1,5 @@
-<div class="card mt-0">
-    <div class="card-body">
-    
-
-
+    <div class="card mt-2 col-12 p-3 shadow-lg border rounded"
+    style="background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
         @if ($errors->has('grade'))
         <div class="alert alert-danger">{{ $errors->first('grade') }}</div>
         @endif

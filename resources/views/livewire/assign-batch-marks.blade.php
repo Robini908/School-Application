@@ -1,26 +1,28 @@
-<div class="container mt-4">
+<div class="card  p-3 shadow-lg border rounded" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
 
     <!-- Session Alerts -->
     <x-flash-messages />
 
     <!-- Class Selection -->
-    <div class="form-group">
+    <div class="form-group col-span-6">
         <label for="class">Select Class:</label>
+        <select wire:model.live="selectedClass" class="form-control" id="class">
+            <option value="">-- Select Class --</option>
+            @foreach ($classes as $class)
+            <option value="{{ $class->id }}">{{ $class->name }}</option>
+            @endforeach
+        </select>
+
         <div wire:loading wire:target="selectedClass">
             <div class="d-flex justify-content-center my-3">
                 <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
                     
             </div>
         </div>
-        <div wire:loading.remove>
-            <select wire:model.lazy="selectedClass" class="form-control" id="class">
-                <option value="">-- Select Class --</option>
-                @foreach ($classes as $class)
-                <option value="{{ $class->id }}">{{ $class->name }}</option>
-                @endforeach
-            </select>
-        </div>
     </div>
+
+
+    
 
     <!-- Selected Class Information -->
     @if ($selectedClass)
@@ -34,20 +36,19 @@
     @if ($selectedClass)
     <div class="form-group mt-3">
         <label for="exam">Select Exam:</label>
+        <select wire:model.live="selectedExam" class="form-control" id="exam">
+            <option value="">-- Select Exam --</option>
+            @foreach ($exams as $exam)
+            <option value="{{ $exam->id }}">{{ $exam->name }}</option>
+            @endforeach
+        </select>
         <div wire:loading wire:target="selectedExam">
             <div class="d-flex justify-content-center my-3">
                 <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
                   
             </div>
         </div>
-        <div wire:loading.remove>
-            <select wire:model.lazy="selectedExam" class="form-control" id="exam">
-                <option value="">-- Select Exam --</option>
-                @foreach ($exams as $exam)
-                <option value="{{ $exam->id }}">{{ $exam->name }}</option>
-                @endforeach
-            </select>
-        </div>
+       
     </div>
     @endif
 
@@ -55,18 +56,18 @@
     @if ($selectedExam)
     <div wire:loading wire:target="selectedSection">
         <div class="d-flex justify-content-center my-3">
-           =<div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+           <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
         </div>
     </div>
 
-    <div wire:loading.remove>
+    <div>
         @if ($sections->isNotEmpty())
             <div class="form-group mt-3">
                 <label>Select Section:</label>
                 <div class="d-flex flex-wrap">
                     @foreach ($sections as $section)
                         <div class="form-check me-3">
-                            <input type="radio" class="form-check-input" wire:model.lazy="selectedSection"
+                            <input type="radio" class="form-check-input" wire:model.live="selectedSection"
                                 value="{{ $section->id }}" id="section-{{ $section->id }}" />
                             <label class="form-check-label" for="section-{{ $section->id }}">{{ $section->name }}</label>
                         </div>

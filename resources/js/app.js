@@ -10,6 +10,7 @@ window.Swal = Swal;
 import Calendar from "@toast-ui/calendar";
 import "@toast-ui/calendar/dist/toastui-calendar.min.css";
 
+
 document.addEventListener("DOMContentLoaded", () => {
   const calendarEl = document.getElementById("calendar");
 
@@ -54,12 +55,5 @@ document.addEventListener("DOMContentLoaded", () => {
   ]);
 });
 
-
-
-import "../../vendor/masmerise/livewire-toaster/resources/js"; //
-
-import ToastComponent from "../../vendor/usernotnull/tall-toasts/resources/js/tall-toasts";
-
-Alpine.plugin(ToastComponent);
 
 

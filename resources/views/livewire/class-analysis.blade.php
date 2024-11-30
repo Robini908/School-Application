@@ -1,6 +1,7 @@
-<div>
+<div class="card  p-3 shadow-lg border rounded" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
+
     <!-- Dropdown to select exam -->
-    <div class="form-group">
+    <div class="form-group col-6">
         <label for="exam">Select Exam:</label>
         <select wire:model.live="examId" wire:change="getGradesCount" id="exam" class="form-control">
             <option value="">-- Choose Exam --</option>

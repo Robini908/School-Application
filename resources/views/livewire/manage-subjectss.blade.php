@@ -1,7 +1,7 @@
-<div class="container mt-0">
+
     @if ($showForm)
     <!-- Show Form for Creating or Editing -->
-    <div class="card " style="border: 1px solid #007bff;">
+    <div style="border: 1px solid #007bff;">
         <div class="card-header bg-primary text-white">
             <h3>{{ $isEditing ? 'Edit Subject' : 'Create New Subject' }}</h3>
         </div>
@@ -160,7 +160,7 @@
 
     @else
     <!-- Show Table of Subjects -->
-    <div class="card mt-0">
+    <div class="mt-0">
         <div class="card-header">
             <button wire:click="create" class="btn btn-primary mb-2" wire:loading.attr="disabled">
                 Add Subject
@@ -238,8 +238,4 @@
             </table>
         </div>
     </div>
-    
-
-
     @endif
-</div>
