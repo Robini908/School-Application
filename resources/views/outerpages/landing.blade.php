@@ -10,7 +10,7 @@
                 <header class="p-2 text-center" id="theheader">
                     <p class=" tsh" >Mbuku ERP</p>
                     <p class=" tsh2">The Ultimate Solution for Schools</p>
-                    <a href="signup.html" class="btn btn-lg" id="startbtn">Get Started</a>
+                    <a href="login.html" class="btn btn-lg" id="startbtn">Get Started</a>
                 </header>            
             </div>            
         </div>

@@ -133,7 +133,6 @@ class GradeManager extends Component
         if (count($this->gradesList) > 1) {
             unset($this->gradesList[$index]);
             $this->gradesList = array_values($this->gradesList); // Re-index the array
-            $this->alert('success', 'Grade removed successfully!'); // Success success
         } else {
             $this->alert('error', 'You must have at least one grade.');
         }
@@ -165,6 +164,30 @@ class GradeManager extends Component
         foreach ($this->gradesList as $index => $grade) {
             $this->validateGrade($index);
         }
+
+        $uniqueGrades = [];
+        $duplicates = [];
+        foreach ($this->gradesList as $grade) {
+            if (in_array($grade['grade'], $uniqueGrades)) {
+                $duplicates[] = $grade['grade'];
+            } else {
+                $uniqueGrades[] = $grade['grade'];
+            }
+        }
+
+        if (!empty($duplicates)) {
+            $this->alert('error', 'The following grades are duplicates and were not applied: ' . implode(', ', $duplicates), [
+                'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
+                'showConfirmButton' => true, // Show a confirmation button
+                'confirmButtonText' => 'OK', // Text on the confirm button
+                'reverseButtons' => true, // Reverse the order of buttons
+                'timer' => 30000, // Time before it automatically closes
+                'toast' => false, // If you want it to be a toast notification or a modal
+            ]);
+        }
+
+
+        
 
         foreach ($this->gradesList as $grade) {
             GradingGrade::updateOrCreate(

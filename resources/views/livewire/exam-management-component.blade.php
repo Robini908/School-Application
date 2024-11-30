@@ -277,13 +277,13 @@
     </div>
     @else
     <!-- Show List -->
-    <div class="row d-flex">
-        <div class="card-header d-flex justify-content-between align-items-center">
+    <div class="d-flex justify-content-between mt-1">
+        <div class="card-header d-flex  align-items-center">
             <h5 class="mb-0">Exam List</h5>
         </div>
     
         <div class="justify-items-end">
-            <button wire:click="create" class="btn btn-primary">Add Exam</button>
+            <button wire:click="create" class="btn btn-primary">New</button>
         </div>
     </div>
     

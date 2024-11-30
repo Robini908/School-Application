@@ -24,10 +24,10 @@
     <link href="{{ asset('assets/css/placeholder.css') }}" rel="stylesheet" type="text/css">
 
     <!-- Core JS files -->
-    <script src="{{ asset('global_assets/js/main/jquery-3.6.0.min.js') }}"></script>
+    <script src="{{ asset('global_assets/js/main/jquery.min.js') }}"></script>
+    <script src="{{ asset('global_assets/js/main/popper.min.js') }}"></script>
     <script src="{{ asset('global_assets/js/main/bootstrap.bundle.min.js') }}"></script> <!-- bundle includes popper -->
     <script src="{{ asset('global_assets/js/plugins/loaders/blockui.min.js') }}"></script>
     <script src="{{ asset('global_assets/js/main/trix.js') }}"></script>
     <script src="{{ asset('global_assets/js/main/swiper-bundle.min.js') }}"></script>
 
-</div>

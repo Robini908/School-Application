@@ -16,9 +16,10 @@ class GradingRangeManager extends Component
     use LivewireAlert;
     public $gradingSystems, $subjects, $selectedGradingSystem;
     public $ranges = [];
+
     public $reuseSubjectId; // Store the selected subject ID for reuse
     public $subjectId;
-    public $submittedRanges = [];
+    public $submittedRanges;
     public $showForm = true; // Flag to control form visibility
     public $isLoading = false; // Flag for loading state
     public $isEditing = false;
@@ -30,10 +31,13 @@ class GradingRangeManager extends Component
 
     public $reuseGradingSystemId;
     public $reuseSubjectFromOtherSystemId;
+    public $hasAssignedRanges = false;
 
     protected $listeners = [
         'deleteRange'
     ];
+
+
 
 
 
@@ -46,16 +50,18 @@ class GradingRangeManager extends Component
 
 
 
+
+
     public function reuseGradingRanges()
     {
         // Validate the selected subject for reuse
         if (!$this->reuseSubjectId) {
-            
+
             $this->alert('error', 'Please select a subject to reuse grading ranges.', [
                 'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
                 'showConfirmButton' => true, // Show a confirmation button
                 'confirmButtonText' => 'OK', // Text on the confirm button
-               
+
                 'reverseButtons' => true, // Reverse the order of buttons
                 'timer' => 30000, // Time before it automatically closes
                 'toast' => false, // If you want it to be a toast notification or a modal
@@ -72,7 +78,7 @@ class GradingRangeManager extends Component
                 'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
                 'showConfirmButton' => true, // Show a confirmation button
                 'confirmButtonText' => 'OK', // Text on the confirm button
-             
+
                 'reverseButtons' => true, // Reverse the order of buttons
                 'timer' => 30000, // Time before it automatically closes
                 'toast' => false, // If you want it to be a toast notification or a modal
@@ -90,7 +96,7 @@ class GradingRangeManager extends Component
                 'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
                 'showConfirmButton' => true, // Show a confirmation button
                 'confirmButtonText' => 'OK', // Text on the confirm button
-              
+
                 'reverseButtons' => true, // Reverse the order of buttons
                 'timer' => 30000, // Time before it automatically closes
                 'toast' => false, // If you want it to be a toast notification or a modal
@@ -105,12 +111,12 @@ class GradingRangeManager extends Component
 
         // Check if the selected grading system has existing ranges
         if (!$existingGradingSystemsWithRanges->contains($this->selectedGradingSystem)) {
-          
+
             $this->alert('error', 'The selected grading system does not have any existing grading ranges for reuse.', [
                 'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
                 'showConfirmButton' => true, // Show a confirmation button
                 'confirmButtonText' => 'OK', // Text on the confirm button
-                
+
                 'reverseButtons' => true, // Reverse the order of buttons
                 'timer' => 30000, // Time before it automatically closes
                 'toast' => false, // If you want it to be a toast notification or a modal
@@ -125,13 +131,13 @@ class GradingRangeManager extends Component
 
         // If no ranges found for reuse, show a warning message
         if ($existingRanges->isEmpty()) {
-            
+
             $this->alert('error', 'No grading ranges found for the subject: ' . $reuseSubject->subject_name . '. Please check if the grading ranges exist.', [
                 'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
                 'showConfirmButton' => true, // Show a confirmation button
                 'confirmButtonText' => 'OK', // Text on the confirm button
                 'showCancelButton' => true, // Show a cancel button
-               
+
                 'timer' => 30000, // Time before it automatically closes
                 'toast' => false, // If you want it to be a toast notification or a modal
             ]);
@@ -155,7 +161,7 @@ class GradingRangeManager extends Component
             'showConfirmButton' => true, // Show a confirmation button
             'confirmButtonText' => 'OK', // Text on the confirm button
             'showCancelButton' => true, // Show a cancel button
-           
+
             'timer' => 30000, // Time before it automatically closes
             'toast' => false, // If you want it to be a toast notification or a modal
         ]);
@@ -165,12 +171,11 @@ class GradingRangeManager extends Component
             'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
             'showConfirmButton' => true, // Show a confirmation button
             'confirmButtonText' => 'OK', // Text on the confirm button
-           
+
             'reverseButtons' => true, // Reverse the order of buttons
             'timer' => 30000, // Time before it automatically closes
             'toast' => false, // If you want it to be a toast notification or a modal
         ]);
-
     }
 
 
@@ -184,7 +189,7 @@ class GradingRangeManager extends Component
                 'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
                 'showConfirmButton' => true, // Show a confirmation button
                 'confirmButtonText' => 'OK', // Text on the confirm button
-              
+
                 'reverseButtons' => true, // Reverse the order of buttons
                 'timer' => 30000, // Time before it automatically closes
                 'toast' => false, // If you want it to be a toast notification or a modal
@@ -204,7 +209,7 @@ class GradingRangeManager extends Component
                 'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
                 'showConfirmButton' => true, // Show a confirmation button
                 'confirmButtonText' => 'OK', // Text on the confirm button
-                
+
                 'reverseButtons' => true, // Reverse the order of buttons
                 'timer' => 30000, // Time before it automatically closes
                 'toast' => false, // If you want it to be a toast notification or a modal
@@ -223,7 +228,7 @@ class GradingRangeManager extends Component
                 'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
                 'showConfirmButton' => true, // Show a confirmation button
                 'confirmButtonText' => 'OK', // Text on the confirm button
-                
+
                 'reverseButtons' => true, // Reverse the order of buttons
                 'timer' => 30000, // Time before it automatically closes
                 'toast' => false, // If you want it to be a toast notification or a modal
@@ -241,7 +246,7 @@ class GradingRangeManager extends Component
                 'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
                 'showConfirmButton' => true, // Show a confirmation button
                 'confirmButtonText' => 'OK', // Text on the confirm button
-                
+
                 'reverseButtons' => true, // Reverse the order of buttons
                 'timer' => 30000, // Time before it automatically closes
                 'toast' => false, // If you want it to be a toast notification or a modal
@@ -265,8 +270,8 @@ class GradingRangeManager extends Component
             'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
             'showConfirmButton' => true, // Show a confirmation button
             'confirmButtonText' => 'OK', // Text on the confirm button
-          
-           
+
+
             'reverseButtons' => true, // Reverse the order of buttons
             'timer' => 30000, // Time before it automatically closes
             'toast' => false, // If you want it to be a toast notification or a modal
@@ -285,8 +290,8 @@ class GradingRangeManager extends Component
                 'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
                 'showConfirmButton' => true, // Show a confirmation button
                 'confirmButtonText' => 'OK', // Text on the confirm button
-                
-                
+
+
                 'reverseButtons' => true, // Reverse the order of buttons
                 'timer' => 30000, // Time before it automatically closes
                 'toast' => false, // If you want it to be a toast notification or a modal
@@ -403,12 +408,12 @@ class GradingRangeManager extends Component
         $this->reset(['subjectId', 'ranges', 'submittedRanges']);
     }
 
-    public function updatedSubjectId()
-    {
-        $this->ranges = [];
-        $this->addRange();
-        $this->loadSubmittedRanges();
-    }
+
+
+
+
+
+
 
     public function addRange()
     {
@@ -421,11 +426,47 @@ class GradingRangeManager extends Component
         $this->ranges = array_values($this->ranges);
     }
 
+
     public function editRange($index)
     {
         $this->isEditing = true;
         $this->currentIndex = $index;
+
+        // Initialize the ranges array with the data of the row being edited
+        $submittedRange = $this->submittedRanges[$index];
+        $this->ranges[$index] = [
+            'range_from' => $submittedRange->range_from,
+            'range_to' => $submittedRange->range_to,
+            'grade' => $submittedRange->grade,
+            'remark' => $submittedRange->remark,
+            'gpa' => $submittedRange->gpa,
+        ];
     }
+
+    public function submitRange($index)
+    {
+        // Make sure we are editing the correct index
+        $rangeToUpdate = $this->submittedRanges[$index];
+
+        $rangeToUpdate->update([
+            'range_from' => $this->ranges[$index]['range_from'],
+            'range_to' => $this->ranges[$index]['range_to'],
+            'grade' => $this->ranges[$index]['grade'],
+            'remark' => $this->ranges[$index]['remark'],
+            'gpa' => $this->ranges[$index]['gpa'],
+        ]);
+
+        $this->alert('success', 'Grading range updated successfully!');
+        $this->resetEditingState();
+        $this->$this->syncRanges();  // Refresh the ranges after updating
+    }
+
+    public function cancelEdit()
+    {
+        $this->resetEditingState();
+    }
+
+
 
     public function submitRanges()
     {
@@ -453,8 +494,12 @@ class GradingRangeManager extends Component
         }
 
         $this->alert('success', 'Grading ranges saved successfully!');
-        $this->reset(['subjectId', 'ranges', 'showForm']); // Reset and hide the form
-        $this->loadSubmittedRanges();
+
+        // After saving, synchronize the ranges
+        $this->syncRanges();
+
+        // Reset and hide the form
+        $this->reset(['ranges', 'showForm']);
         $this->isLoading = false; // Hide loading state
     }
 
@@ -489,9 +534,11 @@ class GradingRangeManager extends Component
 
         $this->alert('success', 'Grading range updated successfully!');
         $this->resetEditingState();
-        $this->loadSubmittedRanges();
+        $this->$this->syncRanges();
         $this->isLoading = false; // Hide loading state
     }
+
+
 
 
     protected function resetEditingState()
@@ -499,7 +546,6 @@ class GradingRangeManager extends Component
         $this->isEditing = false;
         $this->currentIndex = null;
         $this->ranges = [];
-        $this->showForm = false; // Close the form 
     }
     public function editSubmittedRange($id)
     {
@@ -523,33 +569,9 @@ class GradingRangeManager extends Component
     {
         GradingRange::destroy($id);
         $this->alert('success', 'Grading range deleted successfully!');
-        
-        $this->loadSubmittedRanges(); // Refresh the submitted ranges
+
+        $this->syncRanges(); // Refresh the submitted ranges
     }
-
-    // public function confirmDelete($id)
-    // {
-    //     $this->alert('warning', 'Are you sure you want to delete this grading range?', [
-    //         'position' => 'top',
-    //         'showConfirmButton' => true,
-    //         'confirmButtonText' => 'Yes, Delete',
-    //         'showCancelButton' => true,
-    //         'cancelButtonText' => 'No, Keep',
-    //         'reverseButtons' => true,
-    //         'timer' => null, // Keeps alert open until confirmed or canceled
-    //         'toast' => false,
-    //         'onConfirmed' => "deleteConfirmed({$id})", // Use the ID directly in the method call
-    //     ]);
-    // }
-    
-
-    // public function deleteConfirmed($id)
-    // {
-    //     GradingRange::destroy($id);
-    //     $this->alert('success', 'Grading range deleted successfully!');
-    //     $this->loadSubmittedRanges(); // Refresh the submitted ranges
-    // }
-    
 
     protected function validateRanges()
     {
@@ -564,12 +586,70 @@ class GradingRangeManager extends Component
         }
     }
 
+
+
+    public function updatedSubjectId()
+    {
+        // Reset ranges and initialize for the new subject
+        $this->ranges = [];
+        $this->addRange(); // Initialize ranges for the new subject
+
+        // Synchronize the data for the new subject
+        $this->syncRanges();
+
+        // Ensure that the hasAssignedRanges flag is updated
+        $this->hasAssignedRanges = $this->hasSubmittedRanges(); // Ensure flag is recalculated here
+
+        // Load the submitted ranges
+        $this->loadSubmittedRanges();
+    }
+
+
+
+
+
+
+    public function syncRanges()
+    {
+        // Reload submitted ranges and reset flags for synchronization
+        $this->loadSubmittedRanges();
+
+        // Ensure the correct display flag is set
+        $this->resetRangesFlag();
+
+        // Trigger the event for synchronization
+        $this->dispatch('rangesUpdated');
+    }
+
+
+
     public function loadSubmittedRanges()
     {
+        // Reload the ranges from the database for the selected grading system and subject
         $this->submittedRanges = GradingRange::with(['gradingSystem', 'subject'])
             ->where('grading_system_id', $this->selectedGradingSystem)
             ->where('subject_id', $this->subjectId)
             ->get();
+    
+        // Set the flag using the helper method to check if ranges are assigned
+        $this->hasAssignedRanges = $this->hasSubmittedRanges();  // Ensure it's updated immediately after loading the ranges
+    }
+    
+
+
+
+    public function hasSubmittedRanges(): bool
+    {
+        // Check if there are any submitted ranges for the current grading system and subject
+        return GradingRange::where('grading_system_id', $this->selectedGradingSystem)
+            ->where('subject_id', $this->subjectId)
+            ->exists();
+    }
+
+    public function resetRangesFlag()
+    {
+        // Reset the `hasAssignedRanges` flag to ensure correct rendering
+        $this->hasAssignedRanges = $this->hasSubmittedRanges();
     }
 
 

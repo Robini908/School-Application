@@ -12,6 +12,10 @@
             <li class="nav-item">
                 <a href="#grading-range" class="nav-link" data-toggle="tab"> Manage Grading Ranges</a>
             </li>
+
+            <li class="nav-item">
+                <a href="#meangrade-range" class="nav-link" data-toggle="tab"> Manage MeanGrade Ranges</a>
+            </li>
         </ul>
 
         <div class="tab-content">
@@ -22,6 +26,10 @@
             </div>
             <div class="tab-pane fade p-1" id="grading-range">
                 <livewire:grading-range-manager lazy />
+            </div>
+
+            <div class="tab-pane fade p-1" id="meangrade-range">
+                <livewire:grade-manager lazy />
             </div>
         </div>
     </div>

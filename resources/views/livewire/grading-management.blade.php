@@ -100,7 +100,7 @@
 
 
             <!-- Existing Grading Systems Header -->
-            <div class="d-flex justify-content-between mt-1">
+           
                 <h3 class="mb-4 text-center"
                     style="color: #333; font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);">
                     Existing Grading Systems</h3>

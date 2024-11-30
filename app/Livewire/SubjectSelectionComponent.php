@@ -105,9 +105,6 @@ class SubjectSelectionComponent extends Component
     }
 
 
-
-
-
     public function submit()
     {
         $student = StudentRecord::findOrFail($this->studentId);
