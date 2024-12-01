@@ -434,7 +434,7 @@
 
                                                         <div class="col-md-12 mb-4">
                                                             <div class="row">
-                                                                @foreach ($studentsByParent as $parent)
+                                                                @forelse ($studentsByParent as $parent)
                                                                     <div class="col-lg-6 col-md-6 col-sm-12 mb-4">
                                                                         <div class="bg-light p-4 rounded-lg shadow-sm">
                                                                             <h5 class="font-weight-bold text-success">
@@ -442,17 +442,12 @@
                                                                             <p><strong>Siblings:</strong></p>
                                                                             <ul class="list-unstyled">
                                                                                 @foreach ($parent['students'] as $student)
-                                                                                    <li
-                                                                                        class="d-flex justify-content-between align-items-center mb-2">
-                                                                                        <div
-                                                                                            class="d-flex align-items-center">
+                                                                                    <li class="d-flex justify-content-between align-items-center mb-2">
+                                                                                        <div class="d-flex align-items-center">
                                                                                             <strong>{{ $student['name'] }}</strong>
-                                                                                            <span
-                                                                                                class="ml-2 text-muted text-sm">|</span>
-                                                                                            <div
-                                                                                                class="position-relative ml-2">
-                                                                                                <span
-                                                                                                    class="badge badge-info"
+                                                                                            <span class="ml-2 text-muted text-sm">|</span>
+                                                                                            <div class="position-relative ml-2">
+                                                                                                <span class="badge badge-info"
                                                                                                     style="background-color: #17a2b8;">{{ $student['status'] }}</span>
                                                                                                 <!-- Arrow pointing to the badge -->
                                                                                                 <span class="arrow"
@@ -464,9 +459,14 @@
                                                                             </ul>
                                                                         </div>
                                                                     </div>
-                                                                @endforeach
+                                                                @empty
+                                                                    <div class="col-12">
+                                                                        <p class="text-center text-muted">No parents with multiple students found.</p>
+                                                                    </div>
+                                                                @endforelse
                                                             </div>
                                                         </div>
+                                                        
 
 
 
