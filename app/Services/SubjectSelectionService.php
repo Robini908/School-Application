@@ -103,7 +103,6 @@ class SubjectSelectionService
             'Languages' => 2,
             'Technical Subjects' => 1,
 
-            // Removed 'Electives' validation from here
         ];
     }
 

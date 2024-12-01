@@ -161,12 +161,7 @@
     @else
     <!-- Show Table of Subjects -->
     <div class="mt-0">
-        <div class="card-header">
-            <button wire:click="create" class="btn btn-primary mb-2" wire:loading.attr="disabled">
-                Add Subject
-                <div wire:loading wire:target="create" class="spinner-border spinner-border-sm ms-2" role="status"></div>
-            </button>
-    
+        <div class="card-header justify-content-between d-flex align-items-center">
             <!-- Filter dropdown for categories -->
             <div class="float-end">
                 <select wire:model.live="selectedCategory" wire:change="filterByCategory($event.target.value)" class="form-control">
@@ -176,6 +171,10 @@
                     @endforeach
                 </select>
             </div>
+            <button wire:click="create" class="btn btn-primary mb-2" wire:loading.attr="disabled">
+                New
+                <div wire:loading wire:target="create" class="spinner-border spinner-border-sm ms-2" role="status"></div>
+            </button>
         </div>
     
         <div class="card-body">

@@ -1,4 +1,4 @@
-<div class="card mt-4 col-12 p-3 shadow-lg border rounded" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
+<div  class="card mt-4 col-12 p-3 shadow-lg border rounded" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
 
     <form method="post" enctype="multipart/form-data" class="wizard-form steps-validation"
         action="{{ route('students.store') }}" data-fouc>

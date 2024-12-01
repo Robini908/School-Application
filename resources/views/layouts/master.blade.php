@@ -15,7 +15,8 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
-
+    <script src="jquery.js"></script> 
+    <script src="jquery.steps.js"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('partials.inc_top')
     @livewireStyles
@@ -23,7 +24,9 @@
 
 <body
     class="{{ in_array(Route::currentRouteName(), ['payments.invoice', 'marks.tabulation', 'marks.show', 'ttr.manage', 'ttr.show']) ? 'sidebar-xs' : '' }}">
-
+    <script>
+        $("#wizard").steps();
+    </script>
     @include('partials.top_menu')
     <div class="page-content">
         @include('partials.menu')

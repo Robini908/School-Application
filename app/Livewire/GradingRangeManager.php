@@ -7,9 +7,11 @@ use Livewire\Component;
 use App\Models\ExamMarks;
 use App\Models\GradingRange;
 use App\Models\GradingSystem;
+use Livewire\Attributes\Lazy;
+use Illuminate\Support\Facades\Log;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
 
-
+#[Lazy]
 class GradingRangeManager extends Component
 {
 
@@ -479,7 +481,7 @@ class GradingRangeManager extends Component
         $this->validateRanges();
 
         // Log the ranges for debugging
-        \Log::info('Ranges to save:', $this->ranges);
+        Log::info('Ranges to save:', $this->ranges);
 
         foreach ($this->ranges as $range) {
             GradingRange::create([
@@ -510,8 +512,8 @@ class GradingRangeManager extends Component
         $this->validateRanges();
 
         // Log the current index and submitted ranges for debugging
-        \Log::info('Current index:', $this->currentIndex);
-        \Log::info('Submitted ranges:', $this->submittedRanges);
+        Log::info('Current index:', $this->currentIndex);
+        Log::info('Submitted ranges:', $this->submittedRanges);
 
         // Ensure current index is within bounds
         if (isset($this->submittedRanges[$this->currentIndex])) {

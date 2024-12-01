@@ -634,7 +634,7 @@ class ClassManagement extends Component
     public function getYearsRange()
     {
         $currentYear = date('Y'); // Get the current year
-        $startYear = 2020; // Start year, you can change this
+        $startYear = 2009; // Start year, you can change this
         $endYear = $currentYear + 5; // End year is 5 years after the current year
 
         // Generate an array of years

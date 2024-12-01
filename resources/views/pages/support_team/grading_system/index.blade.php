@@ -7,14 +7,14 @@
         <ul class="nav nav-tabs nav-tabs-highlight p-3" style="margin-bottom: 1rem;">
             <!-- Added margin-bottom -->
             <li class="nav-item">
-                <a href="#grading-management" class="nav-link active" data-toggle="tab">Manage Grading Systems</a>
+                <a href="#grading-management" class="nav-link active" data-toggle="tab">Grading Systems</a>
             </li>
             <li class="nav-item">
-                <a href="#grading-range" class="nav-link" data-toggle="tab"> Manage Grading Ranges</a>
+                <a href="#grading-range" class="nav-link" data-toggle="tab">Grading Ranges</a>
             </li>
 
             <li class="nav-item">
-                <a href="#meangrade-range" class="nav-link" data-toggle="tab"> Manage MeanGrade Ranges</a>
+                <a href="#meangrade-range" class="nav-link" data-toggle="tab">MeanGrade Ranges</a>
             </li>
         </ul>
 
@@ -25,7 +25,7 @@
                 <livewire:grading-management lazy />
             </div>
             <div class="tab-pane fade p-1" id="grading-range">
-                <livewire:grading-range-manager lazy />
+                <livewire:grading-range-manager />
             </div>
 
             <div class="tab-pane fade p-1" id="meangrade-range">
