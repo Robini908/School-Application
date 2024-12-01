@@ -2,13 +2,14 @@
 
 namespace App\Livewire;
 
+use App\User;
 use App\Models\MyClass;
 use App\Models\Section;
-use App\User;
-use App\Models\StudentRecord;
-use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Livewire\Component;
 use Livewire\WithPagination;
+use App\Models\StudentRecord;
+use Carbon\Carbon;
+use Jantinnerezo\LivewireAlert\LivewireAlert;
 
 class ClassManagement extends Component
 {
@@ -17,8 +18,12 @@ class ClassManagement extends Component
     // Class Properties
     public $name;
     public $session;
+    public $teacher;
     public $classTeacher;
     public $classId;
+    public $class;
+    public $classSession;
+    public $showClassMaster = false;
     public $editMode = false;
 
     // Stream Properties
@@ -32,7 +37,7 @@ class ClassManagement extends Component
 
     // Selected Class for Viewing Streams or Entries
     public $selectedClass = null;
-    public $viewStreamsMode = false;
+    public $isDisplayingStreams = false;
     public $viewEntriesMode = false;
 
     // Stream Teacher Assignment
@@ -42,7 +47,8 @@ class ClassManagement extends Component
     // Students Data
     public $students = [];
     public $stream;
-
+    public $isEditing = false;
+    public $isViewingClassTeacher = false;
     public $selectedStreamEntries = []; // to store the entries data
     public $isLoadingAssign = false;
     public $isLoadingEdit = false;
@@ -68,8 +74,22 @@ class ClassManagement extends Component
     public $showInlineForm = false;
     public $selectedClassForAssignment;
     public $selectedTeacherId;
+
+    public $genderBalance;
+    public $admissionPeriod;
+    public $studentsWithSameParent;
+    public $studentsFromSameTown;
+    public $suspendedStudents;
+    public $kcpeBatches;
+    public $studentsDormInfo;
+    public $studentsByParent;
+    public $studentsFullNameAndAdmission;
+
     public $sessionYear; // Add this line to declare the sessionYear property
     public $editingStreamId = null;
+
+
+
 
 
     // Validation Rules
@@ -104,26 +124,102 @@ class ClassManagement extends Component
         $this->teachers = User::where('user_type', 'teacher')->get();
     }
 
-
-
-
-    // public function creatingClass(){
-
-    //     $this->isCreating = true;
-    //     $this->editMode = false;
-    //     $this->showForm = true;
-    // }
-
-
-
     public function showCreateForm()
     {
         $this->resetForm();
         $this->showForm = true;
         $this->isCreating = true;
-        $this->editMode = false;
+        $this->isEditing = false;
     }
 
+
+    public function viewEntries($classId)
+    {
+        $class = MyClass::with('student_record')->findOrFail($classId);
+
+        $this->selectedClass = $class;
+        $this->studentsCount = $class->student_record->count();  // Corrected count
+        $this->viewEntriesMode = true;
+        $this->isDisplayingStreams = false;
+
+        // Gender balance using filter on collection, with names in a row
+        $maleStudents = $class->student_record->filter(function ($student) {
+            return !empty($student->gender) && strtolower(trim($student->gender)) === 'male';
+        })->pluck('first_name', 'last_name')->map(function ($first_name, $last_name) {
+            return $first_name . ' ' . $last_name;
+        });
+
+        $femaleStudents = $class->student_record->filter(function ($student) {
+            return !empty($student->gender) && strtolower(trim($student->gender)) === 'female';
+        })->pluck('first_name', 'last_name')->map(function ($first_name, $last_name) {
+            return $first_name . ' ' . $last_name;
+        });
+
+        // Gender balance with names
+        $this->genderBalance = [
+            'male' => $maleStudents->count(),
+            'female' => $femaleStudents->count(),
+            'male_names' => $maleStudents->implode(', '), // Join names with commas
+            'female_names' => $femaleStudents->implode(', ') // Join names with commas
+        ];
+
+        $studentsByParent = $class->student_record->groupBy('parent_id_no')->map(function ($group, $parentId) {
+            // Get the parent details from the parent_detail relationship
+            $parent = $group->first()->parent_detail;
+            $parentName = $parent ? $parent->parent_first_name . ' ' . $parent->parent_middle_name . ' ' . $parent->parent_last_name : 'Unknown Parent';
+            
+            // Get student details: names, admission year, and graduation status
+            $studentDetails = $group->map(function ($student) {
+                // Calculate graduation status (assuming 4 years of study)
+                $yearAdmitted = $student->year_admitted;
+                $currentYear = now()->year; // Get current year
+                $status = ($currentYear - $yearAdmitted >= 4) ? 'Graduated' : 'Still in session, admitted in ' . $yearAdmitted;
+        
+                return [
+                    'name' => $student->first_name . ' ' . $student->last_name,
+                    'status' => $status,
+                    'year_admitted' => $yearAdmitted
+                ];
+            });
+        
+            return [
+                'parent_name' => $parentName,
+                'students' => $studentDetails
+            ];
+        })->filter(function ($parentGroup) {
+            // Only keep parents with more than one student
+            return $parentGroup['students']->count() > 1;
+        });
+        
+        // Pass this grouped data to the view
+        $this->studentsByParent = $studentsByParent;
+        
+        
+    }
+
+
+
+
+
+
+    public function toggleClassForm($classId = null)
+    {
+        if ($classId) {
+            // Editing Existing Class
+            $class = MyClass::with('sections', 'teacher')->findOrFail($classId);
+            $this->classId = $class->id;
+            $this->name = $class->name;
+            $this->session = $class->session;
+            $this->classTeacher = $class->user_id;
+            $this->streams = $class->sections->toArray();
+            $this->showForm = true;
+            $this->isCreating = false;
+            $this->isEditing = true;
+        } else {
+            // Adding New Class
+            $this->showCreateForm();
+        }
+    }
 
 
     public function assignStreamTeacher($streamId)
@@ -167,7 +263,7 @@ class ClassManagement extends Component
             'streams',
             'selectedStream',
             'streamEditMode',
-            'viewStreamsMode',
+            'isDisplayingStreams',
             'viewEntriesMode',
             'streamTeacher',
             'students',
@@ -177,8 +273,19 @@ class ClassManagement extends Component
             'modalStudentsCount',
             'modalStreamName',
         ]);
+        $this->showForm = false;
+        $this->isCreating = false;
+        $this->isEditing = false;
         $this->streamAdded = false;
     }
+
+    // private function resetForm()
+    // {
+    //     $this->reset(['classId', 'name', 'session', 'classTeacher', 'streams']);
+    //     $this->showForm = false;
+    //     $this->isCreating = false;
+    //     $this->isEditing = false;
+    // }
 
     public function resetModalFields()
     {
@@ -189,36 +296,34 @@ class ClassManagement extends Component
         $this->session = null; // Reset session
     }
 
-    public function viewClassMater($classId)
+    public function viewClassMaster($classId)
     {
-        // Retrieve the class and its assigned teacher/session
-        $this->selectedClass = MyClass::find($classId);
-        if ($this->selectedClass) {
-            $this->assignedTeacher = $this->selectedClass->teacher; // Assuming relationship
-            $this->assignedSession = $this->selectedClass->session; // Adjust as needed
-            $this->viewClassMasterMode = true; // Set to true to show class master information
+        // Find the class by ID
+        $class = MyClass::find($classId);
+
+        if ($class) {
+            $this->class = $class; // Store the class object
+
+            // Check if the class has an assigned teacher (master)
+            if ($class->master) {
+                $this->classTeacher = $class->master->name;
+                $this->classSession = $class->session;
+                $this->teacher = $class->master;
+            } else {
+                $this->classTeacher = 'No teacher assigned';
+                $this->teacher = null;
+                $this->classSession = 'N/A'; // Or whatever placeholder is suitable
+            }
         }
+
+        // Toggle the visibility of the card
+        $this->isViewingClassTeacher = !$this->isViewingClassTeacher;
     }
 
 
 
-    // Toggle class form for adding or editing
-    public function toggleClassForm($classId = null)
-    {
-        if ($classId) {
-            // Editing Existing Class
-            $this->editMode = true;
-            $class = MyClass::with('sections', 'teacher')->findOrFail($classId);
-            $this->classId = $class->id;
-            $this->name = $class->name;
-            $this->session = $class->session;
-            $this->classTeacher = $class->user_id;
-            $this->streams = $class->sections->toArray();
-        } else {
-            // Adding New Class
 
-        }
-    }
+
 
     // Save or update class
     public function saveClass()
@@ -346,19 +451,14 @@ class ClassManagement extends Component
     public function viewStreams($classId)
     {
         $this->selectedClass = MyClass::with('sections.teacher', 'sections.studentRecords')->findOrFail($classId);
-        $this->viewStreamsMode = true;
+        $this->isDisplayingStreams = true;
         $this->viewEntriesMode = false;
     }
 
+
+
     // View entries (students) of a selected class
-    public function viewEntries($classId)
-    {
-        $class = MyClass::withCount('student_record')->findOrFail($classId);
-        $this->selectedClass = $class;
-        $this->studentsCount = $class->student_record_count;
-        $this->viewEntriesMode = true;
-        $this->viewStreamsMode = false;
-    }
+
 
 
 
@@ -366,47 +466,61 @@ class ClassManagement extends Component
 
     public function toggleAssignTeacher($classId)
     {
-        if ($this->selectedClassForAssignment === $classId) {
-            $this->showInlineForm = !$this->showInlineForm; // Toggle the form
+        $this->selectedClassForAssignment = $classId;
+        $class = MyClass::find($classId);
+
+        if ($class->master) {
+            // Prefill the form with existing teacher and session values
+            $this->streamTeacher = $class->master->id;
+            $this->session = $class->session;
         } else {
-            $this->selectedClassForAssignment = $classId; // Set the selected class
-            $this->showInlineForm = true; // Show the form
+            // Reset form fields if no teacher is assigned
+            $this->reset(['streamTeacher', 'session']);
         }
 
-        // Reset the fields for teacher and session
-        $this->reset(['streamTeacher', 'session']);
+        $this->showInlineForm = true; // Show the form
     }
+
+
 
     public function closeInlineForm()
     {
         $this->showInlineForm = false;
-        $this->reset(['streamTeacher', 'session']);
+        $this->reset(['streamTeacher', 'session', 'showInlineForm', 'selectedClassForAssignment']);
     }
+
+
+
+
+
 
     public function saveStreamTeacher()
     {
+        // Validate the inputs
         $this->validate([
             'streamTeacher' => 'required|exists:users,id',
-            'session' => 'required|string',
+            'session' => 'required|integer',
         ]);
 
-        // Fetch the selected class
-        $class = MyClass::find($this->selectedClassForAssignment);
-
-        if ($class) {
-            // Assign the teacher as the class master
-            $class->master_id = $this->streamTeacher; // Use master_id to assign the class master
-            $class->session = $this->session; // Save the session
-            $class->save(); // Save changes
-
-            $this->alert('success', 'Class Master assigned successfully.');
-        } else {
-            $this->alert('error', 'Class not found.');
+        // Check if the teacher is already assigned to another class
+        $existingClass = MyClass::where('master_id', $this->streamTeacher)->first();
+        if ($existingClass && $existingClass->id !== $this->selectedClassForAssignment) {
+            $this->alert('error', 'This teacher is already assigned to another class.');
+            return;
         }
 
-        // Close the form and reset
+        // Update or assign the teacher to the selected class
+        $class = MyClass::find($this->selectedClassForAssignment);
+        $class->update([
+            'master_id' => $this->streamTeacher,
+            'session' => $this->session,
+        ]);
+
+        $this->reset(['streamTeacher', 'session', 'showInlineForm', 'selectedClassForAssignment']);
+        $this->alert('success', 'Class teacher has been successfully assigned/updated.');
         $this->closeInlineForm();
     }
+
 
 
 
@@ -423,6 +537,8 @@ class ClassManagement extends Component
             $this->alert('error', 'Teacher not found.');
         }
     }
+
+
 
 
 

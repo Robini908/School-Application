@@ -91,14 +91,14 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {{-- @if ($categories->isEmpty())
+                                    @if (collect($gradesList)->isEmpty())
                                         <!-- Message When No Categories -->
                                         <div class="alert alert-warning text-center" role="alert">
                                             <i class="fas fa-exclamation-circle fa-2x text-warning mb-2"></i>
-                                            <h5 class="mt-2">No categories found!</h5>
-                                            <p>Click the "Add Category" button to create your first category.</p>
+                                            <h5 class="mt-2">No Grades found!</h5>
+                                            <p>Click the "Add New MeanGrade" button to create your first grade.</p>
                                         </div>
-                                    @else --}}
+                                    @else
                                         @foreach ($gradesList as $index => $grade)
                                             <tr>
                                                 <td>
@@ -154,45 +154,41 @@
                                                 </td>
                                                 <td>
                                                     @if ($grade['isEditing'])
-                                                        <button wire:click="updateGrade({{ $index }})"
-                                                            class="btn btn-success btn-sm" wire:loading.attr="disabled">
-                                                            <span wire:loading.remove
-                                                                wire:target="updateGrade({{ $index }})">Update</span>
-                                                            <span wire:loading
-                                                                wire:target="updateGrade({{ $index }})"><i
-                                                                    class="fas fa-spinner fa-spin"></i></span>
-                                                        </button>
-                                                        <button wire:click="cancelEdit({{ $index }})"
-                                                            class="btn btn-secondary btn-sm"
-                                                            wire:loading.attr="disabled">
-                                                            <span wire:loading.remove
-                                                                wire:target="cancelEdit({{ $index }})">Cancel</span>
-                                                            <span wire:loading
-                                                                wire:target="cancelEdit({{ $index }})"><i
-                                                                    class="fas fa-spinner fa-spin"></i></span>
-                                                        </button>
+                                                        <!-- Update Icon -->
+                                                        <i class="fas fa-check-circle text-success fs-5 mx-2"
+                                                            wire:click="updateGrade({{ $index }})"
+                                                            title="Update" data-bs-toggle="tooltip"
+                                                            data-bs-placement="top" wire:loading.attr="disabled"
+                                                            wire:target="updateGrade({{ $index }})">
+                                                        </i>
+                                                        <!-- Cancel Icon -->
+                                                        <i class="fas fa-times-circle text-secondary fs-5 mx-2"
+                                                            wire:click="cancelEdit({{ $index }})" title="Cancel"
+                                                            data-bs-toggle="tooltip" data-bs-placement="top"
+                                                            wire:loading.attr="disabled"
+                                                            wire:target="cancelEdit({{ $index }})">
+                                                        </i>
                                                     @else
-                                                        <button wire:click="editGrade({{ $index }})"
-                                                            class="btn btn-primary btn-sm" wire:loading.attr="disabled">
-                                                            <span wire:loading.remove
-                                                                wire:target="editGrade({{ $index }})">Edit</span>
-                                                            <span wire:loading
-                                                                wire:target="editGrade({{ $index }})"><i
-                                                                    class="fas fa-spinner fa-spin"></i></span>
-                                                        </button>
-                                                        <button wire:click="removeGradeInput({{ $index }})"
-                                                            class="btn btn-danger btn-sm" wire:loading.attr="disabled">
-                                                            <span wire:loading.remove
-                                                                wire:target="removeGradeInput({{ $index }})">Delete</span>
-                                                            <span wire:loading
-                                                                wire:target="removeGradeInput({{ $index }})"><i
-                                                                    class="fas fa-spinner fa-spin"></i></span>
-                                                        </button>
+                                                        <!-- Edit Icon -->
+                                                        <i class="fas fa-edit text-primary fs-5 mx-2"
+                                                            wire:click="editGrade({{ $index }})" title="Edit"
+                                                            data-bs-toggle="tooltip" data-bs-placement="top"
+                                                            wire:loading.attr="disabled"
+                                                            wire:target="editGrade({{ $index }})">
+                                                        </i>
+                                                        <!-- Delete Icon -->
+                                                        <i class="fas fa-trash-alt text-danger fs-5 mx-2"
+                                                            wire:click="removeGradeInput({{ $index }})"
+                                                            title="Delete" data-bs-toggle="tooltip"
+                                                            data-bs-placement="top" wire:loading.attr="disabled"
+                                                            wire:target="removeGradeInput({{ $index }})">
+                                                        </i>
                                                     @endif
+
                                                 </td>
                                             </tr>
                                         @endforeach
-                                    {{-- @endif --}}
+                                    @endif
                                 </tbody>
 
 
@@ -304,29 +300,35 @@
 
 
                     <!-- Save and Cancel Buttons -->
-                    <div class="mt-3">
-                        <button type="submit" class="btn btn-primary" wire:click="saveGrades"
+                    <div class="mt-3 d-flex align-items-center justify-content-start gap-2">
+                        <!-- Save Grades -->
+                        <button type="submit" class="btn btn-primary btn-sm px-3 py-1" wire:click="saveGrades"
                             wire:loading.attr="disabled">
                             <span wire:loading.remove wire:target="saveGrades">Save Grades</span>
-                            <span wire:loading wire:target="saveGrades"><i class="fas fa-spinner fa-spin"></i>
-                                Saving...</span>
+                            <span wire:loading wire:target="saveGrades">
+                                <i class="fas fa-spinner fa-spin"></i> Saving...
+                            </span>
                         </button>
 
-                        <button type="button" wire:click="saveGradesForAll" class="btn btn-warning"
+                        <!-- Save for All -->
+                        <button type="button" class="btn btn-warning btn-sm px-3 py-1" wire:click="saveGradesForAll"
                             wire:loading.attr="disabled">
                             <span wire:loading.remove wire:target="saveGradesForAll">Save for All</span>
-                            <span wire:loading wire:target="saveGradesForAll"><i class="fas fa-spinner fa-spin"></i>
-                                Saving
-                                for All...</span>
+                            <span wire:loading wire:target="saveGradesForAll">
+                                <i class="fas fa-spinner fa-spin"></i> Saving for All...
+                            </span>
                         </button>
 
-                        <button type="button" wire:click="cancelForm" class="btn btn-secondary"
+                        <!-- Cancel -->
+                        <button type="button" class="btn btn-secondary btn-sm px-3 py-1" wire:click="cancelForm"
                             wire:loading.attr="disabled">
                             <span wire:loading.remove wire:target="cancelForm">Cancel</span>
-                            <span wire:loading wire:target="cancelForm"><i class="fas fa-spinner fa-spin"></i>
-                                Cancelling...</span>
+                            <span wire:loading wire:target="cancelForm">
+                                <i class="fas fa-spinner fa-spin"></i> Cancelling...
+                            </span>
                         </button>
                     </div>
+
                 </form>
             </div>
         @endif

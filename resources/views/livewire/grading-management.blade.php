@@ -100,14 +100,16 @@
 
 
             <!-- Existing Grading Systems Header -->
-           
+            <div class="d-flex justify-content-between mb-2">
                 <h3 class="mb-4 text-center"
                     style="color: #333; font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);">
-                    Existing Grading Systems</h3>
+                    Existing Grading Systems
+                </h3>
                 <button wire:click="create" class="btn btn-primary mb-3 align-items-center">
                     New
                 </button>
             </div>
+            
 
 
             <!-- Grading Systems List -->
@@ -136,8 +138,13 @@
                             </section>
 
                             <!-- Effective Date -->
-                            <p><strong style="color: #555;">Effective Date:</strong> <span
-                                    style="color: #007bff;">{{ $gradingSystem->effective_date }}</span></p>
+                            <p>
+                                <strong style="color: #555;">Effective Date:</strong>
+                                <span class="text-bold" style="color: #007bff;">
+                                    {{ \Carbon\Carbon::parse($gradingSystem->effective_date)->format('l, F jS, Y \a\t h:i A') }}
+                                </span>
+                            </p>
+                            
 
                             <!-- Rules Section -->
                             <section class="mb-2">
