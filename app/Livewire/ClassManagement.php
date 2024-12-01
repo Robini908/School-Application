@@ -30,6 +30,7 @@ class ClassManagement extends Component
     public $streamName;
     public $streams = [];
     public $selectedStream = null;
+    public $activeFilters = []; // To hold active filters for display
     public $streamEditMode = false;
     public $streamAdded = false;
     public $showForm = false;
@@ -46,6 +47,8 @@ class ClassManagement extends Component
 
     // Students Data
     public $students = [];
+    public $teacherFilter = ''; // Filter by teacher
+    public $sessionFilter = ''; // Filter by session
     public $stream;
     public $isEditing = false;
     public $isViewingClassTeacher = false;
@@ -167,21 +170,21 @@ class ClassManagement extends Component
             // Get the parent details from the parent_detail relationship
             $parent = $group->first()->parent_detail;
             $parentName = $parent ? $parent->parent_first_name . ' ' . $parent->parent_middle_name . ' ' . $parent->parent_last_name : 'Unknown Parent';
-            
+
             // Get student details: names, admission year, and graduation status
             $studentDetails = $group->map(function ($student) {
                 // Calculate graduation status (assuming 4 years of study)
                 $yearAdmitted = $student->year_admitted;
                 $currentYear = now()->year; // Get current year
                 $status = ($currentYear - $yearAdmitted >= 4) ? 'Graduated' : 'Still in session, admitted in ' . $yearAdmitted;
-        
+
                 return [
                     'name' => $student->first_name . ' ' . $student->last_name,
                     'status' => $status,
                     'year_admitted' => $yearAdmitted
                 ];
             });
-        
+
             return [
                 'parent_name' => $parentName,
                 'students' => $studentDetails
@@ -190,11 +193,9 @@ class ClassManagement extends Component
             // Only keep parents with more than one student
             return $parentGroup['students']->count() > 1;
         });
-        
+
         // Pass this grouped data to the view
         $this->studentsByParent = $studentsByParent;
-        
-        
     }
 
 
@@ -587,11 +588,65 @@ class ClassManagement extends Component
 
     public function render()
     {
-        $teachers = User::where('user_type', 'teacher')->get(); // Fetch teachers
+        // Fetch teachers
+        $teachers = User::where('user_type', 'teacher')->get();
+
+        // Build query for classes
+        $classesQuery = MyClass::with('teacher');
+
+        // Apply teacher filter if selected
+        if ($this->teacherFilter) {
+            $classesQuery->where('master_id', $this->teacherFilter);
+            $this->activeFilters['Teacher'] = $teachers->find($this->teacherFilter)->name;
+        }
+
+        // Apply session filter if selected
+        if ($this->sessionFilter) {
+            $classesQuery->where('session', $this->sessionFilter);
+            $this->activeFilters['Session'] = $this->sessionFilter;
+        }
+
+        // Fetch filtered classes with pagination
+        $classes = $classesQuery->paginate(10);
 
         return view('livewire.class-management', [
             'teachers' => $teachers,
-            'classes' => MyClass::with('teacher')->paginate(10),
+            'classes' => $classes,
+            'activeFilters' => $this->activeFilters,
         ]);
+    }
+
+    public function clearFilter($filter)
+    {
+        if ($filter == 'teacher') {
+            $this->teacherFilter = '';
+        } elseif ($filter == 'session') {
+            $this->sessionFilter = '';
+        }
+
+        // Reset the active filters array after clearing
+        $this->activeFilters = array_filter($this->activeFilters, function ($key) use ($filter) {
+            return $key !== ucfirst($filter);
+        }, ARRAY_FILTER_USE_KEY);
+    }
+
+    // In your Livewire component
+    public function getYearsRange()
+    {
+        $currentYear = date('Y'); // Get the current year
+        $startYear = 2020; // Start year, you can change this
+        $endYear = $currentYear + 5; // End year is 5 years after the current year
+
+        // Generate an array of years
+        return range($startYear, $endYear);
+    }
+
+
+    // Reset all filters
+    public function resetFilters()
+    {
+        $this->teacherFilter = '';
+        $this->sessionFilter = '';
+        $this->activeFilters = [];
     }
 }

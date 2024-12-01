@@ -124,9 +124,61 @@
                 </button>
             </div>
 
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover">
+            <div class="d-flex justify-content-start align-items-center mb-1">
+                <!-- Teacher Filter -->
+                <div class="form-group mr-2">
+                    <label for="teacherFilter" class="sr-only">Filter by Teacher</label>
+                    <select wire:model.live="teacherFilter" id="teacherFilter" class="form-control form-control-sm">
+                        <option value="">Filter by Teacher</option>
+                        @foreach ($teachers as $teacher)
+                            <option value="{{ $teacher->id }}">{{ $teacher->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            
+                <!-- Session Filter -->
+                <div class="form-group mr-2">
+                    <label for="sessionFilter" class="sr-only">Filter by Session</label>
+                    <select wire:model.live="sessionFilter" id="sessionFilter" class="form-control form-control-sm">
+                        <option value="">Filter by Session</option>
+                        @foreach($this->getYearsRange() as $year)
+                            <option value="{{ $year }}">{{ $year }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                
+            </div>
+            
+            
+            <div class="d-flex justify-content-auto mb-3">
+                <!-- Active Filters -->
+                <div class="d-flex flex-wrap mb-2">
+                    @foreach($activeFilters as $key => $value)
+                        <span class="badge badge-info p-2 mr-1">
+                            {{ $key }}: {{ $value }}
+                            <button type="button" wire:click="clearFilter('{{ strtolower($key) }}')" class="btn btn-secondary btn-sm p-0 ml-1" aria-label="Close">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </span>
+                    @endforeach
+                </div>
+                
+                <!-- Reset Filters Button (Visible only if filters are applied) -->
+                @if(count($activeFilters) > 0)
+                    <div class="d-flex align-items-center mb-2">
+                        <button wire:click="resetFilters" class="btn btn-sm btn-danger">
+                            <i class="fas fa-times-circle"></i> Reset Filters
+                        </button>
+                    </div>
+                @endif
+            </div>
+            
+          
+
+
+            <div class="card-body" style="overflow: visible;">
+                <div class="table-responsive" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                    <table class="table table-bordered" style="width: 100%; table-layout: auto;">
                         <thead class="thead-light">
                             <tr>
                                 <th>S/N</th>
@@ -442,12 +494,17 @@
                                                                             <p><strong>Siblings:</strong></p>
                                                                             <ul class="list-unstyled">
                                                                                 @foreach ($parent['students'] as $student)
-                                                                                    <li class="d-flex justify-content-between align-items-center mb-2">
-                                                                                        <div class="d-flex align-items-center">
+                                                                                    <li
+                                                                                        class="d-flex justify-content-between align-items-center mb-2">
+                                                                                        <div
+                                                                                            class="d-flex align-items-center">
                                                                                             <strong>{{ $student['name'] }}</strong>
-                                                                                            <span class="ml-2 text-muted text-sm">|</span>
-                                                                                            <div class="position-relative ml-2">
-                                                                                                <span class="badge badge-info"
+                                                                                            <span
+                                                                                                class="ml-2 text-muted text-sm">|</span>
+                                                                                            <div
+                                                                                                class="position-relative ml-2">
+                                                                                                <span
+                                                                                                    class="badge badge-info"
                                                                                                     style="background-color: #17a2b8;">{{ $student['status'] }}</span>
                                                                                                 <!-- Arrow pointing to the badge -->
                                                                                                 <span class="arrow"
@@ -461,12 +518,13 @@
                                                                     </div>
                                                                 @empty
                                                                     <div class="col-12">
-                                                                        <p class="text-center text-muted">No parents with multiple students found.</p>
+                                                                        <p class="text-center text-muted">No parents
+                                                                            with multiple students found.</p>
                                                                     </div>
                                                                 @endforelse
                                                             </div>
                                                         </div>
-                                                        
+
 
 
 
