@@ -70,6 +70,8 @@
         </div>
     @endif
 
+    {{-- @livewire('chatbot') --}}
+
     {{-- Events Calendar Begins --}}
     <div class="card">
         <div class="card-body">

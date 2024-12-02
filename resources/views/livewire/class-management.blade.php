@@ -20,7 +20,7 @@
                     <!-- Class Name -->
                     <div class="form-group">
                         <label for="name">Class Name</label>
-                        <input type="text" id="name" wire:model.defer="name" class="form-control"
+                        <input type="text" id="name" wire:model.live="name" class="form-control"
                             placeholder="Enter class name">
                         @error('name')
                             <span class="text-danger">{{ $message }}</span>
@@ -34,7 +34,7 @@
 
                         <!-- Add Stream Input Section -->
                         <div class="input-group mb-3">
-                            <input type="text" wire:model.defer="streamName" class="form-control"
+                            <input type="text" wire:model.live="streamName" class="form-control"
                                 placeholder="Add New Stream" @if ($streamEditMode) disabled @endif>
                             <div class="input-group-append">
                                 <button type="button" wire:click="addStream" class="btn btn-primary"
@@ -62,7 +62,7 @@
                                             <span>{{ $stream['name'] }}</span>
                                             @if ($streamEditMode && $selectedStream === $index)
                                                 <div class="mt-2">
-                                                    <input type="text" wire:model.defer="streamName"
+                                                    <input type="text" wire:model.live="streamName"
                                                         class="form-control" placeholder="Edit Stream Name">
                                                     @error('streamName')
                                                         <span class="text-danger">{{ $message }}</span>
@@ -106,6 +106,10 @@
                         <button type="button" wire:click="resetForm" class="btn btn-secondary">
                             Cancel
                         </button>
+                    </div>
+                    <div wire:dirty class="alert alert-warning" style="font-size: 14px; font-weight: bold; color: #856404; background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: 5px; padding: 10px; margin: 10px 0;">
+                        <i class="bi bi-exclamation-circle-fill" style="margin-right: 5px; color: #856404;"></i>
+                        Unsaved changes...
                     </div>
                 </form>
             </div>

@@ -357,3 +357,21 @@
         </fieldset>
         </form>
 </div>
+
+@assets
+<script src="{{ asset('global_assets/js/main/add_student.js') }}"></script>
+<script src="{{ asset('global_assets/js/main/jquery.min.js') }}"></script>
+
+@endassets
+@script
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('tabManager', () => ({
+            activeTab: 'manage-students',
+            showTab(tab) {
+                this.activeTab = tab;
+            }
+        }));
+    });
+</script>
+@endscript

@@ -8,17 +8,19 @@ use App\Models\Section;
 use App\Models\Subject;
 use Livewire\Component;
 use App\Models\GradingGrade;
+use function Amp\Parallel\Worker\parallelMap;
+use function Amp\Promise\wait;
 use App\Models\GradingRange;
 use App\Models\StudentRecord;
-use App\Models\StudentResult;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Amp\ParallelFunctions\parallelMap;
 
 class CombinationFormula extends Component
 {
     // Filter properties
     public $selectedClass;
+
     public $selectedYearAdmitted;
     public $selectedExamYear;
     public $selectedSection;
@@ -111,18 +113,18 @@ class CombinationFormula extends Component
         $this->loading = false;
     }
 
-    private function prepareStudentData($exam)
+
+    public function prepareStudentData($exam)
     {
         Log::info("Preparing student data for exam ID: {$exam->id}");
 
-        // Invalidate cache if data has changed
-        $cacheKey = "exam_{$exam->id}_student_data";
-        Cache::forget($cacheKey); // Remove any old cached data if it's out of date
-
         $studentData = [];
-        $updatedStudents = StudentRecord::with('subjects', 'section')->get(); // Always fetch latest student data
 
+        // Fetch latest student data with relationships (subjects, section)
         try {
+            $updatedStudents = StudentRecord::with('subjects', 'section')->get();
+            Log::info('Fetched student data successfully.');
+
             foreach ($updatedStudents as $student) {
                 $studentMarks = [];
                 $studentGrades = [];
@@ -133,16 +135,18 @@ class CombinationFormula extends Component
                 // Initialize enrolled subjects for passing to the view
                 $studentMarks['enrolled_subject_ids'] = $enrolledSubjectIds;
 
+                // Loop through the subjects
                 foreach ($this->subjects as $subject) {
                     // Check if the student is enrolled in this subject
                     if (in_array($subject->id, $enrolledSubjectIds)) {
                         // Student is enrolled in this subject, proceed with marks and grades
                         $marksValue = $this->getStudentMarks($student, $subject);
                         $marksValue = (int) $marksValue;
-
                         $gradeData = $this->getGradeData($marksValue, $exam->gradingSystem->id, $subject->id);
 
                         $studentMarks[$subject->id] = $marksValue;
+
+                        // Points and grades calculation
                         $points = isset($gradeData['points']) ? (int) $gradeData['points'] : 0;
                         $studentGrades[$subject->id] = $points > 0 ? $gradeData['grade'] : '-';
 
@@ -150,7 +154,7 @@ class CombinationFormula extends Component
                         $totalPoints += $points;
                     } else {
                         // Student is not enrolled in this subject, assign hyphen and skip grade calculation
-                        $studentMarks[$subject->id] = '--';  // Double hyphen for un-enrolled subjects
+                        $studentMarks[$subject->id] = '--'; // Double hyphen for un-enrolled subjects
                         $studentGrades[$subject->id] = '--';
                     }
                 }
@@ -175,13 +179,11 @@ class CombinationFormula extends Component
                 $studentData[] = $studentResult;
             }
 
-            // Calculate positions
+            // Log the student data size
+            Log::info('Processed ' . count($studentData) . ' student records.');
+
+            // Calculate positions (if applicable)
             $studentData = $this->calculatePositions($studentData);
-
-            // Synchronize and store the results in cache
-            Cache::put($cacheKey, $studentData, now()->addHours(2)); // Store for 2 hours
-
-            Log::info("Student data for exam ID: {$exam->id} has been cached successfully.");
         } catch (\Exception $e) {
             Log::error("Error processing student data: {$e->getMessage()}");
             $this->addError('exam_processing', "Failed to process the exam data: " . $e->getMessage());
@@ -189,6 +191,9 @@ class CombinationFormula extends Component
 
         return $studentData;
     }
+
+
+
 
 
 
@@ -223,7 +228,15 @@ class CombinationFormula extends Component
             ->where('subject_id', $subjectId)
             ->where('range_from', '<=', $marksValue)
             ->where('range_to', '>=', $marksValue)
+            ->orWhere(function ($query) use ($marksValue) {
+                $query->where('range_from', '=', $marksValue)
+                    ->where('range_to', '=', $marksValue);
+            })
             ->first();
+
+
+        // Log the fetched grading range
+        Log::info("Grading range for subject {$subjectId} and marks {$marksValue}: " . ($gradingRange ? json_encode($gradingRange->toArray()) : 'No grading range found'));
 
         if (!$gradingRange) {
             return ['grade' => 'N/A', 'points' => 'N/A']; // Show "N/A" if range is missing
@@ -237,74 +250,138 @@ class CombinationFormula extends Component
 
 
 
-    // Calculate positions and sort the student data with tie-breaking logic
-    private function calculatePositions($studentData)
+
+
+
+    private function calculateStreamPositions(array &$studentData): array
     {
-        try {
-            usort($studentData, function ($a, $b) {
-                if ($b['total_marks'] === $a['total_marks']) {
-                    if ($b['total_points'] === $a['total_points']) {
-                        return $b['mean_score'] <=> $a['mean_score'];
-                    }
-                    return $b['total_points'] <=> $a['total_points'];
-                }
-                return $b['total_marks'] <=> $a['total_marks'];
+        // Group students by stream
+        $streams = [];
+        foreach ($studentData as $student) {
+            $streams[$student['stream']][] = $student;
+        }
+
+        // Optimized sorting for each stream and assigning positions
+        foreach ($streams as $stream => &$students) {
+            // Sort students by total_marks, total_points, then mean_score
+            usort($students, function ($a, $b) {
+                return $b['total_marks'] <=> $a['total_marks'] ?:
+                    $b['total_points'] <=> $a['total_points'] ?:
+                    $b['mean_score'] <=> $a['mean_score'];
             });
 
+            // Assign positions based on ranking, handle tied ranks
+            $prevStudent = null;
             $position = 1;
-            foreach ($studentData as $index => &$data) {
-                if (
-                    $index > 0 &&
-                    $data['total_marks'] === $studentData[$index - 1]['total_marks'] &&
-                    $data['total_points'] === $studentData[$index - 1]['total_points'] &&
-                    $data['mean_score'] === $studentData[$index - 1]['mean_score']
-                ) {
-                    $data['position'] = $studentData[$index - 1]['position'];
+            foreach ($students as $index => &$student) {
+                if ($index > 0 && $this->isSameRanking($prevStudent, $student)) {
+                    $student['stream_position'] = $prevStudent['stream_position'];
                 } else {
-                    $data['position'] = $position;
+                    $student['stream_position'] = $position;
                 }
+                $prevStudent = $student;
                 $position++;
             }
+        }
 
-            // Calculate stream positions
-            $this->calculateStreamPositions($studentData);
-        } catch (\Exception $e) {
-            Log::error("Error calculating positions: " . $e->getMessage());
-            $this->addError('calculatePositions', 'Error calculating positions: ' . $e->getMessage());
+        // Flatten and merge stream positions back into the main dataset
+        $streamMap = [];
+        foreach ($streams as $stream => $students) {
+            foreach ($students as $student) {
+                $streamMap[$student['student_id']] = $student['stream_position'];
+            }
+        }
+
+        // Update the original dataset with stream positions
+        foreach ($studentData as &$student) {
+            $student['stream_position'] = $streamMap[$student['student_id']] ?? null;
         }
 
         return $studentData;
     }
 
-    // Calculate stream positions without tie-breaking
-    private function calculateStreamPositions(&$studentData)
+
+
+    /**
+     * Check if two students have the same ranking based on criteria.
+     *
+     * @param array|null $student1
+     * @param array|null $student2
+     * @return bool
+     */
+    private function isSameRanking(?array $student1, ?array $student2): bool
     {
-        $streams = [];
-        foreach ($studentData as &$data) {
-            $streamKey = $data['stream'];
-            if (!isset($streams[$streamKey])) {
-                $streams[$streamKey] = [];
-            }
-            $streams[$streamKey][] = &$data; // Reference to the student data
-        }
-
-        foreach ($streams as $stream => $students) {
-            usort($students, function ($a, $b) {
-                if ($b['total_marks'] === $a['total_marks']) {
-                    if ($b['total_points'] === $a['total_points']) {
-                        return $b['mean_score'] <=> $a['mean_score'];
-                    }
-                    return $b['total_points'] <=> $a['total_points'];
-                }
-                return $b['total_marks'] <=> $a['total_marks'];
-            });
-
-            $position = 1;
-            foreach ($students as $index => &$data) {
-                $data['stream_position'] = $position++; // Assign stream position
-            }
-        }
+        return $student1['total_marks'] === $student2['total_marks'] &&
+            $student1['total_points'] === $student2['total_points'] &&
+            $student1['mean_score'] === $student2['mean_score'];
     }
+
+    /**
+     * Normalize the sample data using vectorized calculations.
+     *
+     * @param array $samples
+     * @return array
+     */
+    private function normalizeSamples(array $samples): array
+    {
+        // Transpose samples for feature-wise operations
+        $transposed = array_map(null, ...$samples);
+
+        // Normalize each feature
+        foreach ($transposed as &$feature) {
+            $min = min($feature);
+            $max = max($feature);
+
+            if ($max - $min > 0) {
+                foreach ($feature as &$value) {
+                    $value = ($value - $min) / ($max - $min);
+                }
+            }
+        }
+
+        // Transpose back to original format
+        return array_map(null, ...$transposed);
+    }
+
+    /**
+     * Calculate positions for all students using parallel processing.
+     *
+     * @param array $studentData
+     * @return array Updated student data with overall and stream positions.
+     */
+    public function calculatePositions(array $studentData): array
+    {
+        if (empty($studentData)) {
+            throw new \InvalidArgumentException('Student data cannot be empty.');
+        }
+
+        // Sort and assign overall positions
+        usort($studentData, function ($a, $b) {
+            return $b['total_marks'] <=> $a['total_marks'] ?:
+                $b['total_points'] <=> $a['total_points'] ?:
+                $b['mean_score'] <=> $a['mean_score'];
+        });
+
+        // Assign overall positions
+        $prevStudent = null;
+        $position = 1;
+        foreach ($studentData as $index => &$student) {
+            if ($index > 0 && $this->isSameRanking($prevStudent, $student)) {
+                $student['position'] = $prevStudent['position'];
+            } else {
+                $student['position'] = $position;
+            }
+            $prevStudent = $student;
+            $position++;
+        }
+
+        // Calculate stream-specific positions in parallel
+        $studentData = $this->calculateStreamPositions($studentData);
+
+        return $studentData;
+    }
+
+
 
 
     public function getMeanGrade($totalPoints, $gradingSystemId)
@@ -348,24 +425,7 @@ class CombinationFormula extends Component
 
 
 
-        // if (!$this->examId) {
-        //     $this->errorMessage = 'Please select an exam to view champions.';
-        //     return;
-        // }
 
-        // $query = ExamMarks::with(['student', 'subject'])->where('exam_id', $this->examId);
-
-        // if ($this->classId) {
-        //     $query->whereHas('student', function ($q) {
-        //         $q->where('my_class_id', $this->classId);
-        //     });
-        // }
-
-        // if ($this->streamId) {
-        //     $query->whereHas('student', function ($q) {
-        //         $q->where('section_id', $this->streamId);
-        //     });
-        // }
 
         if ($this->selectedYearAdmitted) {
             $this->students->where('year_admitted', $this->selectedYearAdmitted);

@@ -152,7 +152,14 @@
                     <button type="button" wire:click="cancel" class="btn btn-secondary">
                         Cancel
                     </button>
+                    
+                    
                 </div>
+                <div wire:dirty class="alert alert-warning" style="font-size: 14px; font-weight: bold; color: #856404; background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: 5px; padding: 10px; margin: 10px 0;">
+                    <i class="bi bi-exclamation-circle-fill" style="margin-right: 5px; color: #856404;"></i>
+                    Unsaved changes...
+                </div>
+                
             </form>
         </div>
     </div>

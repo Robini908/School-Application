@@ -18,32 +18,42 @@
         <div class="sidebar-user">
             <div class="card-body">
                 <div class="media">
+                    @php
+                        $user = Auth::user();
+                        if (!$user) {
+                            header('Location: ' . route('landing'));
+                            exit;
+                        }
+                        $userPhoto = $user->photo ? $user->photo : 'default-photo.jpg';
+                    @endphp
+        
                     <div class="mr-3">
-                        @php
-                        $userPhoto = Auth::user()->photo;
-                        @endphp
                         @if ($userPhoto)
-                        <a href="{{ route('my_account') }}"><img src="{{ $userPhoto }}" width="38" height="38"
-                                class="rounded-circle" alt="photo"></a>
+                            <a href="{{ route('my_account') }}">
+                                <img src="{{ asset('storage/' . $userPhoto) }}" width="38" height="38" class="rounded-circle" alt="User Photo">
+                            </a>
                         @else
-                        <div>Photo Not Found</div>
+                            <div>Photo Not Found</div>
                         @endif
                     </div>
-
+        
                     <div class="media-body">
-                        <div class="media-title font-weight-semibold">{{ Auth::user()->name }}</div>
+                        <div class="media-title font-weight-semibold">
+                            {{ $user->name }}
+                        </div>
                         <div class="font-size-xs opacity-50">
                             <i class="icon-user font-size-sm"></i>
-                            &nbsp;{{ ucwords(str_replace('_', ' ', Auth::user()->user_type)) }}
+                            &nbsp;{{ ucwords(str_replace('_', ' ', $user->user_type)) }}
                         </div>
                     </div>
-
+        
                     <div class="ml-3 align-self-center">
                         <a href="{{ route('my_account') }}" class="text-white"><i class="icon-cog3"></i></a>
                     </div>
                 </div>
             </div>
         </div>
+        
 
 
         <!-- Main navigation -->

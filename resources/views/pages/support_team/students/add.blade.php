@@ -56,17 +56,7 @@
         </div>
     </div>
 </div>
-<script src="{{ asset('global_assets/js/main/add_student.js') }}"></script>
-<script src="{{ asset('global_assets/js/main/manage_admissions.js') }}"></script>
-<script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('tabManager', () => ({
-            activeTab: 'manage-students',
-            showTab(tab) {
-                this.activeTab = tab;
-            }
-        }));
-    });
-</script>
+
 
 @endsection
+

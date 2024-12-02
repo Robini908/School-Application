@@ -23,12 +23,14 @@
             </li>
         </ul>
 
-        <span class="navbar-text ml-md-3 mr-md-auto"></span>
+        <!-- Include the Livewire search next to menu icons -->
+        <div class="navbar-text ml-md-3 mr-md-auto d-flex align-items-center" style="max-width: 400px; width: 100%;">
+            @livewire('intelligent-search')
+        </div>
 
         <ul class="navbar-nav">
             <li class="nav-item dropdown dropdown-user">
                 <a href="#" class="navbar-nav-link dropdown-toggle" data-toggle="dropdown">
-                    <!-- Check if user is authenticated and display appropriate message -->
                     @if(Auth::check())
                         <span>Welcome - {{ Auth::user()->username }}</span>
                     @else
@@ -39,7 +41,6 @@
                 <div class="dropdown-menu dropdown-menu-right">
                     @if(Auth::check())
                         @php
-                            // Safely fetch the student record ID if the user is authenticated and is a student
                             $studentRecordId = Qs::userIsStudent() ? Qs::findStudentRecord(Auth::user()->id)->id : null;
                         @endphp
                         <a href="{{ Qs::userIsStudent() ? route('students.show', Qs::hash($studentRecordId)) : route('users.show', Qs::hash(Auth::user()->id)) }}" class="dropdown-item">

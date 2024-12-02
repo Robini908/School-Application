@@ -232,7 +232,7 @@
                         </div>
                     @endif
                 @endif
-                <button type="submit" class="btn btn-primary mt-2" wire:click="saveRanges"
+                <button type="submit" class="btn btn-success mt-2" wire:click="saveRanges"
                     wire:loading.attr="disabled">
                     {{ $isEditing ? 'Update' : 'Save' }}
                     <span wire:loading wire:target="saveRanges">

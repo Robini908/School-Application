@@ -10,81 +10,81 @@
     </div>
     <div class="card-body">
         <div class="mb-4">
-            
-                <!-- First Row -->
-                <div class="form-row">
-                    <!-- Year Filter -->
-                    <div class="col-md-4 mb-2">
-                        <label for="examYear">Year:</label>
-                        <div class="input-group">
-                            <input type="number" wire:model.live.debounce.500ms="selectedExamYear" id="examYear"
-                                class="form-control" placeholder="Enter Exam Year">
-                            <div wire:loading wire:target="selectedExamYear" class="input-group-append">
-                                <span class="input-group-text">
-                                    <div class="spinner-border spinner-border-sm" role="status"></div>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Year Admitted Filter -->
-                    <div class="col-md-4 mb-2">
-                        <label for="yearAdmitted">Year Admitted:</label>
-                        <div class="input-group">
-                            <input type="number" wire:model.live.debounce.500ms="selectedYearAdmitted"
-                                id="yearAdmitted" class="form-control" placeholder="Enter Year Admitted">
-                            <div wire:loading wire:target="selectedYearAdmitted" class="input-group-append">
-                                <span class="input-group-text">
-                                    <div class="spinner-border spinner-border-sm" role="status"></div>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Term Filter -->
-                    <div class="col-md-4 mb-2">
-                        <label for="term">Term:</label>
-                        <div class="input-group">
-                            <select wire:model.live="selectedTerm" id="term" class="form-control select2"
-                                wire:loading.attr="disabled">
-                                <option value="">Select Term</option>
-                                @foreach ($terms as $term)
-                                    <option value="{{ $term->id }}">{{ $term->name }}</option>
-                                @endforeach
-                            </select>
-                            <div wire:loading wire:target="selectedTerm" class="input-group-append">
-                                <span class="input-group-text">
-                                    <div class="spinner-border spinner-border-sm" role="status"></div>
-                                </span>
-                            </div>
+            <!-- First Row -->
+            <div class="form-row">
+                <!-- Year Filter -->
+                <div class="col-md-4 mb-2">
+                    <label for="examYear">Year:</label>
+                    <div class="input-group">
+                        <input type="number" wire:model.live.debounce.500ms="selectedExamYear" id="examYear"
+                            class="form-control" placeholder="Enter Exam Year">
+                        <div wire:loading wire:target="selectedExamYear" class="input-group-append">
+                            <span class="input-group-text">
+                                <div class="spinner-border spinner-border-sm" role="status"></div>
+                            </span>
                         </div>
                     </div>
                 </div>
-                    
-                
-                <!-- Second Row -->
-                <div class="row mt-2">
-                    <!-- Class Filter -->
-                    <div class="col-md-4 mb-2">
-                        <label for="class">Class:</label>
-                        <div class="input-group">
-                            <select wire:model.live="selectedClass" id="class" class="form-control select2"
-                                wire:loading.attr="disabled">
-                                <option value="">Select Class</option>
-                                @foreach ($classes as $class)
-                                    <option value="{{ $class->id }}">{{ $class->name }}</option>
-                                @endforeach
-                            </select>
-                            <div wire:loading wire:target="selectedClass" class="input-group-append">
-                                <span class="input-group-text">
-                                    <div class="spinner-border spinner-border-sm mt-1" role="status"></div>
-                                </span>
-                            </div>
+
+                <!-- Year Admitted Filter -->
+                <div class="col-md-4 mb-2">
+                    <label for="yearAdmitted">Year Admitted:</label>
+                    <div class="input-group">
+                        <input type="number" wire:model.live.debounce.500ms="selectedYearAdmitted" id="yearAdmitted"
+                            class="form-control" placeholder="Enter Year Admitted">
+                        <div wire:loading wire:target="selectedYearAdmitted" class="input-group-append">
+                            <span class="input-group-text">
+                                <div class="spinner-border spinner-border-sm" role="status"></div>
+                            </span>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Section Filter -->
-                    @if ($selectedClass)
+                <!-- Term Filter -->
+                <div class="col-md-4 mb-2">
+                    <label for="term">Term:</label>
+                    <div class="input-group">
+                        <select wire:model.live="selectedTerm" id="term" class="form-control select2"
+                            wire:loading.attr="disabled">
+                            <option value="">Select Term</option>
+                            @foreach ($terms as $term)
+                                <option value="{{ $term->id }}">{{ $term->name }}</option>
+                            @endforeach
+                        </select>
+                        <div wire:loading wire:target="selectedTerm" class="input-group-append">
+                            <span class="input-group-text">
+                                <div class="spinner-border spinner-border-sm" role="status"></div>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Second Row -->
+            <div class="row mt-2">
+                <!-- Class Filter -->
+                <div class="col-md-4 mb-2">
+                    <label for="class">Class:</label>
+                    <div class="input-group">
+                        <select wire:model.live="selectedClass" id="class" class="form-control select2"
+                            wire:loading.attr="disabled">
+                            <option value="">Select Class</option>
+                            @foreach ($classes as $class)
+                                <option value="{{ $class->id }}">{{ $class->name }}</option>
+                            @endforeach
+                        </select>
+                        <div wire:loading wire:target="selectedClass" class="input-group-append">
+                            <span class="input-group-text">
+                                <div class="spinner-border spinner-border-sm mt-1" role="status"></div>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Filter -->
+                @if ($selectedClass)
                     <div class="col-md-4 mb-2">
                         <label for="section">Section:</label>
                         <div class="input-group">
@@ -102,10 +102,10 @@
                             </div>
                         </div>
                     </div>
-                    @endif
+                @endif
 
-                    <!-- Exam Filter -->
-                    @if ($selectedClass)
+                <!-- Exam Filter -->
+                @if ($selectedClass)
                     <div class="col-md-4 mb-2">
                         <label for="exam">Exam:</label>
                         <div class="input-group">
@@ -124,10 +124,10 @@
                             </div>
                         </div>
                     </div>
-                    @endif
-                </div>
+                @endif
+            </div>
 
-           
+
 
 
 
@@ -326,6 +326,7 @@
                                                                 )
                                                                 : ['grade' => '-', 'points' => '-'];
                                                     @endphp
+
                                                     <td class="align-middle text-center">
                                                         @if (is_null($subjectMark))
                                                             <span style="color: #999;">-</span>
@@ -418,6 +419,7 @@
                                             ? $this->getGradeData($subjectMark, $exam->gradingSystem->id, $subject->id)
                                             : ['grade' => '-', 'points' => '-'];
                                 @endphp
+
                                 <td class="align-middle text-center">
                                     @if (is_null($subjectMark))
                                         <span style="color: #999;">-</span>
@@ -469,4 +471,3 @@
         @endif
     </div>
 </div>
-

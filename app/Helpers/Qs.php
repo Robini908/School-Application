@@ -148,12 +148,17 @@ class Qs
 
     public static function userIsTeamSAT()
     {
-        return in_array(Auth::user()->user_type, self::getTeamSAT());
+        $user = Auth::user();
+
+        return $user && in_array($user->user_type, self::getTeamSAT());
     }
+
 
     public static function userIsAcademic()
     {
-        return in_array(Auth::user()->user_type, self::getTeamAcademic());
+        $user = Auth::user();
+
+        return $user && in_array($user->user_type, self::getTeamAcademic());
     }
 
     public static function userIsAdministrative()

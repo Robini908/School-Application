@@ -14,7 +14,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js" defer></script>
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-
+    <script src="node_modules/jquery/dist/jquery.min.js"></script> <script src="node_modules/jquery-steps/build/jquery.steps.min.js"></script> <script src="node_modules/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="jquery.js"></script> 
     <script src="jquery.steps.js"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -24,9 +24,7 @@
 
 <body
     class="{{ in_array(Route::currentRouteName(), ['payments.invoice', 'marks.tabulation', 'marks.show', 'ttr.manage', 'ttr.show']) ? 'sidebar-xs' : '' }}">
-    <script>
-        $("#wizard").steps();
-    </script>
+    
     @include('partials.top_menu')
     <div class="page-content">
         @include('partials.menu')
@@ -48,12 +46,13 @@
             </div>
         </div>
     </div>
-
     @yield('scripts')
     @stack('scripts')
     @include('partials.inc_bottom')
     {{-- @livewire('wire-elements-modal') --}}
     @livewireScripts
+    @filepondScripts
+
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <x-livewire-alert::scripts />
     {{-- <x-toaster-hub /> --}}
