@@ -16,35 +16,59 @@ class StudentsImport implements ToModel, WithHeadingRow
         if (!isset($row['class_name']) || !isset($row['section_name'])) {
             throw new \Exception("The row is missing 'class_name' or 'section_name'");
         }
-
+    
         // Retrieve the class ID based on the class name
         $class = MyClass::where('name', $row['class_name'])->first();
         $class_id = $class ? $class->id : null;
-
+    
         if (!$class_id) {
             throw new \Exception("Class name '{$row['class_name']}' not found in MyClass table.");
         }
-
+    
         // Retrieve the section ID based on the section name
         $section = Section::where('name', $row['section_name'])->where('my_class_id', $class_id)->first();
         $section_id = $section ? $section->id : null;
-
+    
         if (!$section_id) {
             throw new \Exception("Section name '{$row['section_name']}' not found for class ID '{$class_id}' in Section table.");
         }
-
+    
+        // Validate and format the 'dob' field
+        $dob = null;
+        if (!empty($row['dob'])) {
+            try {
+                if (preg_match('/=DATE\((\d+),(\d+),(\d+)\)/i', $row['dob'], $matches)) {
+                    // Convert Excel formula "=DATE(year, month, day)" to a valid date
+                    $year = $matches[1];
+                    $month = $matches[2];
+                    $day = $matches[3];
+                    $dob = \Carbon\Carbon::create($year, $month, $day)->format('Y-m-d');
+                } else {
+                    // Attempt to parse as a standard date format
+                    $dob = \Carbon\Carbon::parse($row['dob'])->format('Y-m-d');
+                }
+            } catch (\Exception $e) {
+                throw new \Exception("Invalid date format for 'dob': {$row['dob']}");
+            }
+        }
+    
+        // Add the kcpe field (ensure it exists in the Excel row)
+        $kcpe = $row['kcpe'] ?? null;
+    
         return new StudentRecord([
             'adm_no' => $row['adm_no'],
             'first_name' => $row['first_name'],
             'middle_name' => $row['middle_name'],
             'last_name' => $row['last_name'],
             'gender' => $row['gender'],
-            'dob' => $row['dob'],
+            'dob' => $dob, // Parsed and formatted date
             'my_class_id' => $class_id,
             'section_id' => $section_id,
             'year_admitted' => $row['year_admitted'],
-            'email' => $row['email'], // Optional, but useful for communication
-            'phone' => $row['phone'], // Optional, but useful for communication
+            'email' => $row['email'], // Optional
+            'phone' => $row['phone'], // Optional
+            'kcpe' => $kcpe, // Add the kcpe field
         ]);
     }
+    
 }
