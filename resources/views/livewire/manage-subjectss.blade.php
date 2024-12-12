@@ -89,7 +89,7 @@
                         <div class="col-md-6 mb-4">
                             <h6 class="mb-3">Available Categories</h6>
                             <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
-                                <table class="table table-bordered table-hover">
+                                <table class="table table-bordered table-hover fixedHeader">
                                     <thead>
                                         <tr>
                                             <th scope="col">Category Name</th>
@@ -184,7 +184,7 @@
             </button>
         </div>
     
-        <div class="card-body">
+        <div class="table-responsive">
             <!-- Table for all subjects or filtered subjects -->
             <table class="table table-bordered table-striped">
                 <thead class="thead-dark">

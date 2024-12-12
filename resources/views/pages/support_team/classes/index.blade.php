@@ -9,8 +9,6 @@
         {!! Qs::getPanelOptions() !!}
     </div>
 
-    
-
 <livewire:class-management lazy/>
    
 </div>

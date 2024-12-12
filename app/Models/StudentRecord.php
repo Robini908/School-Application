@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Laravel\Scout\Searchable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -9,16 +10,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class StudentRecord extends Model
 {
-    use HasFactory;
+    use HasFactory; 
 
-    // Ensure that the 'id' column is the primary key
     protected $primaryKey = 'id';
-
-    // If the primary key is not an incrementing integer
     public $incrementing = true;
     protected $keyType = 'int';
 
-    // Fillable fields
     protected $fillable = [
         'parent_id_no',
         'my_class_id',
@@ -42,32 +39,46 @@ class StudentRecord extends Model
         'photo',
         'status',
         'student_password',
-        'is_suspended',              // Renamed from is_expelled
-        'suspension_reason',          // Renamed from expulsion_reason
-        'suspended_by',               // Renamed from expelled_by
+        'is_suspended',
+        'suspension_reason',
+        'suspended_by',
         'notification_content',
-        'suspension_date',            // Renamed from expulsion_date
-        'suspension_type',            // Renamed from expulsion_type
-        'suspension_end_date',        // Renamed from expulsion_end_date
-        'disapproval_reason'
+        'suspension_date',
+        'suspension_type',
+        'suspension_end_date',
+        'disapproval_reason',
     ];
 
-    // Casts to ensure proper handling of date fields
     protected $casts = [
-        'suspension_date' => 'datetime',         // Renamed from expulsion_date
-        'suspension_end_date' => 'datetime',     // Renamed from expulsion_end_date
-        // Add other date fields here if needed
+        'suspension_date' => 'datetime',
+        'suspension_end_date' => 'datetime',
     ];
+
+    public function subjects(): BelongsToMany
+    {
+        return $this->belongsToMany(Subject::class, 'student_subject', 'student_id', 'subject_id')
+            ->withTimestamps();
+    }
+
+    public function transitions(): HasMany
+    {
+        return $this->hasMany(StudentTransition::class, 'student_id', 'id');
+    }
+
+    public function examMarks(): HasMany
+    {
+        return $this->hasMany(ExamMarks::class, 'student_id');
+    }
+
+
+
 
     public function parent_detail()
     {
         return $this->belongsTo(ParentDetail::class, 'parent_id_no', 'parent_id_no');
     }
 
-    public function subjects()
-    {
-        return $this->belongsToMany(Subject::class, 'student_subject', 'student_id', 'subject_id');
-    }
+
 
 
 
@@ -76,10 +87,7 @@ class StudentRecord extends Model
         return $this->belongsTo(MyClass::class);
     }
 
-    public function transitions()
-    {
-        return $this->hasMany(StudentTransition::class, 'student_id', 'id');
-    }
+
 
     public function getCurrentClass($academicYear)
     {
@@ -104,11 +112,6 @@ class StudentRecord extends Model
     public function dorm()
     {
         return $this->belongsTo(Dorm::class);
-    }
-
-    public function examMarks()
-    {
-        return $this->hasMany(ExamMarks::class, 'student_id');
     }
 
     public function marks(): HasMany

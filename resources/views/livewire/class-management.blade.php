@@ -46,6 +46,7 @@
                         @error('streamName')
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
+                        
 
                         @if (empty($streams))
                             <div class="alert alert-info">

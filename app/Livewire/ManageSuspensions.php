@@ -2,10 +2,11 @@
 
 namespace App\Livewire;
 
+use Mpdf\Mpdf;
+use Carbon\Carbon;
+use Livewire\Component;
 use App\Models\StudentRecord;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
-use Livewire\Component;
-use Carbon\Carbon;
 
 class ManageSuspensions extends Component
 {
@@ -13,9 +14,10 @@ class ManageSuspensions extends Component
     public $suspendedStudents = [];
     public $isReinstating = false;
     public $showForm = false;
-    
+
     public $selectedStudentId;
     public $student;
+    public $studentName;
     public $newSuspensionEndDate;
     public $isExtendingSuspension = false;
 
@@ -25,6 +27,57 @@ class ManageSuspensions extends Component
     {
         $this->fetchSuspendedStudents();
     }
+
+    public function printSuspension($id)
+    {
+        $student = StudentRecord::find($id);
+        if (!$student) {
+            $this->alert('error', 'Student not found.');
+            return;
+        }
+        $html = view('pdf.suspension', ['student' => $student])->render();
+        return response()->streamDownload(function () use ($html) {
+            echo $html;
+        }, 'suspension_details.pdf');
+    }
+
+    public function downloadStudentSuspension($studentId)
+    {
+        $student = $this->suspendedStudents->where('id', $studentId)->first();
+
+        if ($student) {
+            $html = view('livewire.suspensions.student-pdf', ['student' => $student])->render();
+
+            $mpdf = new Mpdf();
+            $mpdf->WriteHTML($html);
+            $fileName = 'suspension_' . $student->adm_no . '_' . now()->format('Y-m-d_His') . '.pdf';
+            $filePath = storage_path("app/public/{$fileName}");
+
+            $mpdf->Output($filePath, \Mpdf\Output\Destination::FILE);
+
+            return response()->download($filePath)->deleteFileAfterSend();
+        }
+    }
+
+
+    public function printStudentSuspension($studentId)
+    {
+        $student = $this->suspendedStudents->where('id', $studentId)->first();
+
+        if ($student) {
+            $this->dispatch('printStudentSuspension', $student);
+        }
+    }
+
+
+
+    public function printSuspensions()
+    {
+        // Emit an event to handle client-side printing
+        $this->dispatch('printSuspensions');
+    }
+
+
 
     public function humanReadableCountdown($endDate)
     {
@@ -75,6 +128,7 @@ class ManageSuspensions extends Component
     {
         $this->selectedStudentId = $id;
         $this->isReinstating = true;
+        // $this->studentName = $this->student->name;
     }
 
     public function confirmReinstatement()
@@ -96,6 +150,30 @@ class ManageSuspensions extends Component
         }
 
         $this->resetFields();
+    }
+
+
+    public function checkSuspensions()
+    {
+        $now = Carbon::now();
+
+        $studentsToReinstate = StudentRecord::where('is_suspended', true)
+            ->whereNotNull('suspension_end_date')
+            ->where('suspension_end_date', '<=', $now)
+            ->get();
+
+        foreach ($studentsToReinstate as $student) {
+            $student->update([
+                'is_suspended' => false,
+                'suspension_reason' => null,
+                'suspended_by' => null,
+                'suspension_date' => null,
+                'suspension_type' => null,
+                'suspension_end_date' => null,
+            ]);
+        }
+
+        $this->fetchSuspendedStudents(); // Refresh the list of suspended students
     }
 
     public function confirmExtension()

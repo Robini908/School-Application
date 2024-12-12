@@ -3,36 +3,52 @@
 namespace App\Livewire;
 
 use App\Models\Subject;
-
 use Livewire\Component;
 use Usernotnull\Toast\Toast;
 use Masmerise\Toaster\Toaster;
 use App\Models\SubjectCategory;
+use Livewire\Attributes\Locked;
 use Illuminate\Support\Facades\Session;
-use Usernotnull\Toast\Concerns\WireToast;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
 
 class ManageSubjectss extends Component
 {
     use LivewireAlert;
-    use WireToast;
+
     public $subjects;
-    public $subjectId, $subject_name, $subject_code, $abbreviation, $category_id;
+
+    #[Locked]
+    public $subjectId;
+    public $subject_name, $subject_code, $abbreviation;
+    
+    public $category_id;
+
+    #[Locked]
     public $categories = []; // Hold subject categories
+
     public $new_category = ''; // Hold the new category name
+
     public $isEditing = false;
+
     public $isCreating = false;
+
     public $showForm = false;
+
+    // public $subject = [ 'type' => '', ];
+
     public $showNewCategoryForm = false;
+
     public $subjectsWithoutCategory;
+
     public $subjectsWithCategory;
+
     public $selectedCategory;
 
     public $filteredSubjects;
+
     public $allSubjects;
 
-
-
+    #[Locked]
     public $editingCategoryId = null;
 
     public $edit_category = '';
@@ -68,7 +84,6 @@ class ManageSubjectss extends Component
         }
     }
 
-
     public function filterByCategory($categoryId)
     {
         // Filter subjects by selected category and load their categories
@@ -76,11 +91,6 @@ class ManageSubjectss extends Component
             ->where('category_id', $categoryId)
             ->get();
     }
-
-
-
-
-
 
     // Edit Category method
     public function editCategory($id)

@@ -98,8 +98,8 @@ class SubjectSelectionService
     protected function getCategoryRules(): array
     {
         return [
-            'Humanities' => 2,
-            'Sciences' => 3,
+            'Humanities' => 3,
+            'Sciences' => 2,
             'Languages' => 2,
             'Technical Subjects' => 1,
 

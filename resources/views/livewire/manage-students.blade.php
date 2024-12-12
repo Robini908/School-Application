@@ -1,10 +1,29 @@
 <div class="card mt-4 col-12 p-3 shadow-lg border rounded" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
-    <x-flash-messages />
 
     {{-- Header or Page Title --}}
-    <h1 class="text-center text-2xl font-bold mb-4">Manage Students</h1>
-
-
+    @if (
+        !(
+            $isEditingStudent ||
+            $isViewingDetails ||
+            $isDeleting ||
+            $isApproving ||
+            $isSuspendingStudent ||
+            $isExpellingStudent
+        ))
+        <div class="d-flex justify-content-sm-between ">
+            <div class="mb-2">
+                <h1 class="text-center text-2xl font-bold">Manage Students</h1>
+            </div>
+            {{-- <button wire:click="generatePdfReport" wire:loading.attr="disabled" wire:loading.class="btn-secondary"
+                wire:target="generatePdfReport" class="btn btn-danger p-1 btn-sm ">
+                <i class="fas fa-file-pdf"></i>
+                <span wire:loading.remove wire:target="generatePdfReport">PDF</span>
+                <span wire:loading wire:target="generatePdfReport">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                </span>
+            </button> --}}
+        </div>
+    @endif
 
     {{-- Display different views based on the boolean flags --}}
     @if ($isEditingStudent)
@@ -39,15 +58,34 @@
         </div>
     @elseif ($isDeleting)
         {{-- Confirm Delete Page --}}
-
-        <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
-            <h3>Confirm Delete</h3>
-        </div>
+        {{-- <div class="card mt-2 col-12 p-3 shadow-lg border rounded" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef);"> --}}
         <div class="card-body">
-            <p>Are you sure you want to delete {{ $selectedStudent->name }}?</p>
-            <button wire:click="confirmDelete" class="btn btn-danger">Yes, Delete</button>
-            <button wire:click="cancelDelete" class="btn btn-secondary">Cancel</button>
+            <p>
+                <strong>Confirm Deletion</strong>
+            </p>
+            <div class="alert alert-info shadow-sm p-4 rounded" role="alert"
+                style="background-color: #f0f8ff; border-left: 5px solid #17a2b8;">
+
+                You're about to delete <strong>{{ $selectedStudent->first_name }} {{ $selectedStudent->middle_name }}
+                    {{ $selectedStudent->last_name }}</strong> (Admission No: {{ $selectedStudent->adm_no }}).
+                This will permanently remove all financial records, exams, and everything associated with this student
+                from our system.
+            </div>
+            <p class="font-bold text-danger">
+                Please confirm this action. Once deleted, it cannot be undone.
+            </p>
+            <div class="d-flex justify-content-between">
+                <button wire:click="confirmDelete" class="btn btn-danger">Yes, Delete
+                    <div wire:loading wire:target="confirmDelete"
+                        class="spinner-border spinner-border-sm text-light ms-2" role="status"></div>
+                </button>
+                <button wire:click="cancelDelete" class="btn btn-secondary">Cancel
+                    <div wire:loading wire:target="cancelDelete"
+                        class="spinner-border spinner-border-sm text-light ms-2" role="status"></div>
+                </button>
+            </div>
         </div>
+        {{-- </div> --}}
     @elseif ($isExpellingStudent)
         {{-- Expelling Student Page --}}
 
@@ -60,47 +98,27 @@
         </div>
     @elseif ($isSuspendingStudent)
         {{-- Suspending Student Page --}}
-
-        <div class="card-header text-danger d-flex justify-content-between align-items-center p-2">
-            <h4 class="mb-0 text-truncate">
-                {{ $selectedStudent->status === 'suspended' ? 'Reinstate Student' : 'Suspend Student' }}:
-                {{ $selectedStudent->first_name }} {{ $selectedStudent->last_name }}
-            </h4>
-        </div>
-
-        <div class="card-body p-3 mb-4">
-            <!-- Student Photo and Info Section -->
-            <div class="d-flex align-items-center mb-2">
-                <img src="{{ asset($selectedStudent->photo) }}" alt="Student Photo"
-                    class="img-fluid rounded-circle shadow-sm me-3" style="width: 80px; height: 80px;">
-                <div>
-                    <h6 class="text-muted">Class: <span
-                            class="font-weight-bold">{{ $selectedStudent->my_class->name }}</span></h6>
-                    <h6 class="text-muted">Status: <span class="font-weight-bold">{{ $selectedStudent->status }}</span>
-                    </h6>
-                    <h6 class="text-muted">KCPE Score: <span
-                            class="font-weight-bold">{{ $selectedStudent->kcpe }}</span></h6>
-                    <h6 class="text-muted">Section: <span
-                            class="font-weight-bold">{{ $selectedStudent->section->name }}</span></h6>
-                    <h6 class="text-muted">Admission No: <span
-                            class="font-weight-bold">{{ $selectedStudent->adm_no }}</span></h6>
-                    <h6 class="text-muted">Year Admitted: <span
-                            class="font-weight-bold">{{ $selectedStudent->year_admitted }}</span></h6>
-                </div>
+        <div>
+            <div class="text-danger p-2">
+                <h4 class="mb-0 text-truncate">
+                    {{ $selectedStudent->status === 'suspended' ? 'Reinstate Student' : 'Suspend Student' }}:</br>
+                    <strong class="text-success">{{ $selectedStudent->first_name }} {{ $selectedStudent->last_name }}
+                        ({{ $selectedStudent->adm_no }}) from {{ $selectedStudent->my_class->name }} -
+                        {{ $selectedStudent->section->name }} admitted on
+                        {{ $selectedStudent->year_admitted }}</strong>
+                </h4>
             </div>
 
             <!-- Suspend or Reinstate Actions -->
             <div class="text-center mb-2">
                 @if ($selectedStudent->status === 'suspended')
                     <div class="d-flex justify-content-center">
-                        <button wire:click="reinstateStudent"
-                            class="btn btn-success mx-2 rounded-pill">Reinstate</button>
-                        <button wire:click="cancelAction" class="btn btn-secondary mx-2 rounded-pill">Cancel</button>
+                        <button wire:click="reinstateStudent" class="btn btn-success mx-2">Reinstate</button>
+                        <button wire:click="cancelAction" class="btn btn-secondary mx-2">Cancel</button>
                     </div>
                 @else
                     <!-- Reason for Suspension -->
-
-                    <div class="form-group mb-2 col-md-6">
+                    <div class="form-group">
                         <label for="suspensionReason" class="form-label">Reason for Suspension</label>
                         <textarea wire:model.live="suspensionReason" id="suspensionReason" class="form-control" rows="2" required></textarea>
                         @error('suspensionReason')
@@ -109,7 +127,7 @@
                     </div>
 
                     <!-- Type of Suspension -->
-                    <div class="form-group mb-2 col-md-6">
+                    <div class="form-group">
                         <label for="suspensionType" class="form-label">Type of Suspension</label>
                         <select wire:model.live="suspensionType" id="suspensionType" class="form-control" required>
                             <option value="">Select Type</option>
@@ -123,7 +141,7 @@
                     </div>
 
                     <!-- Duration of Suspension -->
-                    <div class="form-group mb-3 col-md-6">
+                    <div class="form-group">
                         <label for="suspensionEndDate" class="form-label">Suspension End Date</label>
                         <input type="date" wire:model.live="suspensionEndDate" id="suspensionEndDate"
                             class="form-control" required>
@@ -132,16 +150,14 @@
                         @enderror
                     </div>
 
-                    <div class="d-flex justify-content-left align-items-center">
-                        <button wire:click="confirmStudentSuspension" class="btn btn-danger mx-2 rounded-pill">
-                            Suspend
-                        </button>
+                    <div class="d-flex justify-content-start align-items-center">
+                        <button wire:click="confirmStudentSuspension"
+                            class="btn btn-danger btn-sm mx-2">Suspend</button>
                         <div wire:loading wire:target="confirmStudentSuspension">
                             <div class="spinner-border text-danger ms-2" role="status"
-                                style="height: 1rem; width: 1rem;">
-                            </div>
+                                style="height: 1rem; width: 1rem;"></div>
                         </div>
-                        <button wire:click="closeAction" class="btn btn-secondary mx-2 rounded-pill">Cancel</button>
+                        <button wire:click="closeAction" class="btn btn-secondary btn-sm mx-2">Cancel</button>
                     </div>
                 @endif
             </div>
@@ -166,29 +182,32 @@
                 <button wire:click="closeAction" class="btn btn-secondary btn-sm">Close</button>
             </div>
 
-            <p class="text-muted">Are you sure you want to approve the following student?</p>
-
+            <p class="text-muted">Are you sure you want to approve/Disapprove the following student?</p>
             <div class="row mb-4">
-                <div class="col-md-6">
-                    <h6 class="text-muted">Name</h6>
-                    <p class="lead">{{ $selectedStudent->first_name }} {{ $selectedStudent->last_name }}</p>
-
-                    <h6 class="text-muted">Email</h6>
-                    <p class="lead">{{ $selectedStudent->email ?? 'N/A' }}</p>
-                </div>
-
-                <div class="col-md-6">
-                    <h6 class="text-muted">Parent</h6>
-                    <p class="lead">{{ $selectedStudent->parent_detail->parent_first_name ?? 'N/A' }}
-                        {{ $selectedStudent->parent_detail->parent_last_name ?? 'N/A' }}</p>
-
-                    <h6 class="text-muted">Class</h6>
-                    <p class="lead">{{ $selectedStudent->my_class->name ?? 'N/A' }}</p>
-
-                    <h6 class="text-muted">Section</h6>
-                    <p class="lead">{{ $selectedStudent->section->name ?? 'N/A' }}</p>
+                <div class="col-md-12">
+                    <div class="alert alert-info shadow-sm p-4 rounded" role="alert"
+                        style="background-color: #f0f8ff; border-left: 5px solid #17a2b8;">
+                        <h5 class="mb-3">
+                            Approval Confirmation
+                        </h5>
+                        <p class="mb-2">
+                            Please confirm that you want to approve <strong>{{ $selectedStudent->first_name }}
+                                {{ $selectedStudent->last_name }}</strong>
+                            who is enrolled in <strong>{{ $selectedStudent->my_class->name }}</strong> -
+                            <strong>{{ $selectedStudent->section->name }}</strong>.
+                        </p>
+                        <p class="mb-2">
+                            This student was admitted on <strong>{{ $selectedStudent->year_admitted }}</strong>.
+                        </p>
+                        <p class="mb-2">
+                            Their email address is <strong>{{ $selectedStudent->email ?? 'N/A' }}</strong>, and their
+                            parent is <strong>{{ $selectedStudent->parent_detail->parent_first_name ?? 'N/A' }}
+                                {{ $selectedStudent->parent_detail->parent_last_name ?? 'N/A' }}</strong>.
+                        </p>
+                    </div>
                 </div>
             </div>
+
 
             <!-- Action Buttons: Approve and Disapprove -->
             <div class="d-flex mt-4" style="gap: 10px;">
@@ -237,7 +256,8 @@
                 <h5>Student Details</h5>
                 <div class="row">
                     <div class="col-md-4">
-                        <p><strong>Name:</strong> {{ $selectedStudent->first_name }} {{ $selectedStudent->last_name }}
+                        <p><strong>Name:</strong> {{ $selectedStudent->first_name }}
+                            {{ $selectedStudent->last_name }}
                         </p>
                     </div>
                     <div class="col-md-4">
@@ -284,16 +304,14 @@
         </div>
     @else
         {{-- Default student list if no actions are being performed --}}
-        <div class="table-responsive" wire:poll.10s="fetchStudents">
+        <div class="table-responsive" wire:poll.30s="fetchStudents">
 
             <div class="card">
 
-                <div class="row g-3 align-items-center m-1">
-                    <div class="col-auto">
-                        <label for="formFilter" class="form-label">Form: </label>
-                    </div>
-                    <div class="col-auto">
-                        <select id="form" class="form-control p-1" wire:model.live="formFilter">
+                <div class="row g-3 align-items-center d-flex m-1">
+                    <div class="col-12 col-md-4">
+                        <label for="formFilter" class="form-label">Form:</label>
+                        <select id="form" class="form-select form-control p-1" wire:model.live="formFilter">
                             <option value="">Select Form...</option>
                             <option value="">All</option>
                             @foreach ($forms as $form)
@@ -301,11 +319,10 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-auto">
-                        <label class="col-form-label">Stream:</label>
-                    </div>
-                    <div class="col-auto">
-                        <select id="section" class="form-control p-1" wire:model.live="sectionFilter">
+
+                    <div class="col-12 col-md-4">
+                        <label for="section" class="form-label">Stream:</label>
+                        <select id="section" class="form-select form-control p-1" wire:model.live="sectionFilter">
                             <option value="">Select Stream...</option>
                             <option value="">All</option>
                             @if ($formFilter)
@@ -315,11 +332,10 @@
                             @endif
                         </select>
                     </div>
-                    <div class="col-auto">
-                        <label class="col-form-label">Status:</label>
-                    </div>
-                    <div class="col-auto">
-                        <select id="status" class="form-control p-1" wire:model.live="statusFilter">
+
+                    <div class="col-12 col-md-4">
+                        <label for="status" class="form-label">Status:</label>
+                        <select id="status" class="form-select form-control p-1" wire:model.live="statusFilter">
                             <option value="">Select Status...</option>
                             <option value="">All</option>
                             @foreach ($statuses as $status)
@@ -329,17 +345,17 @@
                     </div>
                 </div>
 
+
                 <!-- Applied Filters Section -->
-                <div class="m-2">
-                    <h5>Applied Filters:</h5>
+                <div class="m-2 justify-content-between">
                     <div class="d-flex flex-wrap align-items-center">
                         {{-- Form Filter --}}
                         @if ($formFilter)
-                            <div class="badge bg-primary me-1 d-flex align-items-center">
+                            <div class="text-success me-1 d-flex align-items-center">
                                 Form: {{ $formFilter }}
-                                <button class="btn btn-close btn-close-white ms-1"
+                                <button class="btn btn-close btn-close-white ms-1 p-0"
                                     wire:click="removeFilter('formFilter')" aria-label="Close">
-                                    <i class="icon-close"></i>
+                                    <i class="fas fa-times"></i>
                                 </button>
                                 <!-- Spinner for Form Filter -->
                                 <div wire:loading wire:target="removeFilter('formFilter')"
@@ -351,11 +367,11 @@
 
                         {{-- Section Filter --}}
                         @if ($sectionFilter)
-                            <div class="badge bg-secondary me-1 d-flex align-items-center">
+                            <div class="text-success me-1 d-flex align-items-center">
                                 Stream: {{ $sectionFilter }}
-                                <button class="btn btn-close btn-close-white ms-1"
+                                <button class="btn btn-close btn-close-white ms-1 p-0"
                                     wire:click="removeFilter('sectionFilter')" aria-label="Close">
-                                    <i class="icon-close"></i>
+                                    <i class="fas fa-times"></i>
                                 </button>
                                 <!-- Spinner for Section Filter -->
                                 <div wire:loading wire:target="removeFilter('sectionFilter')"
@@ -367,11 +383,11 @@
 
                         {{-- Status Filter --}}
                         @if ($statusFilter)
-                            <div class="badge bg-success me-1 d-flex align-items-center">
+                            <div class="text-success me-1 d-flex align-items-center">
                                 Status: {{ $statusFilter }}
-                                <button class="btn btn-close btn-close-white ms-1"
+                                <button class="btn btn-close btn-close-white ms-1 p-0"
                                     wire:click="removeFilter('statusFilter')" aria-label="Close">
-                                    <i class="icon-close"></i>
+                                    <i class="fas fa-times"></i>
                                 </button>
                                 <!-- Spinner for Status Filter -->
                                 <div wire:loading wire:target="removeFilter('statusFilter')"
@@ -381,141 +397,143 @@
                             </div>
                         @endif
 
-                        {{-- Reset Filter Button --}}
+                        {{-- Reset Filter Icon --}}
                         @if ($formFilter || $sectionFilter || $statusFilter)
-                            <button class="btn btn-danger ms-2" wire:click="resetFilters">
-                                <i class="icon-reset"></i> Reset Filters
+                            <span class="ms-2" wire:click="resetFilters" data-bs-toggle="tooltip"
+                                data-bs-placement="top" title="Reset Filters" style="cursor: pointer;">
+                                <i class="fas fa-sync-alt text-danger" style="font-size: 1.5rem;"></i>
                                 <!-- Spinner for Reset Filters -->
                                 <div wire:loading wire:target="resetFilters"
                                     class="spinner-border spinner-border-sm text-light ms-2" role="status">
                                     <span class="sr-only">Loading...</span>
                                 </div>
-                            </button>
+                            </span>
                         @endif
+
                     </div>
                 </div>
-            </div>
 
-            <x-data-table id="studentTable" title="Student List" message="List of registered students"
-                :columns="[
-                    'Admission',
-                    'Student Photo',
-                    'Name',
-                    'Gender',
-                    'Class',
-                    'Section',
-                    'Status',
-                    'Parent Name',
-                    'Parent Contact',
-                    'Actions',
-                ]">
-                @if ($students->isEmpty())
-                    <tr>
-                        <td colspan="9" class="text-center">No students found for the selected filters.</td>
-                    </tr>
-                @else
-                    @foreach ($students as $student)
-                        <tr @if ($student->is_suspended) style="background-color: #f8d7da;" @endif>
-                            <td>{{ $student->adm_no }}</td>
-                            <td>
-                                @if ($student->photo)
-                                    <img src="{{ asset($student->photo) }}" alt="Student Photo"
-                                        class="img-thumbnail" style="width: 50px; height: 50px;">
-                                @else
-                                    <span class="text-muted">No Image</span>
-                                @endif
-                            </td>
-                            <td>
-                                <span>
-                                    @if ($student['is_suspended'])
-                                        <span class="badge badge-danger">{{ $student['suspension_type'] }}</span>
-                                    @endif
-                                    <a href="{{ route('student.info', ['id' => $student['id']]) }}">
-                                        {{ $student['first_name'] }} {{ $student['last_name'] }}
-                                    </a>
-                                </span>
-                            </td>
 
-                            <td>{{ $student->gender }}</td>
-                            <td>{{ $student->my_class->name ?? 'N/A' }}</td>
-                            <td>{{ $student->section->name ?? 'N/A' }}</td>
-                            <td>
-                                <span
-                                    class="badge {{ $student->status == 'Active' ? 'badge-success' : 'badge-warning' }}">
-                                    {{ $student->status }}
-                                </span>
-                            </td>
-                            <td>{{ $student->parent_detail->parent_first_name ?? 'N/A' }}
-                                {{ $student->parent_detail->parent_last_name ?? 'N/A' }}</td>
-                            <td>{{ $student->parent_detail->parent_phone_number ?? 'N/A' }}</td>
-                            <td class="text-center">
-                                <div class="list-icons">
-                                    <div class="dropdown @if ($student->is_suspended) bg-light @endif">
-                                        <button type="button" class="btn btn-link dropdown-toggle"
-                                            data-toggle="dropdown" aria-expanded="false">
-                                            <i class="icon-menu9"></i>
-                                        </button>
-                                        <ul
-                                            class="dropdown-menu dropdown-menu-right @if ($student->is_suspended) bg-white @endif">
-                                            <li>
-                                                <button wire:click="editStudent({{ $student->id }})"
-                                                    class="dropdown-item @if ($student->is_suspended) disabled @endif">
-                                                    <i class="bi bi-pencil"></i> Edit
-                                                </button>
-                                            </li>
-                                            <li>
-                                                <button wire:click="deleteRecord({{ $student->id }})"
-                                                    class="dropdown-item @if ($student->is_suspended) disabled @endif">
-                                                    <i class="bi bi-trash"></i> Delete
-                                                </button>
-                                            </li>
-                                            <li>
-                                                <button wire:click="viewStudent({{ $student->id }})"
-                                                    class="dropdown-item">
-                                                    <i class="bi bi-eye"></i> View Details
-                                                </button>
-                                            </li>
-                                            <li>
-                                                <button wire:click="suspendStudent({{ $student->id }})"
-                                                    class="dropdown-item @if ($student->is_suspended) disabled @endif">
-                                                    <i class="bi bi-pause"></i> Suspension
-                                                </button>
-                                            </li>
-                                            <li>
-                                                <button wire:click="favoriteStudent({{ $student->id }})"
-                                                    class="dropdown-item">
-                                                    <i class="bi bi-star"></i> Student History
-                                                </button>
-                                            </li>
-                                            <li>
-                                                <button wire:click="approveStudent({{ $student->id }})"
-                                                    class="dropdown-item @if ($student->is_suspended) disabled @endif">
-                                                    <i class="bi bi-check"></i> Approve
-                                                </button>
-                                            </li>
-                                            <li>
-                                                <button wire:click="studentExpulsion({{ $student->id }})"
-                                                    class="dropdown-item @if ($student->is_expelled) disabled @endif">
-                                                    <i class="bi bi-exclamation-triangle"></i> Expulsion
-                                                </button>
-                                            </li>
-                                            <li>
-                                                <button wire:click="isSendingStudentMail({{ $student->id }})"
-                                                    class="dropdown-item @if ($student->is_suspended) disabled @endif">
-                                                    <i class="bi bi-x"></i> Send Mail
-                                                </button>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
+                <x-data-table id="studentTable" title="Student List" message="List of registered students"
+                    :columns="[
+                        'Admission',
+                        'Student Photo',
+                        'Name',
+                        'Gender',
+                        'Class',
+                        'Section',
+                        'Status',
+                        'Parent Name',
+                        'Parent Contact',
+                        'Actions',
+                    ]">
+
+                    @if ($students->isEmpty())
+                        <tr>
+                            <td colspan="9" class="text-center">No students found for the selected filters.
                             </td>
                         </tr>
-                    @endforeach
-                @endif
-            </x-data-table>
-            <div class="mt-4">
-                {{ $students->links() }}
+                    @else
+                        @foreach ($students as $student)
+                            <tr @if ($student->is_suspended) style="background-color: #f8d7da;" @endif>
+                                <td>{{ $student->adm_no }}</td>
+                                <td>
+                                    @if ($student->photo)
+                                        <img src="{{ asset($student->photo) }}" alt="Student Photo"
+                                            class="img-thumbnail" style="width: 50px; height: 50px;">
+                                    @else
+                                        <span class="text-muted">No Image</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <span>
+                                        @if ($student['is_suspended'])
+                                            <span class="badge badge-danger">{{ $student['suspension_type'] }}</span>
+                                        @endif
+                                        <a href="{{ route('student.info', ['id' => $student['id']]) }}">
+                                            {{ $student['first_name'] }} {{ $student['last_name'] }}
+                                        </a>
+                                    </span>
+                                </td>
+
+                                <td>{{ $student->gender }}</td>
+                                <td>{{ $student->my_class->name ?? 'N/A' }}</td>
+                                <td>{{ $student->section->name ?? 'N/A' }}</td>
+                                <td>
+                                    <span
+                                        class="badge {{ $student->status == 'Active' ? 'badge-success' : 'badge-warning' }}">
+                                        {{ $student->status }}
+                                    </span>
+                                </td>
+                                <td>{{ $student->parent_detail->parent_first_name ?? 'N/A' }}
+                                    {{ $student->parent_detail->parent_last_name ?? 'N/A' }}</td>
+                                <td>{{ $student->parent_detail->parent_phone_number ?? 'N/A' }}</td>
+                                <td class="text-center">
+                                    <div class="list-icons">
+                                        <div class="dropdown @if ($student->is_suspended) bg-light @endif">
+                                            <button type="button" class="btn btn-link dropdown-toggle"
+                                                data-toggle="dropdown" aria-expanded="false">
+                                                <i class="icon-menu9"></i>
+                                            </button>
+                                            <ul
+                                                class="dropdown-menu dropdown-menu-right @if ($student->is_suspended) bg-white @endif">
+                                                <li>
+                                                    <button wire:click="editStudent({{ $student->id }})"
+                                                        class="dropdown-item @if ($student->is_suspended) disabled @endif">
+                                                        <i class="bi bi-pencil"></i> Edit
+                                                    </button>
+                                                </li>
+                                                <button wire:click="deleteRecord({{ $student->id }})"
+                                                    class="dropdown-item @if ($student->is_suspended) disabled @endif">
+                                                    <i class="bi bi-trash"></i> Delete </button>
+                                                <li>
+                                                    <button wire:click="viewStudent({{ $student->id }})"
+                                                        class="dropdown-item">
+                                                        <i class="bi bi-eye"></i> View Details
+                                                    </button>
+                                                </li>
+                                                <li>
+                                                    <button wire:click="suspendStudent({{ $student->id }})"
+                                                        class="dropdown-item @if ($student->is_suspended) disabled @endif">
+                                                        <i class="bi bi-pause"></i> Suspension
+                                                    </button>
+                                                </li>
+                                                <li>
+                                                    <button wire:click="favoriteStudent({{ $student->id }})"
+                                                        class="dropdown-item">
+                                                        <i class="bi bi-star"></i> Student History
+                                                    </button>
+                                                </li>
+                                                <li>
+                                                    <button wire:click="approveStudent({{ $student->id }})"
+                                                        class="dropdown-item @if ($student->is_suspended) disabled @endif">
+                                                        <i class="bi bi-check"></i> Approve
+                                                    </button>
+                                                </li>
+                                                <li>
+                                                    <button wire:click="studentExpulsion({{ $student->id }})"
+                                                        class="dropdown-item @if ($student->is_expelled) disabled @endif">
+                                                        <i class="bi bi-exclamation-triangle"></i> Expulsion
+                                                    </button>
+                                                </li>
+                                                <li>
+                                                    <button wire:click="isSendingStudentMail({{ $student->id }})"
+                                                        class="dropdown-item @if ($student->is_suspended) disabled @endif">
+                                                        <i class="bi bi-x"></i> Send Mail
+                                                    </button>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    @endif
+
+                </x-data-table>
+                <div class="mt-4">
+                    {{ $students->links() }}
+                </div>
             </div>
-        </div>
     @endif
 </div>

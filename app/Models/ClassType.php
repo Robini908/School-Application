@@ -3,8 +3,9 @@
 namespace App\Models;
 
 use Eloquent;
+use Illuminate\Database\Eloquent\Model;
 
-class ClassType extends Eloquent
+class ClassType extends Model
 {
     //
 }

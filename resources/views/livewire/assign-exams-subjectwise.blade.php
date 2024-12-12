@@ -1,4 +1,4 @@
-<div class="container mt-4">
+<div class="container mt-1">
     <x-flash-messages />
 
 
@@ -104,7 +104,7 @@
 
 
                 @if ($selectedSection)
-                    <h5 class="h6 font-weight-bold">Students in
+                    <h5 class="h6 font-weight-bold">Students in {{ $classes->where('id', $selectedClass)->first()->name ?? 'N/A' }} -
                         {{ $sections->where('id', $selectedSection)->first()->name ?? 'N/A' }} that sat
                         for {{ $selectedSubjectName }}:</h5>
 
@@ -135,11 +135,23 @@
                                             <td>{{ $student->first_name }} {{ $student->last_name }}
                                                 ({{ $student->adm_no }})
                                             </td>
-                                            <td>
+                                            {{-- <td>
                                                 <input type="number" wire:model="marks.{{ $student->id }}"
                                                     class="form-control" placeholder="Enter marks" min="0"
                                                     max="100"
                                                     @if ($isSubjectSelectionEnabled && !$isEnrolled) disabled style="background-color: #f8d7da; border-color: #f5c2c7;" @endif>
+                                            </td> --}}
+                                            <td>
+                                                @if ($isSubjectSelectionEnabled && !$isEnrolled)
+                                                    <input type="number" class="form-control"
+                                                        placeholder="Not Enrolled in {{ $selectedSubjectName }} " disabled
+                                                        style="background-color: #f8d7da; border-color: #f5c2c7; cursor: not-allowed; color: #dc3545; font-weight: bold;"
+                                                        title="Student not enrolled in this subject" />
+                                                @else
+                                                    <input type="number" wire:model="marks.{{ $student->id }}"
+                                                        class="form-control" placeholder="Enter marks"
+                                                        min="0" max="100" />
+                                                @endif
                                             </td>
                                             @error("marks.{$student->id}")
                                                 <div class="text-danger">{{ $message }}</div>
@@ -201,7 +213,7 @@
                                                 <td>
                                                     @if ($isSubjectSelectionEnabled && !$isEnrolled)
                                                         <input type="number" class="form-control"
-                                                            placeholder="Unenrolled" disabled
+                                                            placeholder="Not Enrolled in {{$selectedSubjectName}}" disabled
                                                             style="background-color: #f8d7da; border-color: #f5c2c7; cursor: not-allowed; color: #dc3545; font-weight: bold;"
                                                             title="Student not enrolled in this subject" />
                                                     @else

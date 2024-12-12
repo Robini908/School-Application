@@ -1,4 +1,4 @@
-<div>
+<div class="table-responsive">
     <table id="{{ $id }}" class="table table-bordered table-striped">
         <thead class="thead-light">
             <tr>

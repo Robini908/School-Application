@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Livewire\Component;
 use App\Models\MyClass;
 use App\Models\StudentRecord;
@@ -13,6 +14,7 @@ use App\Models\ExamMarks;
 
 class AssignBatchMarks extends Component
 {
+    use LivewireAlert;
     public $classes;
     public $selectedClass = null;
     public $selectedClassName = '';
@@ -134,10 +136,10 @@ class AssignBatchMarks extends Component
                 }
             }
 
-            session()->flash('message', 'Marks successfully assigned!');
+            $this->alert('success', 'Marks successfully assigned!');
             $this->resetForm();
         } catch (\Exception $e) {
-            session()->flash('error', 'An error occurred while assigning marks: ' . $e->getMessage());
+            $this->alert('error', 'An error occurred while assigning marks: ' . $e->getMessage());
         } finally {
             $this->buttonText = 'Submit Marks';
         }
@@ -189,7 +191,7 @@ class AssignBatchMarks extends Component
         ])->delete();
 
         unset($this->marks[$studentId][$subjectId]);
-        session()->flash('message', 'Mark deleted successfully!');
+        $this->alert('success', 'Mark deleted successfully!');
     }
 
     public function toggleEdit($studentId, $subjectId)
@@ -233,7 +235,7 @@ class AssignBatchMarks extends Component
         // Remove the editable state after updating
         unset($this->editable[$studentId]);
 
-        session()->flash('message', 'Marks successfully updated for student ' . $studentId . '!');
+        $this->alert('success', 'Marks successfully updated for student ' . $studentId . '!');
     }
 
 

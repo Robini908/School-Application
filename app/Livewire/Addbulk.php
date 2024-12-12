@@ -9,6 +9,7 @@ use Livewire\Component;
 use App\Models\StudentRecord;
 use Livewire\WithFileUploads;
 use App\Imports\StudentsImport;
+use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
 use Spatie\LivewireFilepond\WithFilePond;
@@ -24,12 +25,15 @@ class Addbulk extends Component
     public $file;
     public $studentRecords;
     public $progress = 0;
-    public $showErrorTable = false;
     public $errorDetails = [];
     public $editableRows = [];
     public $isUploading = false;
 
     public $showEditTable = false;
+    
+    public $showErrorTable = false;
+
+    public $uploadCompleted = false;
 
     protected $listeners = ['fileUploadProgress' => 'updateProgress'];
 
@@ -54,24 +58,35 @@ class Addbulk extends Component
         $this->validate([
             'file' => 'required|file|mimes:xlsx,xls,csv|max:10240',
         ]);
-    
+
         $this->progress = 0;
         $this->errorDetails = [];
         $this->showErrorTable = false;
-    
+        $this->uploadCompleted = false;
+
         try {
-            Excel::import(new StudentsImport, $this->file->path(), null, \Maatwebsite\Excel\Excel::XLSX);
-            $this->alert('success', 'Student Data uploaded.');
-    
-            $this->handleFileUploadMessage(true);
-    
-            $this->dispatch('fileUploadFinished');
+            $import = new StudentsImport;
+            Excel::import($import, $this->file->path(), null, \Maatwebsite\Excel\Excel::XLSX);
+
+            // Simulate progress update
+            $this->progress = 50; // Midway
+            $this->dispatch('progress-updated', ['progress' => $this->progress]);
+
+            // Check for failures and handle them
+            if (!empty($import->failures())) {
+                $this->handleFileUploadMessage(false, $import);
+            } else {
+                $this->handleFileUploadMessage(true);
+            }
+
             $this->progress = 100;
+            $this->uploadCompleted = true;
+            $this->dispatch('progress-updated', ['progress' => $this->progress]);
             $this->fetchStudentRecords();
         } catch (ExcelValidationException $e) {
             $this->handleFileUploadMessage(false, $e);
         } catch (ValidationException $e) {
-            $this->alert('info', 'Validation error: ' . $e->getMessage(), [
+            $this->alert('error', "<div class='alert alert-danger'><strong>Validation error:</strong> " . $e->getMessage() . "</div>", [
                 'position' => 'top',
                 'showConfirmButton' => true,
                 'confirmButtonText' => 'OK',
@@ -79,8 +94,8 @@ class Addbulk extends Component
                 'timer' => 30000,
                 'toast' => false,
             ]);
-        } catch (Throwable $e) {
-            $this->alert('info', 'An unexpected error occurred: ' . $e->getMessage(), [
+        } catch (\Throwable $e) {
+            $this->alert('error', "<div class='alert alert-danger'><strong>An unexpected error occurred:</strong> " . $e->getMessage() . "</div>", [
                 'position' => 'top',
                 'showConfirmButton' => true,
                 'confirmButtonText' => 'OK',
@@ -89,16 +104,8 @@ class Addbulk extends Component
                 'toast' => false,
             ]);
         }
-    
-        $this->reset(['file']);
-    }
-    
 
-
-    public function fetchStudentRecords()
-    {
-        // Fetch 5 student records, with relationships loaded
-        $this->studentRecords = StudentRecord::with('my_class', 'section')->limit(5)->get();
+        // $this->reset(['file']);
     }
 
     /**
@@ -111,10 +118,8 @@ class Addbulk extends Component
     public function handleFileUploadMessage(bool $success, $errors = null)
     {
         if ($success) {
-            // Display success message
-            $this->alert('success', 'No errors detected! Student uploaded successfully');
+            $this->alert('success', 'No errors detected! Student data uploaded successfully.');
         } else {
-            // Handle errors and display them
             $this->errorDetails = [];
             $failures = $errors->failures();  // Assuming $errors is an ExcelValidationException
 
@@ -127,13 +132,17 @@ class Addbulk extends Component
                 ];
             }
 
-            $this->showEditTable = true;
+            $this->showErrorTable = true;
 
-            // Log error details for debugging
             logger('Error details:', $this->errorDetails);
 
-            // Display an error alert with failure details
-            $this->alert('info', 'There were validation errors in the file. Please review the errors and try again.', [
+            $errorMessage = "<div class='alert alert-danger'><strong>There were validation errors in the file. Please review the errors and try again.</strong><ul>";
+            foreach ($this->errorDetails as $error) {
+                $errorMessage .= "<li>Row {$error['row']}: {$error['attribute']} - " . implode(', ', $error['errors']) . "</li>";
+            }
+            $errorMessage .= "</ul></div>";
+
+            $this->alert('error', $errorMessage, [
                 'position' => 'top',
                 'showConfirmButton' => true,
                 'confirmButtonText' => 'OK',
@@ -147,11 +156,27 @@ class Addbulk extends Component
 
 
 
+
+
+
+    public function fetchStudentRecords()
+    {
+        // Fetch 5 student records, with relationships loaded
+        $this->studentRecords = StudentRecord::with('my_class', 'section', 'parent_detail')->limit(5)->get();
+    }
+
+
+
+
+
+
+
+
     public function saveCorrections()
     {
         foreach ($this->editableRows as $index => $row) {
             // Validate each corrected row
-            $validator = \Validator::make($row['values'], [
+            $validator = Validator::make($row['values'], [
                 'adm_no' => 'required',
                 'first_name' => 'required',
                 'last_name' => 'required',

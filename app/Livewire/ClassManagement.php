@@ -348,6 +348,7 @@ class ClassManagement extends Component
                 $classData
             );
 
+
             // Save streams
             foreach ($this->streams as $stream) {
                 Section::updateOrCreate(
@@ -372,7 +373,6 @@ class ClassManagement extends Component
     }
 
     // Add stream to the form dynamically
-    // Add a new stream to the class
     public function addStream()
     {
         // Validate the stream name
@@ -456,15 +456,6 @@ class ClassManagement extends Component
         $this->viewEntriesMode = false;
     }
 
-
-
-    // View entries (students) of a selected class
-
-
-
-
-
-
     public function toggleAssignTeacher($classId)
     {
         $this->selectedClassForAssignment = $classId;
@@ -527,7 +518,7 @@ class ClassManagement extends Component
 
     public function fetchTeacherInformation($teacherId)
     {
-        // Assuming you want to fetch the teacher's information based on the selected teacher ID
+        // Assuming i want to fetch the teacher's information based on the selected teacher ID
         $teacher = User::find($teacherId);
 
         if ($teacher) {
@@ -539,15 +530,12 @@ class ClassManagement extends Component
         }
     }
 
-
-
-
-
     // Delete a class
     public function deleteClass($classId)
     {
         $class = MyClass::findOrFail($classId);
         $class->delete();
+
         $this->alert('success', 'Class deleted successfully.');
         $this->resetForm();
     }
@@ -561,7 +549,6 @@ class ClassManagement extends Component
         $this->alert('success', 'Stream deleted successfully.');
         $this->viewStreams($classId);
     }
-    // Your Livewire Component
 
 
     public function showStreamEntries($streamId)
@@ -634,8 +621,8 @@ class ClassManagement extends Component
     public function getYearsRange()
     {
         $currentYear = date('Y'); // Get the current year
-        $startYear = 2009; // Start year, you can change this
-        $endYear = $currentYear + 5; // End year is 5 years after the current year
+        $startYear = 2009; 
+        $endYear = $currentYear + 5; 
 
         // Generate an array of years
         return range($startYear, $endYear);

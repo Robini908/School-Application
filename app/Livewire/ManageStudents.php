@@ -10,6 +10,7 @@ use App\Models\ParentDetail;
 use Livewire\WithPagination;
 use App\Models\StudentRecord;
 use Livewire\WithFileUploads;
+use Maatwebsite\MPDF;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\DisapprovalNotification;
@@ -69,6 +70,7 @@ class ManageStudents extends Component
     public $statuses = ['Active', 'Inactive'];
 
 
+
     protected $listeners = [
         'refreshStudents' => 'loadStudents',
         'studentSelected' => 'selectStudent'
@@ -81,6 +83,35 @@ class ManageStudents extends Component
         $this->fetchStudents();
         $this->loadFilterOptions(); // Load filter options if needed
     }
+
+
+    public function deleteRecord($studentId)
+    {
+        // Locate the student to be deleted
+        $this->selectedStudent = StudentRecord::find($studentId);
+        $this->isDeleting = true;
+
+        // Reset other flags if needed
+        $this->resetOtherFlags(true);
+    }
+
+    public function confirmDelete()
+    {
+        if ($this->selectedStudent) {
+            $fullName = $this->selectedStudent->first_name . ' ' . $this->selectedStudent->middle_name . ' ' . $this->selectedStudent->last_name;
+            $admNo = $this->selectedStudent->adm_no;
+            $this->selectedStudent->delete();
+            $this->alert('success', "Student $fullName (Admission No: $admNo) deleted successfully from the database.");
+        }
+        $this->cancelDelete();
+    }
+
+    public function cancelDelete()
+    {
+        $this->isDeleting = false;
+        $this->selectedStudent = null;
+    }
+
 
     public function toggleDisapproval()
     {
@@ -201,11 +232,45 @@ class ManageStudents extends Component
     public function render()
     {
         return view('livewire.manage-students', [
-            
+
             'students' => $this->loadStudents(), // Pass paginated results directly to the view
         ]);
     }
 
+    public function generatePdfReport()
+    {
+        $students = $this->loadStudents();
+
+        // Generate PDF report using MPDF
+        $mpdf = \MPDF::Create('L', 'mm', 'A4');
+
+        // Set the title and author of the PDF
+        $mpdf->SetTitle('Student Report');
+        $mpdf->SetAuthor('Your Name');
+
+        // Add a page to the PDF
+        $mpdf->AddPage();
+
+        // Set the font and size for the report
+        $mpdf->SetFont('Arial', '', 15);
+
+        // Add a header row to the report
+        $mpdf->Cell(200, 10, 'Name', 0, 1, 'C');
+        $mpdf->Cell(200, 10, 'Class', 0, 1, 'C');
+        $mpdf->Cell(200, 10, 'Section', 0, 1, 'C');
+
+        // Add each student's data to the report
+        foreach ($students as $student) {
+            $mpdf->Cell(200, 10, $student->name, 0, 1);
+            $mpdf->Cell(200, 10, $student->my_class->name, 0, 1);
+            $mpdf->Cell(200, 10, $student->section->name, 0, 1);
+        }
+
+        // Output the PDF to a file
+        $filename = 'student_report.pdf';
+        $path = public_path($filename);
+        $mpdf->Output($path, 'D');
+    }
 
 
     public function getStudentsWithSuspensionInfo()
@@ -367,14 +432,7 @@ class ManageStudents extends Component
     }
 
     // View Student History
-    public function favoriteStudent($studentId)
-    {
-        // Logic to view student's history or favorite
-        $this->selectedStudent = StudentRecord::find($studentId);
-        $this->isViewingHistoryDetails = true;
-        // Reset other flags
-        $this->resetOtherFlags('isViewingHistoryDetails');
-    }
+
 
     // Approve Student
     public function approveStudent($studentId)
@@ -393,7 +451,15 @@ class ManageStudents extends Component
 
         // Verify student information (you can customize these checks as needed)
         if (empty($this->selectedStudent->first_name) || empty($this->selectedStudent->last_name) || empty($this->selectedStudent->parent_id_no)) {
-            $this->alert('error', 'Please ensure all required student information is filled out.');
+            $this->alert('error', 'Please ensure all required student information is filled out.', [
+                'position' => 'top',
+                'showConfirmButton' => true,
+                'confirmButtonText' => 'OK',
+
+                'reverseButtons' => true,
+                'timer' => 30000,
+                'toast' => false,
+            ]);
             return;
         }
     }
@@ -556,18 +622,11 @@ class ManageStudents extends Component
     }
 
 
-    public function deleteRecord($studentId)
-    {
-        // Logic to delete student
-        $this->selectedStudent = StudentRecord::find($studentId);
-        $this->showDeleteModal = true;
-        // Reset other flags
-        $this->resetOtherFlags('showDeleteModal');
-    }
+
 
     // Add other action methods like viewStudent, studentExpulsion, suspendStudent, etc.
 
-    
+
 
     // Helper method to reset all flags except the current one
     protected function resetOtherFlags($currentFlag)

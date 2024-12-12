@@ -6,17 +6,22 @@ use App\Models\Exam;
 use App\Models\MyClass;
 use App\Models\Section;
 use App\Models\Subject;
+use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Livewire\Component;
+use Mpdf\Mpdf;
 use App\Models\ExamMarks;
 use App\Models\GradingRange;
 use Livewire\WithPagination;
 use App\Models\GradingSystem;
 use App\Models\StudentRecord;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\StudentDetailsExport;
 
 class MarkListManagement extends Component
 {
     use WithPagination;
+    use LivewireAlert;
 
     public $classId;
     public $examName;
@@ -25,6 +30,7 @@ class MarkListManagement extends Component
     public $meanScore;
     public $totalPoints;
     public $meanGrade;
+
     public $classPosition;
     public $streamPosition;
 
@@ -47,6 +53,84 @@ class MarkListManagement extends Component
         $this->gradingSystemDetails = [];
         $this->studentAdditionalDetails = [];
     }
+
+
+
+
+
+    // Export data as PDF
+    protected function prepareExportData()
+    {
+        $data = [
+            'studentAdditionalDetails' => $this->studentAdditionalDetails,
+            'studentDetails' => $this->studentDetails,
+            'examName' => $this->examName,
+            'gradingSystemDetails' => $this->gradingSystemDetails,
+            'totalMarks' => $this->totalMarks,
+            'meanScore' => $this->meanScore,
+            'totalPoints' => $this->totalPoints,
+            'classPosition' => $this->classPosition,
+            'streamPosition' => $this->streamPosition,
+            'selectedAdmNo' => $this->selectedAdmNo,
+        ];
+
+        // Sanitize all string data
+        array_walk_recursive($data, function (&$item) {
+            if (is_string($item)) {
+                $item = mb_convert_encoding($item, 'UTF-8', 'UTF-8');
+            }
+        });
+
+        return $data;
+    }
+
+
+    // Add use statement for Mpdf
+
+    public function exportToPDF()
+    {
+        try {
+            $data = $this->prepareExportData();
+
+            // Render the Blade view to HTML
+            $html = view('exports.student-details-pdf', $data)->render();
+
+            // Create an instance of Mpdf
+            $mpdf = new Mpdf();
+
+            // Write the HTML to the PDF
+            $mpdf->WriteHTML($html);
+
+            // Generate the file name based on the student's name and admission number
+            $studentName = $data['studentAdditionalDetails']['first_name'] . '_' . $data['studentAdditionalDetails']['last_name'];
+            $admissionNo = $data['selectedAdmNo'];
+            $fileName = 'report_mark_for_' . str_replace(' ', '_', $studentName) . '_' . $admissionNo . '.pdf';
+
+            // Output the PDF as a download with the generated file name
+            return response()->streamDownload(function () use ($mpdf) {
+                echo $mpdf->Output('', 'S');
+            }, $fileName);
+        } catch (\Exception $e) {
+            $this->alert('error', 'Failed to export to PDF: ' . $e->getMessage());
+        }
+    }
+
+
+
+
+
+
+    // Export data as Excel
+    public function exportToExcel()
+    {
+        try {
+            $data = $this->studentDetails; // assuming $studentDetails is an array of data for export
+            return Excel::download(new StudentDetailsExport($data), 'student-details.xlsx');
+        } catch (\Exception $e) {
+            $this->alert('error', 'Failed to export to Excel: ' . $e->getMessage());
+        }
+    }
+
 
     public function render()
     {

@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
     {
       id: "2",
       calendarId: "0",
-      title: "Conference",
+      title: "Sports",
       category: "time",
       start: "2024-12-05T09:00:00",
       end: "2024-12-05T17:00:00",

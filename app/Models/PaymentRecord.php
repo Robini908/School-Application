@@ -4,8 +4,9 @@ namespace App\Models;
 
 use App\User;
 use Eloquent;
+use Illuminate\Database\Eloquent\Model;
 
-class PaymentRecord extends Eloquent
+class PaymentRecord extends Model
 {
     protected $fillable =['student_id', 'payment_id', 'amt_paid', 'year', 'paid', 'balance', 'ref_no'];
 

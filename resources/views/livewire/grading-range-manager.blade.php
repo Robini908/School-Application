@@ -246,13 +246,13 @@
         @if ($hasAssignedRanges)
             <div class="card my-4 p-4 shadow-lg">
                 <h5 class="card-title text-primary font-weight-bold mb-3">
-                    Grading Ranges Already Assigned
+                    Grading Ranges Already Assigned For:
                 </h5>
                 <p class="card-text text-muted mb-2">
-                    Grading ranges have already been assigned for the selected subject:
-                    <strong>{{ $submittedRanges->first()->subject->subject_name }}</strong>
+                    
+                    <strong class="text-success">{{ $submittedRanges->first()->subject->subject_name }}</strong>
                     under the grading system:
-                    <strong>{{ $submittedRanges->first()->gradingSystem->name }}</strong>.
+                    <strong class="text-success">{{ $submittedRanges->first()->gradingSystem->name }}</strong>.
                 </p>
 
                 <div class="mt-4">
@@ -358,12 +358,5 @@
                 </div>
             </div>
         @endif
-
-
-
     @endif
-
-
-
-
 </div>

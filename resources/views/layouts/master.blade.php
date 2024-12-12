@@ -14,9 +14,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js" defer></script>
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <script src="node_modules/jquery/dist/jquery.min.js"></script> <script src="node_modules/jquery-steps/build/jquery.steps.min.js"></script> <script src="node_modules/jquery-validation/dist/jquery.validate.min.js"></script>
-    <script src="jquery.js"></script> 
-    <script src="jquery.steps.js"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('partials.inc_top')
     @livewireStyles

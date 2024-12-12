@@ -16,6 +16,7 @@ class SubjectAnalysis extends Component
     public $examId;    // Selected exam ID
     public $sections = []; // Array to hold sections for the selected class
     public $subjects = [];
+    public $subjecttype;
     public $gradesCount = [];
     public $classes; // List of classes
     public $exams = []; // List of exams for the selected class

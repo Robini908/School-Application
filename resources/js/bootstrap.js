@@ -1,7 +1,7 @@
 // Importing necessary libraries
 import _ from 'lodash';
 // import Popper from 'popper.js';
-// import $ from 'jquery';
+import $ from 'jquery';
 // import 'bootstrap';
 import axios from 'axios';
 

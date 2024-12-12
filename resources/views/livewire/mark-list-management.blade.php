@@ -107,19 +107,13 @@
                                     <td>{{ $mark['marks'][$subjectName] ?? 'N/A' }}</td>
                                 @endforeach
                                 <td>
-                                    {{-- <button  wire:click ="fetchStudentDetails('{{ $mark['adm_no'] }}')" class="btn btn-primary" wire:loading.attr="disabled"
-                                        wire:loading.class="btn-secondary">
-                                        <span wire:loading.remove>Generate
-                                            Report</span>
-                                        <span wire:loading>
-                                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                            Generating...
-                                        </span>
-                                    </button> --}}
-                                    <button wire:click ="fetchStudentDetails('{{ $mark['adm_no'] }}')" class="btn btn-primary d-flex align-items-center">
-                                        Get Champions
-                                        <div wire:loading wire:target="fetchStudentDetails('{{ $mark['adm_no'] }}')" class="spinner-border spinner-border-sm text-light ms-2"
-                                            role="status"></div>
+
+                                    <button wire:click ="fetchStudentDetails('{{ $mark['adm_no'] }}')"
+                                        class="btn btn-primary d-flex align-items-center">
+                                        Generate Report
+                                        <div wire:loading wire:target="fetchStudentDetails('{{ $mark['adm_no'] }}')"
+                                            class="spinner-border spinner-border-sm text-light ms-2" role="status">
+                                        </div>
                                     </button>
                                 </td>
                             </tr>
@@ -137,11 +131,33 @@
         <link
             href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Georgia:wght@400&family=Courier+New:wght@400&family=Montserrat:wght@400;700&family=Poppins:wght@400;600&family=Open+Sans:wght@400;600&display=swap"
             rel="stylesheet">
-        {{-- 
-        <div class="card mt-4" 
-            style="border-radius: 15px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); overflow: hidden;"> --}}
-        <div class="card  p-3 shadow-lg border rounded" wire:key="details-card"
+
+        <div class="card p-3 shadow-lg border rounded" wire:key="details-card"
             style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); overflow: hidden;">
+            <div class="d-flex justify-content-end mb-4">
+                <!-- Export to PDF Button -->
+                <button wire:click="exportToPDF" wire:loading.attr="disabled" wire:loading.class="btn-secondary"
+                    wire:target="exportToPDF" class="btn btn-danger btn-sm mx-1">
+                    <i class="fas fa-file-pdf"></i>
+                    <span wire:loading.remove wire:target="exportToPDF">PDF</span>
+                    <span wire:loading wire:target="exportToPDF">
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    </span>
+                </button>
+
+                <!-- Export to Excel Button -->
+                <button wire:click="exportToExcel" wire:loading.attr="disabled" wire:loading.class="btn-secondary"
+                    wire:target="exportToExcel" class="btn btn-success btn-sm mx-1">
+                    <i class="fas fa-file-excel"></i>
+                    <span wire:loading.remove wire:target="exportToExcel">Excel</span>
+                    <span wire:loading wire:target="exportToExcel">
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    </span>
+                </button>
+
+                <button wire:click="closeDetails" class="btn btn-danger btn-sm"
+                    style="border-radius: 5px; font-family: 'Roboto', sans-serif;">Close</button>
+            </div>
 
             <div class="card-header bg-primary text-white"
                 style="border-top-left-radius: 15px; border-top-right-radius: 15px;">
@@ -157,7 +173,8 @@
                                 class="img-thumbnail"
                                 style="width: 100px; height: 100px; border-radius: 50%; border: 2px solid #007bff;">
                         @else
-                            <span class="text-muted" style="font-size: 16px; font-family: 'Courier New', monospace;">No
+                            <span class="text-muted"
+                                style="font-size: 16px; font-family: 'Courier New', monospace;">No
                                 Image</span>
                         @endif
                     </div>
@@ -193,7 +210,8 @@
                     <h6
                         style="font-weight: bold; font-family: 'Courier New', monospace; font-size: 18px; margin-top: 20px; color: #555;">
                         Exam: {{ $examName ?? 'N/A' }}</h6>
-                    <h6 style="font-weight: bold; font-family: 'Courier New', monospace; font-size: 18px; color: #555;">
+                    <h6
+                        style="font-weight: bold; font-family: 'Courier New', monospace; font-size: 18px; color: #555;">
                         Grading
                         System: {{ $gradingSystemDetails['name'] ?? 'N/A' }}</h6>
                     <p class="text-muted mb-2" style="font-size: 16px; color: #777;">Description:
@@ -217,15 +235,15 @@
                             @foreach ($studentDetails as $detail)
                                 <tr wire:key="subject-{{ $loop->index }}">
                                     <td style="font-family: 'Roboto', sans-serif;">
-                                        {{ $detail['subject_name'] ?? 'N/A' }}</td>
-                                    <td style="font-family: 'Roboto', sans-serif;">
-                                        {{ $detail['marks'] ?? 'N/A' }}</td>
-                                    <td style="font-family: 'Roboto', sans-serif;">
-                                        {{ $detail['grade'] ?? 'N/A' }}</td>
-                                    <td style="font-family: 'Roboto', sans-serif;">
-                                        {{ $detail['remark'] ?? 'N/A' }}</td>
-                                    <td style="font-family: 'Roboto', sans-serif;">
-                                        {{ $detail['gpa'] ?? 'N/A' }}</td>
+                                        {{ $detail['subject_name'] ?? 'N/A' }}
+                                    </td>
+                                    <td style="font-family: 'Roboto', sans-serif;">{{ $detail['marks'] ?? 'N/A' }}
+                                    </td>
+                                    <td style="font-family: 'Roboto', sans-serif;">{{ $detail['grade'] ?? 'N/A' }}
+                                    </td>
+                                    <td style="font-family: 'Roboto', sans-serif;">{{ $detail['remark'] ?? 'N/A' }}
+                                    </td>
+                                    <td style="font-family: 'Roboto', sans-serif;">{{ $detail['gpa'] ?? 'N/A' }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -240,40 +258,31 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-6">
-                                    <p style="font-family: 'Roboto', sans-serif;"><strong>Total
-                                            Marks:</strong>
+                                    <p style="font-family: 'Roboto', sans-serif;"><strong>Total Marks:</strong>
                                         {{ $totalMarks ?? 'N/A' }}</p>
-                                    <p style="font-family: 'Roboto', sans-serif;"><strong>Mean
-                                            Score:</strong>
+                                    <p style="font-family: 'Roboto', sans-serif;"><strong>Mean Score:</strong>
                                         {{ $meanScore ?? 'N/A' }}</p>
-                                    <p style="font-family: 'Roboto', sans-serif;"><strong>Total
-                                            Points:</strong>
+                                    <p style="font-family: 'Roboto', sans-serif;"><strong>Total Points:</strong>
                                         {{ $totalPoints ?? 'N/A' }}</p>
                                 </div>
                                 <div class="col-md-6">
-                                    <p style="font-family: 'Roboto', sans-serif;"><strong>Position in
-                                            Class:</strong> {{ $classPosition ?? 'N/A' }}</p>
-                                    <p style="font-family: 'Roboto', sans-serif;"><strong>Position in
-                                            Stream:</strong> {{ $streamPosition ?? 'N/A' }}</p>
+                                    <p style="font-family: 'Roboto', sans-serif;"><strong>Position in Class:</strong>
+                                        {{ $classPosition ?? 'N/A' }}</p>
+                                    <p style="font-family: 'Roboto', sans-serif;"><strong>Position in Stream:</strong>
+                                        {{ $streamPosition ?? 'N/A' }}</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 @else
-                    <p class="text-muted text-center" style="font-size: 16px; color: #777;">No details
-                        found for this student.
+                    <p class="text-muted text-center" style="font-size: 16px; color: #777;">No details found for this
+                        student.
                     </p>
                 @endif
             </div>
 
-            <div class="card-footer text-center">
-                <button wire:click="closeDetails" class="btn btn-danger btn-sm"
-                    style="border-radius: 5px; font-family: 'Roboto', sans-serif;">Close</button>
-            </div>
+
         </div>
-
-
-
-
     @endif
+
 </div>
