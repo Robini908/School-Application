@@ -104,11 +104,10 @@
                                 <td>{{ $mark['student_name'] ?? 'N/A' }}</td>
                                 <td>{{ $mark['adm_no'] ?? 'N/A' }}</td>
                                 @foreach ($marks->first()['marks'] as $subjectName => $subjectMark)
-                                    <td>{{ $mark['marks'][$subjectName] ?? 'N/A' }}</td>
+                                    <td>{{ $mark['marks'][$subjectName] ?? '--' }}</td>
                                 @endforeach
                                 <td>
-
-                                    <button wire:click ="fetchStudentDetails('{{ $mark['adm_no'] }}')"
+                                    <button wire:click="fetchStudentDetails('{{ $mark['adm_no'] }}')"
                                         class="btn btn-primary d-flex align-items-center">
                                         Generate Report
                                         <div wire:loading wire:target="fetchStudentDetails('{{ $mark['adm_no'] }}')"
@@ -125,6 +124,7 @@
             <p class="mt-4 text-muted">No marks available for the selected criteria.</p>
         @endif
     @endif
+
 
     <!-- Details Card -->
     @if ($showingDetails)
@@ -241,9 +241,11 @@
                                     </td>
                                     <td style="font-family: 'Roboto', sans-serif;">{{ $detail['grade'] ?? 'N/A' }}
                                     </td>
-                                    <td style="font-family: 'Roboto', sans-serif;">{{ $detail['remark'] ?? 'N/A' }}
+                                    <td style="font-family: 'Roboto', sans-serif;">
+                                        {{ $detail['remark'] ?? 'N/A' }}
                                     </td>
-                                    <td style="font-family: 'Roboto', sans-serif;">{{ $detail['gpa'] ?? 'N/A' }}</td>
+                                    <td style="font-family: 'Roboto', sans-serif;">{{ $detail['gpa'] ?? 'N/A' }}
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -266,16 +268,19 @@
                                         {{ $totalPoints ?? 'N/A' }}</p>
                                 </div>
                                 <div class="col-md-6">
-                                    <p style="font-family: 'Roboto', sans-serif;"><strong>Position in Class:</strong>
+                                    <p style="font-family: 'Roboto', sans-serif;"><strong>Position in
+                                            Class:</strong>
                                         {{ $classPosition ?? 'N/A' }}</p>
-                                    <p style="font-family: 'Roboto', sans-serif;"><strong>Position in Stream:</strong>
+                                    <p style="font-family: 'Roboto', sans-serif;"><strong>Position in
+                                            Stream:</strong>
                                         {{ $streamPosition ?? 'N/A' }}</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 @else
-                    <p class="text-muted text-center" style="font-size: 16px; color: #777;">No details found for this
+                    <p class="text-muted text-center" style="font-size: 16px; color: #777;">No details found for
+                        this
                         student.
                     </p>
                 @endif

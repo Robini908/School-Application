@@ -37,6 +37,9 @@ class MarkListManagement extends Component
 
     public $examId;
     public $sectionId;
+    public $selectedExamId;
+    public $availableExams = [];
+    public $comparisonDetails = [];
     public $studentDetails = []; // Property to hold student details
     public $marks;
     public $showingDetails = false; // Flag to show/hide details card
@@ -45,6 +48,43 @@ class MarkListManagement extends Component
     public $studentAdditionalDetails = []; // Initialize the additional details property
     public $gradingSystemDetails = [];
 
+
+    public function compareExamPerformance()
+    {
+        if (!$this->selectedExamId) {
+            $this->comparisonDetails = [];
+            return;
+        }
+
+        // Fetch current exam marks
+        $currentExamMarks = ExamMarks::where('exam_id', $this->currentExamId)
+            ->where('student_id', $this->selectedStudentId)
+            ->get()
+            ->keyBy('subject_id');
+
+        // Fetch comparison exam marks
+        $comparisonExamMarks = ExamMarks::where('exam_id', $this->selectedExamId)
+            ->where('student_id', $this->selectedStudentId)
+            ->get()
+            ->keyBy('subject_id');
+
+        // Prepare comparison data
+        $this->comparisonDetails = [];
+        foreach ($currentExamMarks as $subjectId => $currentMark) {
+            $comparisonMark = $comparisonExamMarks->get($subjectId);
+            $difference = $comparisonMark ? $currentMark->marks - $comparisonMark->marks : null;
+
+            $this->comparisonDetails[] = [
+                'subject' => $currentMark->subject->subject_name,
+                'current_mark' => $currentMark->marks,
+                'comparison_mark' => $comparisonMark->marks ?? 'N/A',
+                'difference' => $difference,
+                'trend' => $difference > 0 ? 'up' : ($difference < 0 ? 'down' : 'neutral'),
+            ];
+        }
+    }
+
+
     public function mount()
     {
         // Initialize marks as an empty collection
@@ -52,8 +92,14 @@ class MarkListManagement extends Component
         $this->studentDetails = [];
         $this->gradingSystemDetails = [];
         $this->studentAdditionalDetails = [];
+        $this->fetchAvailableExams();
     }
 
+
+    private function fetchAvailableExams()
+    {
+        $this->availableExams = Exam::where('class_id', $this->classId)->get(['id', 'name']);
+    }
 
 
 
@@ -243,34 +289,34 @@ class MarkListManagement extends Component
 
     private function fetchMarksAndDetails($student, $exam, $gradingSystem)
     {
-        // Fetch the student's marks for the subjects in the exam
         $marks = ExamMarks::with('subject')
             ->where('student_id', $student->id)
             ->where('exam_id', $exam->id)
             ->get()
             ->keyBy('subject_id');
 
-        // Get all subjects in the grading system
         $gradingSystemSubjects = DB::table('grading_system_subject')
             ->where('grading_system_id', $gradingSystem->id)
             ->pluck('subject_id')
             ->toArray();
 
-        $subjectCount = count($gradingSystemSubjects);
+        $subjectCount = 0;
         foreach ($gradingSystemSubjects as $subjectId) {
-            $this->processSubjectMarks($marks, $subjectId, $gradingSystem);
+            if ($this->isStudentEnrolledInSubject($student->id, $subjectId)) {
+                $this->processSubjectMarks($marks, $subjectId, $gradingSystem);
+                $subjectCount++;
+            }
         }
 
-        // Calculate mean score
         $this->meanScore = $subjectCount > 0 ? $this->totalMarks / $subjectCount : 'N/A';
 
-        // Set grading system details
         $this->gradingSystemDetails = [
             'name' => $gradingSystem->name,
             'description' => $gradingSystem->description,
             'effective_date' => $gradingSystem->effective_date,
         ];
     }
+
 
     private function processSubjectMarks($marks, $subjectId, $gradingSystem)
     {
@@ -295,19 +341,11 @@ class MarkListManagement extends Component
                 'gpa' => $gradingRange->gpa ?? 'N/A',
             ];
 
-            // Accumulate totals
             $this->totalMarks += $subjectMarksValue;
-            $this->totalPoints += $gradingRange->gpa ?? 0; // Default to 0 if GPA is not found
-        } else {
-            $this->studentDetails[] = [
-                'subject_name' => $subject->subject_name ?? 'Unknown Subject',
-                'marks' => 'N/A',
-                'grade' => 'N/A',
-                'remark' => 'N/A',
-                'gpa' => 'N/A',
-            ];
+            $this->totalPoints += $gradingRange->gpa ?? 0;
         }
     }
+
 
     private function fetchMarksWithoutGradingSystem($student)
     {
@@ -316,17 +354,52 @@ class MarkListManagement extends Component
             ->get();
 
         foreach ($marks as $mark) {
-            $this->studentDetails[] = [
-                'subject_name' => $mark->subject->subject_name ?? 'N/A',
-                'marks' => $mark->marks ?? 'N/A',
-                'grade' => 'N/A',
-                'remark' => 'N/A',
-                'gpa' => 'N/A',
-            ];
+            if ($this->isStudentEnrolledInSubject($student->id, $mark->subject_id)) {
+                $this->studentDetails[] = [
+                    'subject_name' => $mark->subject->subject_name ?? 'N/A',
+                    'marks' => $mark->marks ?? 'N/A',
+                    'grade' => 'N/A',
+                    'remark' => 'N/A',
+                    'gpa' => 'N/A',
+                ];
+            }
         }
 
         $this->gradingSystemDetails = ['name' => 'N/A', 'description' => 'N/A', 'effective_date' => 'N/A'];
     }
+
+    /**
+     * Check if subject selection is enabled for a specific class.
+     *
+     * @param int $classId
+     * @return bool
+     */
+    protected function isSubjectSelectionEnabled(int $classId): bool
+    {
+        return MyClass::find($classId)?->subjectSelectionSetting?->is_subject_selection_enabled ?? false;
+    }
+
+    /**
+     * Check if a student is enrolled in a specific subject.
+     *
+     * @param int $studentId
+     * @param int $subjectId
+     * @return bool
+     */
+    private function isStudentEnrolledInSubject(int $studentId, int $subjectId): bool
+    {
+        $student = StudentRecord::with('subjects', 'my_class.subjectSelectionSetting')->find($studentId);
+
+        if (!$student) {
+            return false;
+        }
+
+        $isSelectionEnabled = $student->my_class?->subjectSelectionSetting?->is_subject_selection_enabled ?? false;
+
+        // Treat all students as enrolled if subject selection is disabled
+        return !$isSelectionEnabled || $student->subjects->contains('id', $subjectId);
+    }
+
 
     private function resetStudentDetails()
     {
@@ -421,32 +494,20 @@ class MarkListManagement extends Component
 
     public function getStudentGradingDetails($marks, $subjectId)
     {
-        // Fetch the grading system associated with the exam
-        $gradingSystem = GradingSystem::where('id', $this->gradingSystemId) // Assume you have gradingSystemId defined
-            ->first();
+        if (!$this->isStudentEnrolledInSubject($this->selectedStudentId, $subjectId)) {
+            return ['grade' => 'N/A', 'remark' => 'Not Enrolled', 'gpa' => 'N/A'];
+        }
 
+        $gradingSystem = GradingSystem::find($this->gradingSystemId);
         if (!$gradingSystem) {
             return ['grade' => 'N/A', 'remark' => 'N/A', 'gpa' => 'N/A'];
         }
 
-        // Get the grading ranges for the subject
-        $gradingRange = GradingRange::where('subject_id', $subjectId)
-            ->where('grading_system_id', $gradingSystem->id)
+        return GradingRange::where('grading_system_id', $gradingSystem->id)
+            ->where('subject_id', $subjectId)
             ->where('range_from', '<=', $marks)
             ->where('range_to', '>=', $marks)
-            ->first();
-
-        // Return the grade, remark, and GPA
-        if ($gradingRange) {
-            return [
-                'grade' => $gradingRange->grade,
-                'remark' => $gradingRange->remark,
-                'gpa' => $gradingRange->gpa,
-            ];
-        }
-
-        // Default if no range found
-        return ['grade' => 'N/A', 'remark' => 'N/A', 'gpa' => 'N/A'];
+            ->first(['grade', 'remark', 'gpa']);
     }
 
 
@@ -475,20 +536,29 @@ class MarkListManagement extends Component
             // Get all subjects that can be displayed in the table
             $allSubjects = ExamMarks::with('subject')->where('exam_id', $this->examId)->pluck('subject_id')->unique();
 
+            // Check if subject selection is enabled for the class
+            $isSelectionEnabled = MyClass::where('id', function ($query) {
+                $query->select('my_class_id')->from('sections')->where('id', $this->sectionId);
+            })->first()?->subjectSelectionSetting?->is_subject_selection_enabled ?? false;
+
             // Format marks to include student names and subject names
-            $this->marks = $marks->groupBy('student_id')->map(function ($marks, $studentId) use ($allSubjects) {
+            $this->marks = $marks->groupBy('student_id')->map(function ($marks, $studentId) use ($allSubjects, $isSelectionEnabled) {
                 $firstMark = $marks->first(); // Get the first mark to fetch student details
 
-                // Create a default array with N/A for all subjects
-                $subjectMarks = $allSubjects->mapWithKeys(function ($subjectId) use ($marks) {
-                    // Find the mark for this subject
+                // Create a default array with '--' for all subjects if selection is enabled
+                $subjectMarks = $allSubjects->mapWithKeys(function ($subjectId) use ($marks, $studentId, $isSelectionEnabled) {
                     $subjectMark = $marks->firstWhere('subject_id', $subjectId);
-
-                    // Get subject name or default to 'N/A'
                     $subjectName = $subjectMark ? $subjectMark->subject->subject_name : 'N/A';
-                    $marksValue = $subjectMark ? $subjectMark->marks : 'N/A'; // Default to 'N/A' if no marks
 
-                    return [$subjectName => $marksValue]; // Use subject name as the key
+                    if ($isSelectionEnabled) {
+                        // Check if the student is enrolled in the subject
+                        $isEnrolled = $this->isStudentEnrolledInSubject($studentId, $subjectId);
+                        $marksValue = $isEnrolled ? ($subjectMark?->marks ?? '--') : '--';
+                    } else {
+                        $marksValue = $subjectMark?->marks ?? '--';
+                    }
+
+                    return [$subjectName => $marksValue];
                 });
 
                 return [

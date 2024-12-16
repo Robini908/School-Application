@@ -81,10 +81,10 @@
                                     Classes</span></a>
                         </li>
                         {{--Manage Sections--}}
-                        <li class="nav-item">
+                        {{-- <li class="nav-item">
                             <a href="{{ route('sections.index') }}"
                                 class="nav-link {{ in_array(Route::currentRouteName(), ['sections.index','sections.edit',]) ? 'active' : '' }}"><span>Streams</span></a>
-                        </li>
+                        </li> --}}
                         {{--Manage Dorms--}}
                         <li class="nav-item">
                             <a href="{{ route('dorms.index') }}"
@@ -134,7 +134,6 @@
                                 <span>Subjects</span></a>
 
                         </li>
-                        {{--Grades list--}}
                         
 
 
@@ -158,12 +157,7 @@
                                 <span> Marks Allocation</span>
                             </a>
                         </li>
-                        {{-- <li
-                            class="nav-item {{ in_array(Route::currentRouteName(), ['exams.grades']) ? 'nav-item-expanded nav-item-open' : '' }}">
-                            <a href="{{ route('exams.grades') }}" class="nav-link">
-                                <span> Grades Management</span>
-                            </a>
-                        </li> --}}
+                        
 
 
                     </ul>

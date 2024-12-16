@@ -45,6 +45,12 @@ class SubjectSelectionService
             }
         }
 
+        // Validate total number of subjects
+        $totalSubjects = $selectedSubjects->count();
+        if ($totalSubjects < 7 || $totalSubjects > 8) {
+            $validationErrors[] = "You must select between 7 and 8 subjects. You have selected {$totalSubjects}.";
+        }
+
         // If there are validation errors, throw ValidationException with the formatted message
         if (!empty($validationErrors)) {
             $errorMessage = implode(' ', $validationErrors);
@@ -54,6 +60,7 @@ class SubjectSelectionService
         // Return true if no validation errors
         return true;
     }
+
 
     public function countSubjectsByCategory($selectedSubjects)
     {
@@ -98,7 +105,7 @@ class SubjectSelectionService
     protected function getCategoryRules(): array
     {
         return [
-            'Humanities' => 3,
+            'Humanities' => 1,
             'Sciences' => 2,
             'Languages' => 2,
             'Technical Subjects' => 1,

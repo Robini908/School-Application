@@ -1,11 +1,8 @@
-<div
-    style="background: linear-gradient(135deg, #f9fafb, #e5e7eb); padding: 30px; border-radius: 15px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);">
+<div style="background: linear-gradient(135deg, #f9fafb, #e5e7eb); padding: 30px; border-radius: 15px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);">
     <h2 class="text-center mb-4"
         style="font-weight: bold; font-size: 1.8rem; color: #374151; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);">
         <i class="fas fa-cogs" style="color: #4f46e5;"></i> Manage Subject Selection for Classes
     </h2>
-    <!-- Admin Deadline Set -->
-
 
     <!-- Dropdown for Action Selection -->
     <div class="list-icons mb-4">
@@ -18,7 +15,6 @@
                 <button class="dropdown-item" type="button" wire:click="$set('activeAction', 'selectDeadline')">
                     <i class="icon-pencil"></i> Set Deadline (Subject selection end date)
                 </button>
-                
             </div>
         </div>
     </div>
@@ -30,19 +26,13 @@
         </div>
     @endif
 
+    <!-- Search Bar -->
     <div class="d-flex justify-content-between mb-4 align-items-center">
-        <!-- Search Bar -->
         <div class="input-group w-50">
             <span class="input-group-text bg-white"><i class="fas fa-search"></i></span>
             <input type="text" wire:model.live="search" class="form-control" placeholder="Search classes..."
                 style="border-radius: 0 5px 5px 0;">
         </div>
-        <!-- Filter Dropdown -->
-        <select wire:model.live="filter" class="form-select w-25" style="border-radius: 5px;">
-            <option value="all">All Classes</option>
-            <option value="selected">Selected</option>
-            <option value="not_selected">Not Selected</option>
-        </select>
     </div>
 
     <!-- Classes Table -->
@@ -87,16 +77,10 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="3" style="text-align: center; color: #6b7280; font-style: italic;">
-                            <i class="fas fa-info-circle"></i> No classes match your criteria.
-                        </td>
+                        <td colspan="3" class="text-center">No Classes Found</td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
-
-
-
-
 </div>

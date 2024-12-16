@@ -9,11 +9,6 @@
     <meta name="author" content="CJ Inspired">
 
     <title>@yield('page_title') | {{ config('app.name') }}</title>
-
-    <!-- Font Awesome -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js" defer></script>
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('partials.inc_top')
     @livewireStyles

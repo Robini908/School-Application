@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use App\Models\MyClass;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Cache;
 use App\Models\SubjectSelectionSetting;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
 
@@ -21,7 +20,6 @@ class ManageSubjectSelection extends Component
     public $search = '';
     public $deadline;
     public $filteredClasses = [];
-    public $filter = 'all';
     public $previousSettings = []; // To store previous state for reverting
     public $rateLimit = 5; // Max toggles per minute
     public $lastToggleTime = null; // Track the last toggle time for rate limiting
@@ -32,22 +30,6 @@ class ManageSubjectSelection extends Component
     {
         $this->loadClasses();
     }
-
-
-    // Load classes with synchronization
-    // public function loadClasses()
-    // {
-    //     $this->classes = MyClass::with('subjectSelectionSetting')->get();
-    //     foreach ($this->classes as $class) {
-    //         $this->settings[$class->id] = $class->subjectSelectionSetting ? $class->subjectSelectionSetting->is_subject_selection_enabled : false;
-    //     }
-
-    //     $query = MyClass::query();
-    //     if ($this->filter !== 'all') {
-    //         $query->where('is_selected', $this->filter === 'selected');
-    //     }
-    //     $this->filteredClasses = $query->get();
-    // }
 
     public function loadClasses()
     {
@@ -61,20 +43,9 @@ class ManageSubjectSelection extends Component
                 : false;
         }
 
-        // Apply the filter to show selected classes
-        $query = MyClass::query();
-        if ($this->filter !== 'all') {
-            $query->whereHas('subjectSelectionSetting', function ($q) {
-                $q->where('is_subject_selection_enabled', true);
-            });
-        }
-        $this->filteredClasses = $query->get();
+        // Initially, set filteredClasses to all classes
+        $this->filteredClasses = $this->classes;
     }
-
-
-
-    // Revert a toggle change
-
 
     // Toggle the selection, ensuring dependencies are intact and no concurrency issues
     public function toggleSelection($classId)
@@ -122,11 +93,6 @@ class ManageSubjectSelection extends Component
         ]);
     }
 
-
-
-
-
-
     // Check rate limit
     public function checkRateLimit()
     {
@@ -145,12 +111,9 @@ class ManageSubjectSelection extends Component
     // Check if the class has dependencies (dummy function for demo)
     public function hasDependencies($classId)
     {
-        // Add logic to check for dependencies (e.g., checking if the subject is being used by another class)
+        // Check for dependencies (e.g., checking if the subject is being used by another class)
         return false;
     }
-
-    // Check rate limiting to prevent too many changes in a short period
-
 
     // Save settings to the database (this is an additional helper to save state)
     public function saveSettings($classId, $status)
@@ -161,19 +124,13 @@ class ManageSubjectSelection extends Component
         );
     }
 
-
-
-    // Filter classes based on search and selection status
+    // Filter classes based on search term
     public function getFilteredClasses()
     {
+        // Start with all classes
         $filtered = $this->classes;
 
-        if ($this->filter === 'selected') {
-            $filtered = $filtered->filter(fn($class) => $this->settings[$class->id]);
-        } elseif ($this->filter === 'not_selected') {
-            $filtered = $filtered->filter(fn($class) => !$this->settings[$class->id]);
-        }
-
+        // If there's a search term, filter based on class name
         if ($this->search) {
             $filtered = $filtered->filter(fn($class) => str_contains(strtolower($class->name), strtolower($this->search)));
         }

@@ -223,15 +223,7 @@
         </div>
 
         <div class="card-body">
-            <button wire:click="export('pdf')" class="btn btn-danger">
-                Export to PDF
-            </button>
-            <button wire:click="export('xlsx')" class="btn btn-success">
-                Export to Excel
-            </button>
-            <button wire:click="export('print')" class="btn btn-primary">
-                Print
-            </button>
+            
                                     
             <h5 class="card-title">Streams List</h5>
             <div class="table-responsive">

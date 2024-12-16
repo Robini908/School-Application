@@ -160,7 +160,7 @@ class GradingRangeManager extends Component
         })->toArray();
 
         // Inform the user that grading ranges have been loaded successfully
-        $this->alert('error', 'Grading ranges loaded successfully. You can now adjust them as needed.', [
+        $this->alert('success', 'Grading ranges loaded successfully. You can now adjust them as needed.', [
             'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
             'showConfirmButton' => true, // Show a confirmation button
             'confirmButtonText' => 'OK', // Text on the confirm button
@@ -171,7 +171,7 @@ class GradingRangeManager extends Component
         ]);
 
         // Notify success for the completion of the process
-        $this->alert('error', 'Grading ranges successfully loaded for reuse from "' . $reuseSubject->subject_name . '"!', [
+        $this->alert('success', 'Grading ranges successfully loaded for reuse from "' . $reuseSubject->subject_name . '"!', [
             'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
             'showConfirmButton' => true, // Show a confirmation button
             'confirmButtonText' => 'OK', // Text on the confirm button
@@ -270,7 +270,7 @@ class GradingRangeManager extends Component
         })->toArray();
 
         // Success  with the grading system and subject names
-        $this->alert('sucess', 'Grading ranges successfully loaded for reuse from the subject "' . $reuseSubject->subject_name . '" in the grading system "' . $reuseGradingSystem->name . '"! You can now adjust them as needed.', [
+        $this->alert('success', 'Grading ranges successfully loaded for reuse from the subject "' . $reuseSubject->subject_name . '" in the grading system "' . $reuseGradingSystem->name . '"! You can now adjust them as needed.', [
             'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
             'showConfirmButton' => true, // Show a confirmation button
             'confirmButtonText' => 'OK', // Text on the confirm button

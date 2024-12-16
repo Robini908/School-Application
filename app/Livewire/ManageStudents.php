@@ -35,6 +35,8 @@ class ManageStudents extends Component
     protected $mystudent; // Change to protected
     protected $filePath; // Change to protected
     public $formFilter = '';
+    public $isEditingAll = false;
+    public $editingFields = [];
     public $sectionFilter = '';
     public $statusFilter = '';
     public $classes = [];
@@ -312,12 +314,74 @@ class ManageStudents extends Component
     // View Student Details
     public function viewStudent($studentId)
     {
-        // Logic to view student details
-        $this->selectedStudent = StudentRecord::find($studentId);
+        $this->selectedStudent = StudentRecord::findOrFail($studentId);
         $this->isViewingDetails = true;
-        // Reset other flags
         $this->resetOtherFlags('isViewingDetails');
     }
+
+    public function editField($field)
+    {
+        $this->editingFields[$field] = true; // Enable editing mode for the field
+    }
+
+    public function saveField($field)
+    {
+        $this->validateOnly("selectedStudent.$field", [
+            "selectedStudent.$field" => 'required|string|max:255',
+        ]);
+
+        $this->selectedStudent->save(); // Save updated data to the database
+        unset($this->editingFields[$field]); // Exit editing mode for the field
+    }
+
+    public function cancelEdit($field)
+    {
+        unset($this->editingFields[$field]); // Exit editing mode for the field
+        $this->selectedStudent->refresh(); // Refresh data from the database
+    }
+
+    public function editAll()
+    {
+        $this->isEditingAll = true; // Enable editing mode for all fields
+    }
+
+    public function saveAll()
+    {
+        $this->validate([
+            'selectedStudent.first_name' => 'required|string|max:255',
+            'selectedStudent.last_name' => 'required|string|max:255',
+            'selectedStudent.email' => 'required|email',
+            'selectedStudent.parent_id_no' => 'nullable|string|max:255',
+            'selectedStudent.my_class_id' => 'required|integer|exists:my_classes,id',
+            'selectedStudent.section_id' => 'required|integer|exists:sections,id', 
+            'selectedStudent.adm_no' => 'nullable|string|max:30|unique:student_records,adm_no,' . $this->selectedStudent->id,
+            'selectedStudent.dorm_id' => 'nullable|integer|exists:dorms,id', 
+            'selectedStudent.year_admitted' => 'nullable|string|max:4',
+            'selectedStudent.kcpe' => 'required|string',
+            'selectedStudent.middle_name' => 'nullable|string|max:255',
+            'selectedStudent.gender' => 'required|string|in:male,female,other',
+            'selectedStudent.phone' => 'nullable|string|max:15',
+            'selectedStudent.dob' => 'nullable|date',
+            'selectedStudent.nal_id' => 'nullable|integer',
+            'selectedStudent.state_id' => 'nullable|integer',
+            'selectedStudent.lga_id' => 'nullable|integer',
+            'selectedStudent.town' => 'nullable|string|max:255',
+            'selectedStudent.bg_id' => 'nullable|integer',
+            'selectedStudent.photo' => 'nullable|string|max:255',
+            'selectedStudent.status' => 'nullable|string|max:255',
+
+        ]);
+
+        $this->selectedStudent->save(); // Save updated data to the database
+        $this->isEditingAll = false; // Exit editing mode for all fields
+    }
+
+    public function cancelEditAll()
+    {
+        $this->isEditingAll = false; // Exit editing mode for all fields
+        $this->selectedStudent->refresh(); // Refresh data from the database
+    }
+
 
     public function studentExpulsion($studentId)
     {
@@ -555,12 +619,15 @@ class ManageStudents extends Component
         $this->isEditingStudent = false;
         $this->isViewingDetails = false;
         $this->isDeleting = false;
-        // $this->isExpellingStudent = false;
         $this->isSuspendingStudent = false;
         $this->isViewingHistoryDetails = false;
         $this->isApproving = false;
         $this->isRejectingStudent = false;
         $this->isSendingStudentMail = false;
+        $this->isExpellingStudent = false;
+        $this->isViewingDetails = false;
+        $this->isEditingAll = false;
+        $this->selectedStudent = null;
     }
 
 

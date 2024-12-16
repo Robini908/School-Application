@@ -115,24 +115,28 @@ class AssignBatchMarks extends Component
 
         try {
             foreach ($this->students as $student) {
-                foreach ($this->subjects as $subject) {
-                    // Only process the subjects that the student is enrolled in
-                    if ($this->isStudentEnrolledInSubject($student->id, $subject->id)) {
-                        $marks = $this->marks[$student->id][$subject->id] ?? null;
+                $isSubjectSelectionEnabled = $this->isSubjectSelectionEnabled($student->my_class_id);
 
-                        // Update or create the exam mark record for the student and subject
-                        ExamMarks::updateOrCreate(
-                            [
-                                'student_id' => $student->id,
-                                'exam_id' => $this->selectedExam,
-                                'subject_id' => $subject->id,
-                            ],
-                            [
-                                'grading_range_id' => null,
-                                'marks' => $marks,
-                            ]
-                        );
+                foreach ($this->subjects as $subject) {
+                    // If subject selection is enabled, check if the student is enrolled in the subject
+                    if ($isSubjectSelectionEnabled && !$this->isStudentEnrolledInSubject($student->id, $subject->id)) {
+                        continue; // Skip if not enrolled
                     }
+
+                    $marks = $this->marks[$student->id][$subject->id] ?? null;
+
+                    // Update or create the exam mark record for the student and subject
+                    ExamMarks::updateOrCreate(
+                        [
+                            'student_id' => $student->id,
+                            'exam_id' => $this->selectedExam,
+                            'subject_id' => $subject->id,
+                        ],
+                        [
+                            'grading_range_id' => null,
+                            'marks' => $marks,
+                        ]
+                    );
                 }
             }
 
@@ -149,9 +153,10 @@ class AssignBatchMarks extends Component
     {
         $rules = [];
         foreach ($this->students as $student) {
+            $isSubjectSelectionEnabled = $this->isSubjectSelectionEnabled($student->my_class_id);
+
             foreach ($this->subjects as $subject) {
-                // Only validate marks for enrolled subjects
-                if ($this->isStudentEnrolledInSubject($student->id, $subject->id)) {
+                if (!$isSubjectSelectionEnabled || $this->isStudentEnrolledInSubject($student->id, $subject->id)) {
                     $rules["marks.{$student->id}.{$subject->id}"] = [
                         'required',
                         'integer',
@@ -161,14 +166,46 @@ class AssignBatchMarks extends Component
                 }
             }
         }
+
         $this->validate($rules);
+    }
+
+
+
+
+    /**
+     * Check if subject selection is enabled for a specific class.
+     *
+     * @param int $classId
+     * @return bool
+     */
+    protected function isSubjectSelectionEnabled($classId)
+    {
+        // Check the MyClass model via the subjectSelectionSetting relationship
+        $class = MyClass::find($classId);
+        return $class?->subjectSelectionSetting?->is_subject_selection_enabled ?? false;
     }
 
     private function isStudentEnrolledInSubject($studentId, $subjectId)
     {
-        return StudentRecord::find($studentId)
-            ? StudentRecord::find($studentId)->subjects->contains('id', $subjectId)
-            : false;
+        $student = StudentRecord::find($studentId);
+
+        if (!$student) {
+            return false;
+        }
+
+        // Check if subject selection is enabled for the class
+        $isSelectionEnabled = MyClass::find($student->my_class_id)
+            ->subjectSelectionSetting
+            ->is_subject_selection_enabled ?? false;
+
+        // If subject selection is disabled, treat all students as enrolled
+        if (!$isSelectionEnabled) {
+            return true;
+        }
+
+        // Otherwise, check if the student is explicitly enrolled in the subject
+        return $student->subjects->contains('id', $subjectId);
     }
 
 
