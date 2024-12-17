@@ -2,12 +2,13 @@
 
 use App\Models\StudentRecord;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
-//use App\Http\Controllers\AdmissionController;
-use App\Http\Controllers\SubjectRanges;
-use App\Http\Controllers\StudentRecordController;
-use App\Mail\DisapprovalNotification;
 use Illuminate\Support\Facades\Mail;
+//use App\Http\Controllers\AdmissionController;
+use App\Mail\DisapprovalNotification;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SubjectRanges;
+use App\Http\Controllers\MpesaController;
+use App\Http\Controllers\StudentRecordController;
 
 
 Auth::routes();
@@ -25,6 +26,10 @@ Route::get('/send-test-email', function () {
 
     return 'Test email sent!';
 });
+
+// mpesa
+Route::post('mpesa/callback', [MpesaController::class, 'callback'])->name('mpesa.callback');
+
 
 
 

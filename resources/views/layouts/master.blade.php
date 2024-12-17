@@ -8,7 +8,14 @@
     <meta id="csrf-token" name="csrf-token" content="{{ csrf_token() }}">
     <meta name="author" content="CJ Inspired">
 
+
     <title>@yield('page_title') | {{ config('app.name') }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <x-livewire-alert::scripts />
+
+
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('partials.inc_top')
     @livewireStyles
@@ -16,7 +23,7 @@
 
 <body
     class="{{ in_array(Route::currentRouteName(), ['payments.invoice', 'marks.tabulation', 'marks.show', 'ttr.manage', 'ttr.show']) ? 'sidebar-xs' : '' }}">
-    
+
     @include('partials.top_menu')
     <div class="page-content">
         @include('partials.menu')
@@ -38,15 +45,15 @@
             </div>
         </div>
     </div>
+
     @yield('scripts')
     @stack('scripts')
     @include('partials.inc_bottom')
-    {{-- @livewire('wire-elements-modal') --}}
+    
     @livewireScripts
     @filepondScripts
 
-    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <x-livewire-alert::scripts />
+
     {{-- <x-toaster-hub /> --}}
 </body>
 

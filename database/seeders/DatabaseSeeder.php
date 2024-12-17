@@ -11,7 +11,7 @@ class DatabaseSeeder extends Seeder
         $this->call(BloodGroupsTableSeeder::class);
         $this->call(NationalitiesTableSeeder::class);
         $this->call(StatesTableSeeder::class);
-       
+
         $this->call(SkillsTableSeeder::class);
         $this->call(UserTypesTableSeeder::class);
         $this->call(ClassTypesTableSeeder::class);
@@ -19,8 +19,10 @@ class DatabaseSeeder extends Seeder
         $this->call(UsersTableSeeder::class);
         $this->call(SettingsTableSeeder::class);
         $this->call(SectionsTableSeeder::class);
+
         $this->call(ParentDetailsTableSeeder::class);
         $this->call(StudentRecordSeeder::class);
+
         $this->call(SubjectCategorySeeder::class);
         $this->call(SubjectSeeder::class);
         $this->call(GradingSystemSeeder::class);

@@ -10,7 +10,7 @@ class SectionsTableSeeder extends Seeder
 {
     public function run()
     {
-        DB::table('sections')->truncate();
+        // DB::table('sections')->truncate();
 
         $classes = MyClass::pluck('id')->all();
 

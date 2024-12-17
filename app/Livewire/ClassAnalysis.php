@@ -2,9 +2,9 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
 use App\Models\Exam;
-use App\Models\StudentResult;
+use Livewire\Component;
+use App\Models\GradingGrade;
 
 class ClassAnalysis extends Component
 {
@@ -121,6 +121,18 @@ class ClassAnalysis extends Component
         // Clear the error message if data is found
         $this->errorMessage = null;
     }
+
+
+    // public function getMeanGrade($totalPoints, $gradingSystemId)
+    // {
+    //     // Find the corresponding grade for the total points based on the grading system
+    //     $gradeData = GradingGrade::where('grading_system_id', $gradingSystemId)
+    //         ->where('range_from', '<=', $totalPoints) // Updated column name
+    //         ->where('range_to', '>=', $totalPoints)   // Updated column name
+    //         ->first();
+
+    //     return $gradeData ? $gradeData->grade : '-'; // Return '-' if no grade found
+    // }
     
 
     public function render()

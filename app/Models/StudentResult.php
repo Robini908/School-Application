@@ -15,12 +15,10 @@ class StudentResult extends Model
     protected $fillable = [
         'student_id',
         'exam_id', // Add exam_id for mass assignment
-       
         'total_marks',
         'total_points',
         'mean_score',
         'mean_grade',
-        
         'position',
         'stream_position',
     ];

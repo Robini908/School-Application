@@ -239,6 +239,14 @@
                         <i class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></i>
                     </span>
                 </button>
+
+                <button type="submit" class="btn btn-primary mt-2" wire:click="saveAllRanges"
+                    wire:loading.attr="disabled">
+                    {{ $isEditing ? 'Update All' : 'Save All' }}
+                    <span wire:loading wire:target="saveAllRanges">
+                        <i class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></i>
+                    </span>
+                </button>
                 <hr class="my-4 font-bold"> <!-- Horizontal line for separation -->
             </div>
 
@@ -249,7 +257,7 @@
                     Grading Ranges Already Assigned For:
                 </h5>
                 <p class="card-text text-muted mb-2">
-                    
+
                     <strong class="text-success">{{ $submittedRanges->first()->subject->subject_name }}</strong>
                     under the grading system:
                     <strong class="text-success">{{ $submittedRanges->first()->gradingSystem->name }}</strong>.

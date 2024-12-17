@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class StudentRecord extends Model
 {
-    use HasFactory; 
+    use HasFactory;
 
     protected $primaryKey = 'id';
     public $incrementing = true;
@@ -58,6 +58,11 @@ class StudentRecord extends Model
     {
         return $this->belongsToMany(Subject::class, 'student_subject', 'student_id', 'subject_id')
             ->withTimestamps();
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class, 'student_id');
     }
 
     public function transitions(): HasMany

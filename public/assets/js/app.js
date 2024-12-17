@@ -66,7 +66,6 @@ var App = function () {
         if($('body').hasClass('sidebar-xs')) {
             revertBottomMenus();
         }
-
         // Toggle min sidebar class
         $('.sidebar-main-toggle').on('click', function (e) {
             e.preventDefault();

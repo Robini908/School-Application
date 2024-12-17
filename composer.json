@@ -39,8 +39,10 @@
     "ramsey/collection": "^2.0",
     "revolt/event-loop": "^1.0",
     "rishadblack/wire-reports": "^1.0",
+    "safaricom/mpesa": "^1.0",
     "spatie/laravel-collection-macros": "^7.14",
     "spatie/livewire-filepond": "^1.4",
+    "stripe/stripe-php": "^16.3",
     "symfony/security-core": "^7.1",
     "voku/portable-ascii": "^2.0",
     "wire-elements/modal": "^2.0"

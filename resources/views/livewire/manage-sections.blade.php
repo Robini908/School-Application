@@ -129,7 +129,7 @@
                     <div class="alert alert-danger">No students are enrolled in this section.</div>
                 @else
                     <div class="table-responsive">
-                        <table class="table">
+                        <table class="table datatable-button-html5-columns">
                             <thead class="thead-light">
                                 <tr>
                                     <th>Photo</th>

@@ -24,7 +24,7 @@ class ParentDetailsTableSeeder extends Seeder
                 'parent_last_name' => $faker->lastName,
                 'parent_phone_number' => $faker->phoneNumber,
                 'parent_email' => $faker->unique()->safeEmail,
-                'parent_password' => bcrypt('password'), // Password hashing
+                'parent_password' => encrypt('cj'),
             ]);
         }
     }

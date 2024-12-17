@@ -20,7 +20,7 @@
                 <div class="row row-cols-1 row-cols-md-2 g-4">
                     @foreach ($students as $student)
                         <div class="col">
-                            <div class="card shadow-sm h-100 border-0">
+                            <div>
                                 <div class="card-body d-flex flex-column justify-content-between">
                                     <div>
                                         <h5 class="card-title text-primary">{{ $student->first_name }}
@@ -63,7 +63,7 @@
                 <i class="fas fa-times"></i> Close
             </button>
         </div>
-        <div class="card-body">
+        <div >
             <p class="card-text"><strong>Total Subjects Enrolled: {{ $student->subjects->count() }}</strong></p>
             <div class="row row-cols-1 row-cols-md-2 g-4">
                 @foreach ($student->subjects as $subject)

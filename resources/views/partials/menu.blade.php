@@ -81,10 +81,10 @@
                                     Classes</span></a>
                         </li>
                         {{--Manage Sections--}}
-                        {{-- <li class="nav-item">
+                        <li class="nav-item">
                             <a href="{{ route('sections.index') }}"
                                 class="nav-link {{ in_array(Route::currentRouteName(), ['sections.index','sections.edit',]) ? 'active' : '' }}"><span>Streams</span></a>
-                        </li> --}}
+                        </li>
                         {{--Manage Dorms--}}
                         <li class="nav-item">
                             <a href="{{ route('dorms.index') }}"

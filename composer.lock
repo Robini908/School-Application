@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "5f684a26440e480d8e5b5f10424ae70d",
+  "content-hash": "1fe52d915eb9c6a2410cd9e6f5678be9",
   "packages": [
     {
       "name": "algolia/algoliasearch-client-php",
@@ -7814,6 +7814,49 @@
       "time": "2024-10-27T17:38:32+00:00"
     },
     {
+      "name": "safaricom/mpesa",
+      "version": "1.0.8",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/safaricom/mpesa-php-sdk.git",
+        "reference": "c66895dcdec8df1f496e017708c557fc252340c5"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/safaricom/mpesa-php-sdk/zipball/c66895dcdec8df1f496e017708c557fc252340c5",
+        "reference": "c66895dcdec8df1f496e017708c557fc252340c5",
+        "shasum": ""
+      },
+      "require": {
+        "php": ">=5.3.0"
+      },
+      "require-dev": {
+        "symfony/dotenv": "^4.3@dev"
+      },
+      "type": "package",
+      "autoload": {
+        "psr-4": {
+          "Safaricom\\Mpesa\\": "src/"
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "mit"
+      ],
+      "authors": [
+        {
+          "name": "Moses Nandwa",
+          "email": "mnandwa@safaricom.co.ke"
+        }
+      ],
+      "description": "A PHP package for Mpesa API",
+      "support": {
+        "issues": "https://github.com/safaricom/mpesa-php-sdk/issues",
+        "source": "https://github.com/safaricom/mpesa-php-sdk/tree/master"
+      },
+      "time": "2019-01-06T16:01:21+00:00"
+    },
+    {
       "name": "setasign/fpdi",
       "version": "v2.6.2",
       "source": {
@@ -8101,6 +8144,65 @@
         }
       ],
       "time": "2024-11-22T18:16:57+00:00"
+    },
+    {
+      "name": "stripe/stripe-php",
+      "version": "v16.3.0",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/stripe/stripe-php.git",
+        "reference": "48af6bc64ca8157b3fdce100e856069963bac466"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/stripe/stripe-php/zipball/48af6bc64ca8157b3fdce100e856069963bac466",
+        "reference": "48af6bc64ca8157b3fdce100e856069963bac466",
+        "shasum": ""
+      },
+      "require": {
+        "ext-curl": "*",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "php": ">=5.6.0"
+      },
+      "require-dev": {
+        "friendsofphp/php-cs-fixer": "3.5.0",
+        "phpstan/phpstan": "^1.2",
+        "phpunit/phpunit": "^5.7 || ^9.0"
+      },
+      "type": "library",
+      "extra": {
+        "branch-alias": {
+          "dev-master": "2.0-dev"
+        }
+      },
+      "autoload": {
+        "psr-4": {
+          "Stripe\\": "lib/"
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "Stripe and contributors",
+          "homepage": "https://github.com/stripe/stripe-php/contributors"
+        }
+      ],
+      "description": "Stripe PHP Library",
+      "homepage": "https://stripe.com/",
+      "keywords": [
+        "api",
+        "payment processing",
+        "stripe"
+      ],
+      "support": {
+        "issues": "https://github.com/stripe/stripe-php/issues",
+        "source": "https://github.com/stripe/stripe-php/tree/v16.3.0"
+      },
+      "time": "2024-11-20T23:30:16+00:00"
     },
     {
       "name": "symfony/console",

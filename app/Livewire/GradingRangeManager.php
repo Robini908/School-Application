@@ -20,6 +20,7 @@ class GradingRangeManager extends Component
     use LivewireAlert;
     public $gradingSystems, $subjects, $selectedGradingSystem;
     public $ranges = [];
+    public $grades = [];
 
     public $reuseSubjectId; // Store the selected subject ID for reuse
     public $subjectId;
@@ -62,11 +63,11 @@ class GradingRangeManager extends Component
         if (!$this->reuseSubjectId) {
 
             $this->alert('error', 'Please select a subject to reuse grading ranges.', [
-                'position' => 'top', 
+                'position' => 'top',
                 'showConfirmButton' => true,
-                'confirmButtonText' => 'OK', 
+                'confirmButtonText' => 'OK',
 
-                'reverseButtons' => true, 
+                'reverseButtons' => true,
                 'timer' => 30000,
                 'toast' => false,
             ]);
@@ -283,14 +284,14 @@ class GradingRangeManager extends Component
     }
 
 
-public function suggestGradingRanges()
-{
-    // Check if the grading system already has existing ranges
-    $existingRanges = GradingRange::where('grading_system_id', $this->gradingSystemId)->exists();
+    public function suggestGradingRanges()
+    {
+        // Check if the grading system already has existing ranges
+        $existingRanges = GradingRange::where('grading_system_id', $this->gradingSystemId)->exists();
 
-    // If ranges exist, don't suggest new ones
-    if ($existingRanges) {
-        $this->alert('error', 'Grading ranges already exist for the selected grading system.', [
+        // If ranges exist, don't suggest new ones
+        if ($existingRanges) {
+            $this->alert('error', 'Grading ranges already exist for the selected grading system.', [
                 'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
                 'showConfirmButton' => true, // Show a confirmation button
                 'confirmButtonText' => 'OK', // Text on the confirm button
@@ -299,47 +300,47 @@ public function suggestGradingRanges()
                 'reverseButtons' => true, // Reverse the order of buttons
                 'timer' => 30000, // Time before it automatically closes
                 'toast' => false, // If you want it to be a toast notification or a modal
-        ]);
-        return;
-    }
+            ]);
+            return;
+        }
 
-    // Define grades and their corresponding GPAs
-    $grades = ['A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D+', 'D', 'D-', 'E'];
-    $gpas = [12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]; // Corresponding GPAs in the same order
+        // Define grades and their corresponding GPAs
+        $grades = ['A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D+', 'D', 'D-', 'E'];
+        $gpas = [12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]; // Corresponding GPAs in the same order
 
-    // Initialize suggested ranges
-    $suggestedRanges = [];
+        // Initialize suggested ranges
+        $suggestedRanges = [];
 
-    // Set ranges dynamically to ensure they cover 0 to 100
-    $rangeLimits = [100, 90, 81, 72, 63, 54, 45, 36, 27, 18, 10, 8, 0];
+        // Set ranges dynamically to ensure they cover 0 to 100
+        $rangeLimits = [100, 90, 81, 72, 63, 54, 45, 36, 27, 18, 10, 8, 0];
 
-    // Loop through the range limits to create dynamic ranges
-    for ($i = 0; $i < count($rangeLimits) - 1; $i++) {
-        $rangeFrom = $rangeLimits[$i + 1]; // Starting point for the current range
+        // Loop through the range limits to create dynamic ranges
+        for ($i = 0; $i < count($rangeLimits) - 1; $i++) {
+            $rangeFrom = $rangeLimits[$i + 1]; // Starting point for the current range
             $rangeTo = $rangeLimits[$i];       // Ending point for the current range
 
-        // Prepare the suggested range
-        $suggestedRanges[] = [
-            'range_from' => $rangeFrom,
-            'range_to' => $rangeTo,
+            // Prepare the suggested range
+            $suggestedRanges[] = [
+                'range_from' => $rangeFrom,
+                'range_to' => $rangeTo,
                 'grade' => $grades[$i],
                 'remark' => $this->generateDynamicRemark($grades[$i], $this->getPerformanceDataFromAlternativeSource()),
                 'gpa' => $this->suggestGPA($this->getPerformanceDataFromAlternativeSource(), $grades[$i], $gpas[$i]),
-        ];
-    }
+            ];
+        }
 
-    // Set the generated ranges to the form field
-    $this->ranges = $suggestedRanges;
+        // Set the generated ranges to the form field
+        $this->ranges = $suggestedRanges;
 
-    $this->alert('success', 'New suggested grading ranges have been successfully populated.', [
+        $this->alert('success', 'New suggested grading ranges have been successfully populated.', [
             'position' => 'top', // Position on screen (can be top, top-end, bottom, etc.)
             'showConfirmButton' => true, // Show a confirmation button
             'confirmButtonText' => 'OK', // Text on the confirm button
             'reverseButtons' => true, // Reverse the order of buttons
             'timer' => 30000, // Time before it automatically closes
             'toast' => false, // If you want it to be a toast notification or a modal
-    ]);
-}
+        ]);
+    }
 
 
     // Function to get performance data from an alternative source (mock example)
@@ -411,13 +412,6 @@ public function suggestGradingRanges()
         $this->subjects = GradingSystem::find($gradingSystemId)->subjects;
         $this->reset(['subjectId', 'ranges', 'submittedRanges']);
     }
-
-
-
-
-
-
-
 
     public function addRange()
     {
@@ -505,6 +499,35 @@ public function suggestGradingRanges()
         // Reset and hide the form
         $this->reset(['ranges', 'showForm']);
         $this->isLoading = false; // Hide loading state
+    }
+
+
+
+    public function saveAllRanges()
+    {
+        $this->isLoading = true; // Show loading state
+        $this->validateRanges();
+
+        foreach ($this->grades as $subjectId => $gradeRange) {
+            GradingRange::create([
+                'range_from' => $gradeRange['range_from'],
+                'range_to' => $gradeRange['range_to'],
+                'grade' => '', // Initialize grade field
+                'remark' => '',
+                'gpa' => '',
+                'grading_system_id' => $this->selectedGradingSystem,
+                'subject_id' => $subjectId, // Include subject ID in the create method
+            ]);
+        }
+
+        // After saving, synchronize the ranges
+        $this->syncRanges();
+
+        // Reset and hide the form
+        $this->reset(['ranges', 'showForm']);
+        $this->isLoading = false; // Hide loading state
+
+        $this->alert('success', 'Grading ranges saved successfully for all subjects!');
     }
 
 
@@ -634,11 +657,11 @@ public function suggestGradingRanges()
             ->where('grading_system_id', $this->selectedGradingSystem)
             ->where('subject_id', $this->subjectId)
             ->get();
-    
+
         // Set the flag using the helper method to check if ranges are assigned
         $this->hasAssignedRanges = $this->hasSubmittedRanges();  // Ensure it's updated immediately after loading the ranges
     }
-    
+
 
 
 

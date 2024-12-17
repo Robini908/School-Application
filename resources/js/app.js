@@ -4,10 +4,8 @@
  */
 
 import "./bootstrap";
-import Swal from 'sweetalert2';
-
-
-window.Swal = Swal;
+// import Swal from 'sweetalert2';
+// window.Swal = Swal;
 import Calendar from "@toast-ui/calendar";
 import "@toast-ui/calendar/dist/toastui-calendar.min.css";
 
