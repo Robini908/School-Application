@@ -3,13 +3,17 @@
 namespace App\Livewire;
 
 use App\User;
+use Carbon\Carbon;
 use App\Models\MyClass;
 use App\Models\Section;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\StudentRecord;
-use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
+use Dompdf\Dompdf;
+use Dompdf\Options;
+use Illuminate\Support\Facades\Response;
 
 class ClassManagement extends Component
 {
@@ -47,6 +51,8 @@ class ClassManagement extends Component
 
     // Students Data
     public $students = [];
+    public Collection $classTeachers;   // List of teachers assigned to the class
+    public $hasTeachers = false;
     public $teacherFilter = ''; // Filter by teacher
     public $sessionFilter = ''; // Filter by session
     public $stream;
@@ -54,6 +60,8 @@ class ClassManagement extends Component
     public $isViewingClassTeacher = false;
     public $selectedStreamEntries = []; // to store the entries data
     public $isLoadingAssign = false;
+    public $editingTeacherId = null; // Track the teacher being edited
+    public $editingSession = null;   // Track the session being edited
     public $isLoadingEdit = false;
     public $isLoadingDelete = false;
 
@@ -107,6 +115,50 @@ class ClassManagement extends Component
         ];
     }
 
+
+
+    public function exportPdf()
+    {
+        // Fetch the class and teachers data
+        $class = MyClass::find($this->selectedClassForAssignment);
+
+        if (!$class) {
+            session()->flash('error', 'Class not found.');
+            return;
+        }
+
+        $classTeachers = $class->teachers()->withPivot('session')->get();
+
+        // Ensure UTF-8 encoding for all data
+        foreach ($classTeachers as $teacher) {
+            $teacher->name = mb_convert_encoding($teacher->name, 'UTF-8', 'auto');
+        }
+
+        // Generate HTML content for the PDF
+        $html = view('pdf.class-teachers', [
+            'class' => $class,
+            'classTeachers' => $classTeachers,
+        ])->render();
+
+        // Initialize Dompdf
+        $options = new Options();
+        $options->set('isRemoteEnabled', true); // Enable remote files (e.g., images)
+        $options->set('defaultFont', 'DejaVu Sans'); // Use a Unicode font
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        // Generate the PDF file
+        $pdfContent = $dompdf->output();
+
+        // Download the PDF
+        return Response::make($pdfContent, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="class-teachers.pdf"',
+        ]);
+    }
     // Fetch initial data when component mounts
     public function mount()
     {
@@ -125,6 +177,7 @@ class ClassManagement extends Component
 
         // Load teachers list
         $this->teachers = User::where('user_type', 'teacher')->get();
+        $this->classTeachers = collect();
     }
 
     public function showCreateForm()
@@ -246,6 +299,8 @@ class ClassManagement extends Component
 
     public function cancelEdit()
     {
+        $this->reset(['streamTeacher', 'session', 'editingTeacherId', 'editingSession']);
+
         $this->editingStreamId = null; // Reset the editing state
         $this->selectedTeacherId = null; // Clear the selected teacher
         $this->sessionYear = ''; // Reset session/year input
@@ -299,28 +354,170 @@ class ClassManagement extends Component
 
     public function viewClassMaster($classId)
     {
+        // Set the selected class ID
+        $this->selectedClassForAssignment = $classId;
+
         // Find the class by ID
         $class = MyClass::find($classId);
 
         if ($class) {
             $this->class = $class; // Store the class object
 
-            // Check if the class has an assigned teacher (master)
-            if ($class->master) {
-                $this->classTeacher = $class->master->name;
-                $this->classSession = $class->session;
-                $this->teacher = $class->master;
-            } else {
-                $this->classTeacher = 'No teacher assigned';
-                $this->teacher = null;
-                $this->classSession = 'N/A'; // Or whatever placeholder is suitable
-            }
+            // Fetch all teachers assigned to this class with their sessions
+            $this->classTeachers = $class->teachers()->withPivot('session')->get();
+
+            // Check if any teachers are assigned
+            $this->hasTeachers = $this->classTeachers->isNotEmpty();
         }
 
         // Toggle the visibility of the card
         $this->isViewingClassTeacher = !$this->isViewingClassTeacher;
     }
 
+    public function deleteTeacher($teacherId, $session)
+    {
+        // Debugging: Check the value of selectedClassForAssignment
+        logger('Selected Class ID: ' . $this->selectedClassForAssignment);
+
+        if (!$this->selectedClassForAssignment) {
+            session()->flash('error', 'No class selected.');
+            return;
+        }
+
+        // Find the class by ID
+        $class = MyClass::find($this->selectedClassForAssignment);
+
+        if (!$class) {
+            session()->flash('error', 'Class not found.');
+            return;
+        }
+
+        // Remove the teacher assignment for the specified session
+        $class->teachers()
+            ->wherePivot('user_id', $teacherId)
+            ->wherePivot('session', $session)
+            ->detach();
+
+        // Refresh the list of teachers
+        $this->viewClassMaster($this->selectedClassForAssignment);
+
+        // Show a success message
+        session()->flash('message', 'Teacher assignment deleted successfully.');
+    }
+
+    public function toggleAssignTeacher($classId)
+    {
+        $this->selectedClassForAssignment = $classId;
+        $class = MyClass::find($classId);
+
+        if ($class) {
+            $this->class = $class; // Store the class object
+
+            // Reset form fields for a new assignment
+            $this->reset(['streamTeacher', 'session', 'editingTeacherId', 'editingSession']);
+
+            // Show the form
+            $this->showInlineForm = true;
+        }
+    }
+
+    public function editTeacher($teacherId, $session)
+    {
+        // Set the form fields for editing
+        $this->editingTeacherId = $teacherId;
+        $this->editingSession = $session;
+        $this->streamTeacher = $teacherId;
+        $this->session = $session;
+        $this->showInlineForm = true; // Show the form
+    }
+
+    public function saveStreamTeacher()
+    {
+        // Validate the input fields
+        $this->validate([
+            'streamTeacher' => 'required|exists:users,id',
+            'session' => 'required|string|digits:4|integer|min:1900|max:' . (date('Y') + 1), // Ensure valid year
+        ], [
+            'streamTeacher.required' => 'Please select a teacher.',
+            'streamTeacher.exists' => 'The selected teacher does not exist.',
+            'session.required' => 'Please select a session.',
+            'session.digits' => 'The session must be a 4-digit year.',
+            'session.integer' => 'The session must be a valid year.',
+            'session.min' => 'The session year must be 1900 or later.',
+            'session.max' => 'The session year cannot be later than ' . (date('Y') + 1) . '.',
+        ]);
+
+        $class = MyClass::find($this->selectedClassForAssignment);
+
+        // Ensure the selected user is a teacher
+        $teacher = User::where('id', $this->streamTeacher)->where('user_type', 'teacher')->first();
+        if (!$teacher) {
+            $this->addError('streamTeacher', 'The selected user is not a teacher.');
+            return;
+        }
+
+        // Check if the teacher is already assigned to another class for the same session
+        $existingAssignment = \DB::table('class_teacher')
+            ->where('user_id', $this->streamTeacher)
+            ->where('session', $this->session)
+            ->where('my_class_id', '!=', $class->id) // Exclude the current class
+            ->first();
+
+        if ($existingAssignment) {
+            $existingClass = MyClass::find($existingAssignment->my_class_id);
+            $this->addError(
+                'streamTeacher',
+                'The teacher "' . $teacher->name . '" is already assigned to class "' . $existingClass->name . '" for the session "' . $this->session . '".'
+            );
+            return;
+        }
+
+        // Check if the teacher is already assigned to this class for the same session (duplicate)
+        $isDuplicate = $class->teachers()
+            ->wherePivot('user_id', $this->streamTeacher)
+            ->wherePivot('session', $this->session)
+            ->exists();
+
+        if ($isDuplicate) {
+            $this->addError(
+                'streamTeacher',
+                'The teacher "' . $teacher->name . '" is already assigned to this class "' . $class->name . '" for the session "' . $this->session . '".'
+            );
+            return;
+        }
+
+        // If editing, remove the existing assignment for the session
+        if ($this->editingTeacherId && $this->editingSession) {
+            $class->teachers()
+                ->wherePivot('user_id', $this->editingTeacherId)
+                ->wherePivot('session', $this->editingSession)
+                ->detach();
+        }
+
+        // Assign the teacher for the selected session
+        $class->assignTeacherForSession($this->streamTeacher, $this->session);
+
+        // Reset form fields and editing properties
+        $this->reset(['streamTeacher', 'session', 'editingTeacherId', 'editingSession', 'showInlineForm']);
+
+        // Refresh the list of teachers
+        $this->viewClassMaster($this->selectedClassForAssignment);
+
+        // Show a success message (optional)
+        session()->flash('message', 'Teacher assignment saved successfully.');
+    }
+
+    /**
+     * Close the inline form.
+     */
+    public function closeInlineForm()
+    {
+        // Reset form fields
+        $this->reset(['streamTeacher', 'session', 'showInlineForm', 'editingTeacherId', 'editingSession']);
+
+        // Clear all validation errors
+        $this->resetErrorBag();
+    }
 
 
 
@@ -456,64 +653,6 @@ class ClassManagement extends Component
         $this->viewEntriesMode = false;
     }
 
-    public function toggleAssignTeacher($classId)
-    {
-        $this->selectedClassForAssignment = $classId;
-        $class = MyClass::find($classId);
-
-        if ($class->master) {
-            // Prefill the form with existing teacher and session values
-            $this->streamTeacher = $class->master->id;
-            $this->session = $class->session;
-        } else {
-            // Reset form fields if no teacher is assigned
-            $this->reset(['streamTeacher', 'session']);
-        }
-
-        $this->showInlineForm = true; // Show the form
-    }
-
-
-
-    public function closeInlineForm()
-    {
-        $this->showInlineForm = false;
-        $this->reset(['streamTeacher', 'session', 'showInlineForm', 'selectedClassForAssignment']);
-    }
-
-
-
-
-
-
-    public function saveStreamTeacher()
-    {
-        // Validate the inputs
-        $this->validate([
-            'streamTeacher' => 'required|exists:users,id',
-            'session' => 'required|integer',
-        ]);
-
-        // Check if the teacher is already assigned to another class
-        $existingClass = MyClass::where('master_id', $this->streamTeacher)->first();
-        if ($existingClass && $existingClass->id !== $this->selectedClassForAssignment) {
-            $this->alert('error', 'This teacher is already assigned to another class.');
-            return;
-        }
-
-        // Update or assign the teacher to the selected class
-        $class = MyClass::find($this->selectedClassForAssignment);
-        $class->update([
-            'master_id' => $this->streamTeacher,
-            'session' => $this->session,
-        ]);
-
-        $this->reset(['streamTeacher', 'session', 'showInlineForm', 'selectedClassForAssignment']);
-        $this->alert('success', 'Class teacher has been successfully assigned/updated.');
-        $this->closeInlineForm();
-    }
-
-
 
 
     public function fetchTeacherInformation($teacherId)
@@ -621,8 +760,8 @@ class ClassManagement extends Component
     public function getYearsRange()
     {
         $currentYear = date('Y'); // Get the current year
-        $startYear = 2009; 
-        $endYear = $currentYear + 5; 
+        $startYear = 2009;
+        $endYear = $currentYear + 5;
 
         // Generate an array of years
         return range($startYear, $endYear);

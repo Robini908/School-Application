@@ -49,6 +49,13 @@ class User extends Authenticatable
         return $this->belongsTo(Lga::class);
     }
 
+    public function dorms()
+    {
+        return $this->belongsToMany(Dorm::class, 'dorm_teacher', 'user_id', 'dorm_id')
+                    ->withPivot('session') // Include the session from the pivot table
+                    ->withTimestamps();    // Include timestamps if needed
+    }
+
    
 
     public function userType()

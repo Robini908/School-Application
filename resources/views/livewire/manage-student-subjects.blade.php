@@ -1,5 +1,4 @@
-<div
-    style="background: linear-gradient(135deg, #f9fafb, #e5e7eb); padding: 30px; border-radius: 15px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);">
+<div>
     @if ($showStudentList)
         <!-- Search Bar -->
         <div class="input-group mb-4">
@@ -20,7 +19,8 @@
                 <div class="row row-cols-1 row-cols-md-2 g-4">
                     @foreach ($students as $student)
                         <div class="col">
-                            <div>
+                            <div class="card shadow-sm mb-3"
+                                style="background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
                                 <div class="card-body d-flex flex-column justify-content-between">
                                     <div>
                                         <h5 class="card-title text-primary">{{ $student->first_name }}
@@ -37,11 +37,12 @@
                                             <p class="card-text"><small class="text-muted text-success">Total Subjects:
                                                     {{ $student->subjects->count() }}</small></p>
                                         @endif
+                                        <button wire:click="selectStudent({{ $student->id }})"
+                                            class="btn btn-outline-primary mt-2 align-self-end">
+                                            Manage
+                                        </button>
                                     </div>
-                                    <button wire:click="selectStudent({{ $student->id }})"
-                                        class="btn btn-outline-primary mt-2 align-self-end">
-                                        Manage
-                                    </button>
+
                                 </div>
                             </div>
                         </div>
@@ -56,23 +57,26 @@
 
     @if ($showSubjectManagement && $student)
         <div class="card-header d-flex justify-content-between align-items-center bg-transparent">
-            <h4 class="mb-0 text-primary">Managing Subjects for: {{ $student->first_name }}
-                {{ $student->last_name }}</h4>
+            <h4 class="mb-0 text-primary">{{ $student->first_name }} {{ $student->last_name }} <span
+                    class="text-secondary">is enrolled in </span> <strong>{{ $student->subjects->count() }}
+                    subjects</strong></h4>
+
+
             <button wire:click="closeCard" class="btn btn-outline-secondary" data-bs-toggle="tooltip"
                 data-bs-placement="top" title="Close Management">
                 <i class="fas fa-times"></i> Close
             </button>
         </div>
-        <div >
-            <p class="card-text"><strong>Total Subjects Enrolled: {{ $student->subjects->count() }}</strong></p>
-            <div class="row row-cols-1 row-cols-md-2 g-4">
+        <div>
+            <div class="row row-cols-1 row-cols-md-3 g-2">
                 @foreach ($student->subjects as $subject)
                     <div class="col">
-                        <div class="card shadow-lg border-0 rounded-3">
-                            <div class="card-body d-flex flex-column justify-content-between">
+
+                        <div class="card col-md-12" style="background-color: #f8f9fa; border: 1px solid #ddd;">
+                            <div class="card-body">
                                 <div>
                                     <h5 class="card-title text-dark">
-                                        {{ $subject->subject_name }}
+                                        {{ $subject->subject_name }} ({{ $subject->subject_code }})
                                         @if ($subject->type === 'compulsory')
                                             <span class="badge bg-success ms-2 py-2 px-3" data-bs-toggle="tooltip"
                                                 data-bs-placement="top" title="Compulsory Subject">
@@ -80,12 +84,7 @@
                                             </span>
                                         @endif
                                     </h5>
-                                    <p class="card-text">
-                                        <small class="text-muted">
-                                            <strong>Code:</strong> {{ $subject->subject_code }} <br>
-                                            <strong>Abbreviation:</strong> {{ $subject->abbreviation }}
-                                        </small>
-                                    </p>
+
                                     @if ($rechooseSubjectId === $subject->id)
                                         <select wire:model="newSubjectId" class="form-select form-control mt-2"
                                             wire:change="updateSubjectSelection({{ $subject->id }})"

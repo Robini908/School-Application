@@ -46,7 +46,7 @@
                         @error('streamName')
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
-                        
+
 
                         @if (empty($streams))
                             <div class="alert alert-info">
@@ -108,7 +108,8 @@
                             Cancel
                         </button>
                     </div>
-                    <div wire:dirty class="alert alert-warning" style="font-size: 14px; font-weight: bold; color: #856404; background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: 5px; padding: 10px; margin: 10px 0;">
+                    <div wire:dirty class="alert alert-warning"
+                        style="font-size: 14px; font-weight: bold; color: #856404; background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: 5px; padding: 10px; margin: 10px 0;">
                         <i class="bi bi-exclamation-circle-fill" style="margin-right: 5px; color: #856404;"></i>
                         Unsaved changes...
                     </div>
@@ -140,36 +141,37 @@
                         @endforeach
                     </select>
                 </div>
-            
+
                 <!-- Session Filter -->
                 <div class="form-group mr-2">
                     <label for="sessionFilter" class="sr-only">Filter by Session</label>
                     <select wire:model.live="sessionFilter" id="sessionFilter" class="form-control form-control-sm">
                         <option value="">Filter by Session</option>
-                        @foreach($this->getYearsRange() as $year)
+                        @foreach ($this->getYearsRange() as $year)
                             <option value="{{ $year }}">{{ $year }}</option>
                         @endforeach
                     </select>
                 </div>
-                
+
             </div>
-            
-            
+
+
             <div class="d-flex justify-content-auto mb-3">
                 <!-- Active Filters -->
                 <div class="d-flex flex-wrap mb-2">
-                    @foreach($activeFilters as $key => $value)
+                    @foreach ($activeFilters as $key => $value)
                         <span class="badge badge-info p-2 mr-1">
                             {{ $key }}: {{ $value }}
-                            <button type="button" wire:click="clearFilter('{{ strtolower($key) }}')" class="btn btn-secondary btn-sm p-0 ml-1" aria-label="Close">
+                            <button type="button" wire:click="clearFilter('{{ strtolower($key) }}')"
+                                class="btn btn-secondary btn-sm p-0 ml-1" aria-label="Close">
                                 <i class="fas fa-times"></i>
                             </button>
                         </span>
                     @endforeach
                 </div>
-                
+
                 <!-- Reset Filters Button (Visible only if filters are applied) -->
-                @if(count($activeFilters) > 0)
+                @if (count($activeFilters) > 0)
                     <div class="d-flex align-items-center mb-2">
                         <button wire:click="resetFilters" class="btn btn-sm btn-danger">
                             <i class="fas fa-times-circle"></i> Reset Filters
@@ -177,8 +179,8 @@
                     </div>
                 @endif
             </div>
-            
-          
+
+
 
 
             <div class="card-body" style="overflow: visible;">
@@ -210,18 +212,24 @@
                                                     title="Edit Class">
                                                     <i class="icon-pencil"></i> Edit
                                                 </button>
-                                                <button wire:click="viewClassMaster({{ $class->id }})"
+                                                <button wire:click=" viewClassMaster({{ $class->id }})"
                                                     class="dropdown-item btn btn-warning btn-sm" data-toggle="tooltip"
                                                     title="View Class Master">
                                                     <i class="icon-eye"></i> View Class Master
                                                 </button>
 
                                                 <!-- Assign Teacher Button -->
-                                                <button wire:click="toggleAssignTeacher({{ $class->id }})"
+                                                {{-- <button wire:click="toggleAssignTeacher({{ $class->id }})"
                                                     class="dropdown-item btn btn-info btn-sm" data-toggle="tooltip"
                                                     title="{{ $class->master ? 'Change Class Teacher' : 'Assign Class Teacher' }}">
                                                     <i class="icon-user-check"></i>
                                                     {{ $class->master ? 'Change Class Teacher' : 'Assign Class Teacher' }}
+                                                </button> --}}
+                                                <button wire:click="toggleAssignTeacher({{ $class->id }})"
+                                                    class="dropdown-item btn btn-info btn-sm" data-toggle="tooltip"
+                                                    title="{{ $class->getTeacherForSession($class->session) ? 'Change Class Teacher' : 'Assign Class Teacher' }}">
+                                                    <i class="icon-user-check"></i>
+                                                    {{ $class->getTeacherForSession($class->session) ? 'Change Class Teacher' : 'Assign Class Teacher' }}
                                                 </button>
 
 
@@ -286,7 +294,7 @@
 
                                                         <div class="col-auto">
                                                             <button type="submit" class="btn btn-success">
-                                                                {{ $streamTeacher && $session ? 'Update Teacher' : 'Assign Teacher' }}
+                                                                Assign Teacher
                                                             </button>
                                                             <button type="button" wire:click="closeInlineForm"
                                                                 class="btn btn-secondary">Cancel</button>
@@ -621,62 +629,165 @@
             </div>
         </div>
     @endif
+    <!-- Include jQuery -->
+
     @if ($isViewingClassTeacher)
-        <div class="card mt-3 shadow-lg rounded-lg border-2" style="border-color: #d1d5db;">
-            <div class="card-header"
-                style="background-color: #007bff; color: white; padding: 1rem; border-top-left-radius: .25rem; border-top-right-radius: .25rem;">
-                <strong>Class Master Information</strong>
-            </div>
-            <div class="card-body"
-                style="padding: 1.5rem; background-color: white; border-bottom-left-radius: .25rem; border-bottom-right-radius: .25rem;">
-                <!-- Class Information -->
-                <div class="mb-4">
-                    <p style="font-size: 1.125rem; font-weight: 600; color: #4b5563;"><strong>Class:</strong>
-                        {{ $class->name }}</p>
-                    <p style="font-size: 1rem; color: #6b7280;"><strong>Class Teacher for "{{ $class->name }}" for
-                            the year "{{ $classSession }}":</strong> {{ $classTeacher }}</p>
-                </div>
-
-                <!-- Teacher's Detailed Information -->
-                @if ($teacher)
-                    <div class="mt-6">
-                        <h5 style="font-size: 1.25rem; font-weight: 700; color: #16a34a; margin-bottom: 1rem;">Teacher
-                            Details</h5>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <p><strong style="color: #374151;">Name:</strong> <span
-                                        style="color: #1f2937;">{{ $teacher->name }}</span></p>
-                                <p><strong style="color: #374151;">Phone:</strong> <span
-                                        style="color: #1f2937;">{{ $teacher->phone ?? 'Not Available' }}</span></p>
-                                <p><strong style="color: #374151;">Gender:</strong> <span
-                                        style="color: #1f2937;">{{ $teacher->gender ?? 'Not Available' }}</span></p>
-                            </div>
-                            <div class="col-md-6">
-                                <p><strong style="color: #374151;">Code:</strong> <span
-                                        style="color: #1f2937;">{{ $teacher->code ?? 'Not Available' }}</span></p>
-                                <p><strong style="color: #374151;">Photo:</strong>
-                                    @if ($teacher->photo)
-                                        <img src="{{ $teacher->photo }}" alt="Teacher Photo"
-                                            style="width: 6rem; height: 6rem; border-radius: 50%; object-fit: cover;">
-                                    @else
-                                        <span style="color: #6b7280;">No Photo Available</span>
-                                    @endif
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                @else
-                    <p style="color: #ef4444; margin-top: 1rem;">Teacher details are not available.</p>
-                @endif
-
-                <button wire:click="$set('isViewingClassTeacher', false)" class="btn btn-secondary"
-                    style="margin-top: 1rem; padding: .375rem .75rem; border-radius: .25rem;">
-                    Close
-                </button>
-            </div>
+    <div class="card mt-3 shadow-lg rounded-lg border-2" style="border-color: #d1d5db;">
+        <div class="card-header"
+            style="background-color: #007bff; color: white; padding: 1rem; border-top-left-radius: .25rem; border-top-right-radius: .25rem;">
+            <strong>Class Teachers Information</strong>
         </div>
-    @endif
+        <div class="card-body"
+            style="padding: 1.5rem; background-color: white; border-bottom-left-radius: .25rem; border-bottom-right-radius: .25rem;">
+            <!-- Flash Messages -->
+            @if (session('message'))
+                <div class="alert alert-success">
+                    {{ session('message') }}
+                </div>
+            @endif
+            @if (session('error'))
+                <div class="alert alert-danger">
+                    {{ session('error') }}
+                </div>
+            @endif
 
+            <!-- Class Information -->
+            <div class="mb-4">
+                <p style="font-size: 1.125rem; font-weight: 600; color: #4b5563;"><strong>Class:</strong>
+                    {{ $class->name }}</p>
+            </div>
 
+            <!-- Display all teachers in a Bootstrap table -->
+            @if ($hasTeachers)
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Session</th>
+                                <th>Teacher Name</th>
+                                <th>Phone</th>
+                                <th>Gender</th>
+                                <th>Code</th>
+                                <th>Photo</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($classTeachers->groupBy('pivot.session') as $session => $teachers)
+                                @foreach ($teachers as $teacher)
+                                    <tr>
+                                        <!-- Display the inline form if this row is being edited -->
+                                        @if ($editingTeacherId === $teacher->id && $editingSession === $session)
+                                            <td colspan="7">
+                                                <form wire:submit.prevent="saveStreamTeacher">
+                                                    <div class="row align-items-end">
+                                                        <div class="col">
+                                                            <label for="streamTeacher">Select Teacher</label>
+                                                            <select wire:model="streamTeacher" id="streamTeacher" class="form-control" required>
+                                                                <option value="">-- Select Teacher --</option>
+                                                                @foreach ($teachers as $teacherOption)
+                                                                    <option value="{{ $teacherOption->id }}">{{ $teacherOption->name }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                            @error('streamTeacher')
+                                                                <span class="text-danger">{{ $message }}</span>
+                                                            @enderror
+                                                        </div>
+
+                                                        <div class="col">
+                                                            <label for="session">Session</label>
+                                                            <select wire:model="session" id="session" class="form-control" required>
+                                                                <option value="">-- Select Session --</option>
+                                                                @foreach (range(date('Y'), 1900) as $year)
+                                                                    <option value="{{ $year }}">{{ $year }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                            @error('session')
+                                                                <span class="text-danger">{{ $message }}</span>
+                                                            @enderror
+                                                        </div>
+
+                                                        <div class="col-auto">
+                                                            <button type="submit" class="btn btn-success">
+                                                                Save
+                                                            </button>
+                                                            <button type="button" wire:click="cancelEdit" class="btn btn-secondary">Cancel</button>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </td>
+                                        @else
+                                            <!-- Display the teacher's information -->
+                                            <td>{{ $session }}</td>
+                                            <td>{{ $teacher->name }}</td>
+                                            <td>{{ $teacher->phone ?? '--' }}</td>
+                                            <td>{{ $teacher->gender ?? '--' }}</td>
+                                            <td>{{ $teacher->code ?? '--' }}</td>
+                                            <td>
+                                                @if ($teacher->photo)
+                                                    <img src="{{ $teacher->photo }}" alt="Teacher Photo"
+                                                        style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+                                                @else
+                                                    <span>--</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <!-- Disable Edit Button -->
+                                                {{-- <button wire:click="editTeacher({{ $teacher->id }}, '{{ $session }}')"
+                                                    class="btn btn-sm btn-primary" title="Edit">
+                                                    <i class="fas fa-edit"></i>
+                                                </button> --}}
+
+                                                <!-- Delete Button -->
+                                                <button wire:click="deleteTeacher({{ $teacher->id }}, '{{ $session }}')"
+                                                    class="btn btn-sm btn-danger" title="Delete">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        @endif
+                                    </tr>
+                                @endforeach
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <p style="color: #ef4444; margin-top: 1rem;">No teachers assigned to this class.</p>
+            @endif
+
+            <!-- Export PDF Button -->
+            <button wire:click="exportPdf" class="btn btn-primary mt-3">
+                <i class="fas fa-download"></i> Export as PDF
+            </button>
+
+            <!-- Close Button -->
+            <button wire:click="$set('isViewingClassTeacher', false)" class="btn btn-secondary"
+                style="margin-top: 1rem; padding: .375rem .75rem; border-radius: .25rem;">
+                Close
+            </button>
+        </div>
+    </div>
+@endif
 
 </div>
+
+@script
+
+<script>
+    // Function to hide a message
+    function hideMessage(selector) {
+        $(selector).fadeOut('slow');
+    }
+
+    // Automatically hide success and error messages after 5 seconds
+    $(document).ready(function() {
+        setTimeout(function() {
+            $('#successMessage').fadeOut('slow');
+        }, 5000);
+
+        setTimeout(function() {
+            $('#errorMessage').fadeOut('slow');
+        }, 5000);
+    });
+</script>
+@endscript

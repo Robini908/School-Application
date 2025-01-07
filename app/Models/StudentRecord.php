@@ -119,6 +119,15 @@ class StudentRecord extends Model
         return $this->belongsTo(Dorm::class);
     }
 
+    public function dorms()
+    {
+        return $this->belongsToMany(Dorm::class, 'dorm_student', 'student_id', 'dorm_id')
+            ->withPivot('year') // Include the year in the pivot table
+            ->withTimestamps();
+    }
+
+
+
     public function marks(): HasMany
     {
         return $this->hasMany(ExamMarks::class, 'student_id');

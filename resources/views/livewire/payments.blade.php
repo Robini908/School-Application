@@ -12,13 +12,14 @@
         <!-- Display Payments List -->
         <form wire:submit.prevent="submitPayment">
             <!-- Search and Select Student -->
-            <div class="mb-3">
+            <div class="mb-3 col-md-6">
                 <label for="student_search" class="form-label fw-semibold" style="color: #4a5568;">Select Student</label>
                 <input type="text" wire:model.live="student_search" id="student_search" class="form-control"
                     placeholder="Search for student...">
 
                 <!-- Display search results -->
                 @if ($student_search && count($studentSearchResults))
+                <div class="modal-dialog-centered">
                     <ul class="list-group mt-2">
                         @foreach ($studentSearchResults as $student)
                             <li class="list-group-item list-group-item-action"
@@ -27,6 +28,7 @@
                             </li>
                         @endforeach
                     </ul>
+                </div>
                 @endif
 
                 <!-- Display selected student -->
@@ -44,7 +46,7 @@
             <!-- Payment Amount -->
             <div class="mb-3">
                 <label for="amount" class="form-label fw-semibold" style="color: #4a5568;">Payment Amount</label>
-                <div class="input-group">
+                <div class="input-group md-col-6">
                     <span class="input-group-text">KSH</span>
                     <input type="number" wire:model="amount" id="amount" class="form-control"
                         placeholder="Enter payment amount">

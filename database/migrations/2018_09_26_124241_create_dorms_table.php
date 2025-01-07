@@ -16,7 +16,7 @@ class CreateDormsTable extends Migration
         Schema::create('dorms', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name', 100)->unique();
-            $table->string('description')->nullable();
+            $table->string(column: 'description')->nullable();
             $table->timestamps();
         });
     }

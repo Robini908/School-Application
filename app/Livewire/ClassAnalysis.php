@@ -13,8 +13,8 @@ class ClassAnalysis extends Component
     public $gradesCount = [];
     public $errorMessage = null;
     public $exams = [];
-    public $className; // Variable for class name
-    public $examName; // Variable for exam name
+    public $className; 
+    public $examName; 
 
     public function mount()
     {
@@ -79,7 +79,7 @@ class ClassAnalysis extends Component
             $this->gradesCount[$classId]['sections'][$sectionId]['student_count']++;
     
             // Assuming each student result has a score field
-            $totalScore = $result->score; // Adjust this if your score field is named differently
+            $totalScore = $result->score; 
     
             // Ensure totalScore is a number
             if (is_numeric($totalScore)) {
@@ -121,18 +121,6 @@ class ClassAnalysis extends Component
         // Clear the error message if data is found
         $this->errorMessage = null;
     }
-
-
-    // public function getMeanGrade($totalPoints, $gradingSystemId)
-    // {
-    //     // Find the corresponding grade for the total points based on the grading system
-    //     $gradeData = GradingGrade::where('grading_system_id', $gradingSystemId)
-    //         ->where('range_from', '<=', $totalPoints) // Updated column name
-    //         ->where('range_to', '>=', $totalPoints)   // Updated column name
-    //         ->first();
-
-    //     return $gradeData ? $gradeData->grade : '-'; // Return '-' if no grade found
-    // }
     
 
     public function render()

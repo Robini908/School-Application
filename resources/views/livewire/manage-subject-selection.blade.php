@@ -1,4 +1,4 @@
-<div style="background: linear-gradient(135deg, #f9fafb, #e5e7eb); padding: 30px; border-radius: 15px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);">
+<diva>
     <h2 class="text-center mb-4"
         style="font-weight: bold; font-size: 1.8rem; color: #374151; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);">
         <i class="fas fa-cogs" style="color: #4f46e5;"></i> Manage Subject Selection for Classes
@@ -83,4 +83,4 @@
             </tbody>
         </table>
     </div>
-</div>
+</diva>

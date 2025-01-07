@@ -45,7 +45,7 @@
             </div>
             @if ($activeAction)
                 <button wire:click="$set('activeAction', null)" class="btn btn-light rounded-circle p-2" title="Close">
-                    <i class="fas fa-times" style="font-size: 1.25rem; color: #6c757d;"></i>
+                    <i class="fas fa-chevron-left" style="font-size: 1.25rem; color: #6c757d;"></i>
                 </button>
             @endif
         </div>

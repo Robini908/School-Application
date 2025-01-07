@@ -180,37 +180,6 @@ class CombinationFormula extends Component
         return $studentData;
     }
 
-
-
-    public function generateExamAnalysisReport($examId)
-{
-    // Fetch exam, students, and subjects data
-    $exam = Exam::with('gradingSystem')->findOrFail($examId);
-    $students = StudentRecord::with('section')->get();
-    $subjects = Subject::all();
-
-    // Prepare the data (reusing the `prepareStudentData` function)
-    $marks = $this->prepareStudentData($exam);
-
-    if (empty($marks)) {
-        return back()->withErrors(['error' => 'No data available for this exam.']);
-    }
-
-    // Generate PDF
-    $pdf = PDF::loadView('reports.exam_analysis', compact('exam', 'marks', 'subjects'));
-
-    // Stream the PDF in the browser
-    return $pdf->stream('exam_analysis_report.pdf');
-}
-
-
-
-
-
-
-
-
-
     private function resetExamData()
     {
         $this->marks = [];
@@ -280,6 +249,8 @@ class CombinationFormula extends Component
                     $data['total_marks'] === $studentData[$index - 1]['total_marks'] &&
                     $data['total_points'] === $studentData[$index - 1]['total_points'] &&
                     $data['mean_score'] === $studentData[$index - 1]['mean_score']
+
+
                 ) {
                     $data['position'] = $studentData[$index - 1]['position'];
                 } else {
@@ -339,12 +310,6 @@ class CombinationFormula extends Component
 
         return $gradeData ? $gradeData->grade : '-'; // Return '-' if no grade found
     }
-
-
-
-
-
-
 
     public function filterStudents()
     {

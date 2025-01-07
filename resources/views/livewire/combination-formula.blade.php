@@ -285,42 +285,29 @@
                                     <table class="table table-bordered" style="width: 100%; border-radius: 5px;">
                                         <thead>
                                             <tr class="table-primary">
-                                                <th rowspan="2" class="align-middle"
-                                                    style="font-family: 'Roboto', sans-serif;">
-                                                    Student Name</th>
-                                                <th rowspan="2" class="align-middle"
-                                                    style="font-family: 'Roboto', sans-serif;">
-                                                    Stream</th>
-                                                <th colspan="{{ count($subjects) }}" class="text-center"
-                                                    style="font-family: 'Roboto', sans-serif;">Subjects</th>
-                                                <th rowspan="2" class="align-middle text-center"
-                                                    style="font-family: 'Roboto', sans-serif;">Total Marks</th>
-                                                <th rowspan="2" class="align-middle text-center"
-                                                    style="font-family: 'Roboto', sans-serif;">Total Points</th>
-                                                <th rowspan="2" class="align-middle text-center"
-                                                    style="font-family: 'Roboto', sans-serif;">Class Position</th>
-                                                <th rowspan="2" class="align-middle text-center"
-                                                    style="font-family: 'Roboto', sans-serif;">Stream Position</th>
-                                                <th rowspan="2" class="align-middle text-center"
-                                                    style="font-family: 'Roboto', sans-serif;">Mean Score</th>
-                                                <th rowspan="2" class="align-middle text-center"
-                                                    style="font-family: 'Roboto', sans-serif;">Mean Grade</th>
+                                                <th rowspan="2" class="align-middle" style="font-family: 'Roboto', sans-serif;">Student Name</th>
+                                                <th rowspan="2" class="align-middle" style="font-family: 'Roboto', sans-serif;">Stream</th>
+                                                <th colspan="{{ count($subjects) }}" class="text-center" style="font-family: 'Roboto', sans-serif;">Subjects</th>
+                                                <th rowspan="2" class="align-middle text-center" style="font-family: 'Roboto', sans-serif;">Total Marks</th>
+                                                <th rowspan="2" class="align-middle text-center" style="font-family: 'Roboto', sans-serif;">Total Points</th>
+                                                <th rowspan="2" class="align-middle text-center" style="font-family: 'Roboto', sans-serif;">Class Position</th>
+                                                <th rowspan="2" class="align-middle text-center" style="font-family: 'Roboto', sans-serif;">Stream Position</th>
+                                                <th rowspan="2" class="align-middle text-center" style="font-family: 'Roboto', sans-serif;">Mean Score</th>
+                                                <th rowspan="2" class="align-middle text-center" style="font-family: 'Roboto', sans-serif;">Mean Grade</th>
                                             </tr>
                                             <tr class="table-secondary">
                                                 @foreach ($subjects as $subject)
-                                                    <th class="text-center"
-                                                        style="font-family: 'Roboto', sans-serif;">
-                                                        {{ $subject->subject_name }}</th>
+                                                    <th class="text-center" style="font-family: 'Roboto', sans-serif;">
+                                                        {{ $subject->subject_name }}
+                                                    </th>
                                                 @endforeach
                                             </tr>
                                         </thead>
                                         <tbody>
                                             @forelse ($marks as $mark)
                                                 <tr>
-                                                    <td class="align-middle">{{ $mark['student_name'] ?? '-' }}
-                                                    </td>
+                                                    <td class="align-middle">{{ $mark['student_name'] ?? '-' }}</td>
                                                     <td class="align-middle">{{ $mark['stream'] ?? '-' }}</td>
-
                                                     @foreach ($subjects as $subject)
                                                         @php
                                                             $subjectMark = $mark['marks'][$subject->id] ?? '--';
@@ -334,19 +321,11 @@
                                                             @endif
                                                         </td>
                                                     @endforeach
-
-
-                                                    <td class="align-middle text-center">
-                                                        {{ $mark['total_marks'] ?? '-' }}</td>
-                                                    <td class="align-middle text-center">
-                                                        {{ $mark['total_points'] ?? '-' }}</td>
-                                                    <td class="align-middle text-center">
-                                                        {{ $mark['position'] ?? '-' }}</td>
-                                                    <td class="align-middle text-center">
-                                                        {{ $mark['stream_position'] ?? '-' }}</td>
-                                                    <td class="align-middle text-center">
-                                                        {{ number_format($mark['mean_score'], 2) }}
-                                                    </td>
+                                                    <td class="align-middle text-center">{{ $mark['total_marks'] ?? '-' }}</td>
+                                                    <td class="align-middle text-center">{{ $mark['total_points'] ?? '-' }}</td>
+                                                    <td class="align-middle text-center">{{ $mark['position'] ?? '-' }}</td>
+                                                    <td class="align-middle text-center">{{ $mark['stream_position'] ?? '-' }}</td>
+                                                    <td class="align-middle text-center">{{ number_format($mark['mean_score'], 2) }}</td>
                                                     <td class="align-middle text-center">
                                                         @if (isset($mark['total_points']))
                                                             {{ $this->getMeanGrade($mark['total_points'], $exam->gradingSystem->id) }}
@@ -357,14 +336,13 @@
                                                 </tr>
                                             @empty
                                                 <tr>
-                                                    <td colspan="{{ count($subjects) + 8 }}" class="text-center">
-                                                        No
-                                                        marks available
-                                                        for this exam.</td>
+                                                    <td colspan="{{ count($subjects) + 8 }}" class="text-center">No marks available for this exam.</td>
                                                 </tr>
                                             @endforelse
                                         </tbody>
                                     </table>
+                                    
+
                                     {{-- {{ $students->links() }} --}}
                                 </div>
                             </div>
@@ -378,29 +356,21 @@
                 <table class="table table-bordered" style="width: 100%; border-radius: 5px;">
                     <thead>
                         <tr class="table-primary">
-                            <th rowspan="2" class="align-middle" style="font-family: 'Roboto', sans-serif;">
-                                Student Name</th>
-                            <th rowspan="2" class="align-middle" style="font-family: 'Roboto', sans-serif;">
-                                Stream</th>
-                            <th colspan="{{ count($subjects) }}" class="text-center"
-                                style="font-family: 'Roboto', sans-serif;">Subjects</th>
-                            <th rowspan="2" class="align-middle text-center"
-                                style="font-family: 'Roboto', sans-serif;">Total Marks</th>
-                            <th rowspan="2" class="align-middle text-center"
-                                style="font-family: 'Roboto', sans-serif;">Total Points</th>
-                            <th rowspan="2" class="align-middle text-center"
-                                style="font-family: 'Roboto', sans-serif;">Class Position</th>
-                            <th rowspan="2" class="align-middle text-center"
-                                style="font-family: 'Roboto', sans-serif;">Stream Position</th>
-                            <th rowspan="2" class="align-middle text-center"
-                                style="font-family: 'Roboto', sans-serif;">Mean Score</th>
-                            <th rowspan="2" class="align-middle text-center"
-                                style="font-family: 'Roboto', sans-serif;">Mean Grade</th>
+                            <th rowspan="2" class="align-middle" style="font-family: 'Roboto', sans-serif;">Student Name</th>
+                            <th rowspan="2" class="align-middle" style="font-family: 'Roboto', sans-serif;">Stream</th>
+                            <th colspan="{{ count($subjects) }}" class="text-center" style="font-family: 'Roboto', sans-serif;">Subjects</th>
+                            <th rowspan="2" class="align-middle text-center" style="font-family: 'Roboto', sans-serif;">Total Marks</th>
+                            <th rowspan="2" class="align-middle text-center" style="font-family: 'Roboto', sans-serif;">Total Points</th>
+                            <th rowspan="2" class="align-middle text-center" style="font-family: 'Roboto', sans-serif;">Class Position</th>
+                            <th rowspan="2" class="align-middle text-center" style="font-family: 'Roboto', sans-serif;">Stream Position</th>
+                            <th rowspan="2" class="align-middle text-center" style="font-family: 'Roboto', sans-serif;">Mean Score</th>
+                            <th rowspan="2" class="align-middle text-center" style="font-family: 'Roboto', sans-serif;">Mean Grade</th>
                         </tr>
                         <tr class="table-secondary">
                             @foreach ($subjects as $subject)
                                 <th class="text-center" style="font-family: 'Roboto', sans-serif;">
-                                    {{ $subject->subject_name }}</th>
+                                    {{ $subject->subject_name }}
+                                </th>
                             @endforeach
                         </tr>
                     </thead>
@@ -410,26 +380,23 @@
                                 <td class="align-middle">{{ $mark['student_name'] ?? '-' }}</td>
                                 <td class="align-middle">{{ $mark['stream'] ?? '-' }}</td>
                                 @foreach ($subjects as $subject)
-                                @php
-                                    $subjectMark = $mark['marks'][$subject->id] ?? '--';
-                                    $grade = $mark['grades'][$subject->id] ?? '--';
-                                @endphp
-                                <td class="align-middle text-center">
-                                    @if ($subjectMark === '--')
-                                        --
-                                    @else
-                                        {{ $subjectMark }} {{ $grade }}
-                                    @endif
-                                </td>
-                            @endforeach
-                            
-
+                                    @php
+                                        $subjectMark = $mark['marks'][$subject->id] ?? '--';
+                                        $grade = $mark['grades'][$subject->id] ?? '--';
+                                    @endphp
+                                    <td class="align-middle text-center">
+                                        @if ($subjectMark === '--')
+                                            --
+                                        @else
+                                            {{ $subjectMark }} {{ $grade }}
+                                        @endif
+                                    </td>
+                                @endforeach
                                 <td class="align-middle text-center">{{ $mark['total_marks'] ?? '-' }}</td>
                                 <td class="align-middle text-center">{{ $mark['total_points'] ?? '-' }}</td>
                                 <td class="align-middle text-center">{{ $mark['position'] ?? '-' }}</td>
                                 <td class="align-middle text-center">{{ $mark['stream_position'] ?? '-' }}</td>
-                                <td class="align-middle text-center">{{ number_format($mark['mean_score'], 2) }}
-                                </td>
+                                <td class="align-middle text-center">{{ number_format($mark['mean_score'], 2) }}</td>
                                 <td class="align-middle text-center">
                                     @if (isset($mark['total_points']))
                                         {{ $this->getMeanGrade($mark['total_points'], $exam->gradingSystem->id) }}
@@ -440,12 +407,13 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="{{ count($subjects) + 8 }}" class="text-center">No marks available
-                                    for this exam.</td>
+                                <td colspan="{{ count($subjects) + 8 }}" class="text-center">No marks available for this exam.</td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
+                
+
                 {{-- {{ $students->links() }} --}}
             </div>
             @endif

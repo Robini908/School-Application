@@ -2,122 +2,17 @@
 @section('page_title', 'Manage Dorms')
 @section('content')
 
-    <div class="card">
-        <div class="card-header header-elements-inline">
-            <h6 class="card-title">Manage Dorms</h6>
+    <div class="card p-3 shadow-lg border rounded" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
+        {{-- <div class="card-header header-elements-inline">
+            <h2 class="card-title">Manage Dorms</h2>
             {!! Qs::getPanelOptions() !!}
-        </div>
+        </div> --}}
 
         <div class="card-body">
-            <ul class="nav nav-tabs nav-tabs-highlight">
-                <li class="nav-item"><a href="#all-dorms" class="nav-link active" data-toggle="tab">Manage Dorms</a></li>
-                <li class="nav-item"><a href="#new-dorm" class="nav-link" data-toggle="tab"><i class="icon-plus2"></i> Create New Dorm</a></li>
-            </ul>
-
-            <div class="tab-content">
-                    <div class="tab-pane fade show active" id="all-dorms">
-                        <table class="table datatable-button-html5-columns">
-                            <thead>
-                            <tr>
-                                <th>S/N</th>
-                                <th>Name</th>
-                                <th>Capacity</th>
-                                <th>Occupancy</th>
-                                <th>Session</th>
-                                <th>Dorm master</th>
-                                {{-- <th>Description</th> --}}
-                                <th>Action</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            @foreach($dorms as $d)
-                                <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $d->name }}</td>
-                                    <td>{{ $d->capacity }}</td>
-                                    <td>{{ $users->where('user_type', 'student')->where('dorm_id', $d->id)->count() }}</td>
-                                    <td>{{ $d->session }}</td>
-                                    <td>{{ $d->teacher ? $d->teacher->name : 'No dorm master assigned' }}</td>
-                                    {{-- <td>{{ $d->description}}</td> --}}
-                                    <td class="text-center">
-                                        <div class="list-icons">
-                                            <div class="dropdown">
-                                                <a href="#" class="list-icons-item" data-toggle="dropdown">
-                                                    <i class="icon-menu9"></i>
-                                                </a>
-
-                                                <div class="dropdown-menu dropdown-menu-left">
-                                                    @if(Qs::userIsTeamSA())
-                                                    {{--Edit--}}
-                                                    <a href="{{ route('dorms.edit', $d->id) }}" class="dropdown-item"><i class="icon-pencil"></i> Edit</a>
-                                                   @endif
-                                                        @if(Qs::userIsSuperAdmin())
-                                                    {{--Delete--}}
-                                                    <a id="{{ $d->id }}" onclick="confirmDelete(this.id)" href="#" class="dropdown-item"><i class="icon-trash"></i> Delete</a>
-                                                    <form method="post" id="item-delete-{{ $d->id }}" action="{{ route('dorms.destroy', $d->id) }}" class="hidden">@csrf @method('delete')</form>
-                                                        @endif
-                                                        @if(Qs::userIsTeamSA())
-                                                        {{--Edit--}}
-                                                        <a href="{{ route('dormasters.edit', $d->id) }}" class="dropdown-item"><i class="icon-pencil"></i> Add dorm master</a>
-                                                       @endif
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-
-                <div class="tab-pane fade" id="new-dorm">
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <form class="ajax-store" method="post" action="{{ route('dorms.store') }}">
-                                @csrf
-                                <div class="form-group row">
-                                    <label class="col-lg-3 col-form-label font-weight-semibold">Name <span class="text-danger">*</span></label>
-                                    <div class="col-lg-9">
-                                        <input name="name" value="{{ old('name') }}" required type="text" class="form-control" placeholder="Name of Dormitory">
-                                    </div>
-                                </div>
-                                <div class="form-group row">
-                                    <label class="col-lg-3 col-form-label font-weight-semibold">Capacity <span class="text-danger">*</span></label>
-                                    <div class="col-lg-9">
-                                        <input name="capacity" value="{{ old('capacity') }}" required type="text" class="form-control" placeholder="Capacity">
-                                    </div>
-                                </div>
-                                <div class="form-group row">
-                                    <label class="col-lg-3 col-form-label font-weight-semibold">Session <span class="text-danger">*</span></label>
-                                    <select data-placeholder="Choose..." required name="year_admitted" id="year_admitted" class="custom-select">
-                                        <option value="session"></option>
-                                        @for($y = date('Y', strtotime('-40 years')); $y <= date('Y'); $y++)
-                                            <option {{ (old('year_admitted') == $y) ? 'selected' : '' }} value="{{ $y }}">
-                                                {{ $y }}
-                                            </option>
-                                        @endfor
-                                    </select>
-                                </div> 
-
-                                {{-- <div class="form-group row">
-                                    <label class="col-lg-3 col-form-label font-weight-semibold">Description</label>
-                                    <div class="col-lg-9">
-                                        <input name="description" value="{{ old('description') }}"  type="text" class="form-control" placeholder="Description of Dormitory">
-                                    </div>
-                                </div> --}}
-
-                                <div class="text-right">
-                                    <button id="ajax-btn" type="submit" class="btn btn-primary">Submit form <i class="icon-paperplane ml-2"></i></button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            @livewire('manage-dorms')
         </div>
     </div>
 
-    {{--Dorm List Ends--}}
+    {{-- Dorm List Ends --}}
 
 @endsection

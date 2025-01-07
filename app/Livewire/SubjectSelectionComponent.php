@@ -48,6 +48,12 @@ class SubjectSelectionComponent extends Component
         })->get();
         $this->showStudentCard = true;
     }
+    public function toggleShowStudentCard()
+    {
+        $this->showStudentCard = true;
+        $this->showSubjectForm = false;
+
+    }
 
     public function updatedSelectedClass($classId)
     {
@@ -77,6 +83,7 @@ class SubjectSelectionComponent extends Component
             ];
             $this->showSubjectForm = true;
         } else {
+            $this->showStudentCard = true;
             $this->alert('error', 'No students were selected.');
         }
     }

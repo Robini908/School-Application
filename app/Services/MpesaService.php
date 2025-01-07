@@ -31,7 +31,7 @@ class MpesaService
             $BusinessShortCode = config('mpesa.shortcode');
             $PassKey = config('mpesa.passkey');
             $TransactionType = "CustomerPayBillOnline";
-            $CallBackURL = route('mpesa.callback');  // Assuming you have a route for this
+            $CallBackURL = route('mpesa.callback'); 
             $AccountReference = "School Fees";
             $Remarks = "Payment for School Fees";
 
