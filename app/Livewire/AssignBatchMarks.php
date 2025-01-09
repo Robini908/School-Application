@@ -16,6 +16,8 @@ class AssignBatchMarks extends Component
 {
     use LivewireAlert;
     public $classes;
+
+    public $specialGrades = [];
     public $selectedClass = null;
     public $selectedClassName = '';
     public $buttonText = 'Submit Marks';
@@ -37,6 +39,16 @@ class AssignBatchMarks extends Component
     {
         $this->classes = MyClass::all();
         $this->subjects = Subject::all();
+        // Load students and subjects (you can customize this based on your logic)
+        $this->students = StudentRecord::all();
+
+        // Initialize marks and specialGrades arrays
+        foreach ($this->students as $student) {
+            foreach ($this->subjects as $subject) {
+                $this->marks[$student->id][$subject->id] = null;
+                $this->specialGrades[$student->id][$subject->id] = null;
+            }
+        }
     }
 
     public function updatedSelectedClass($classId)
@@ -86,6 +98,7 @@ class AssignBatchMarks extends Component
     {
         foreach ($this->students as $student) {
             foreach ($this->subjects as $subject) {
+                // Fetch the exam mark for the student and subject
                 $examMark = ExamMarks::where([
                     'student_id' => $student->id,
                     'exam_id' => $this->selectedExam,
@@ -93,9 +106,19 @@ class AssignBatchMarks extends Component
                 ])->first();
 
                 if ($examMark) {
+                    // Load marks if they exist
                     $this->marks[$student->id][$subject->id] = $examMark->marks;
+
+                    // Load special grade if it exists
+                    if ($examMark->special_grade) {
+                        $this->specialGrades[$student->id][$subject->id] = $examMark->special_grade;
+                    } else {
+                        $this->specialGrades[$student->id][$subject->id] = null; // Initialize as null if no special grade exists
+                    }
                 } else {
-                    $this->marks[$student->id][$subject->id] = null; // Initialize as null if no marks exist
+                    // Initialize marks and special grades as null if no record exists
+                    $this->marks[$student->id][$subject->id] = null;
+                    $this->specialGrades[$student->id][$subject->id] = null;
                 }
             }
         }
@@ -118,12 +141,18 @@ class AssignBatchMarks extends Component
                 $isSubjectSelectionEnabled = $this->isSubjectSelectionEnabled($student->my_class_id);
 
                 foreach ($this->subjects as $subject) {
-                    // If subject selection is enabled, check if the student is enrolled in the subject
                     if ($isSubjectSelectionEnabled && !$this->isStudentEnrolledInSubject($student->id, $subject->id)) {
                         continue; // Skip if not enrolled
                     }
 
                     $marks = $this->marks[$student->id][$subject->id] ?? null;
+                    $specialGrade = $this->specialGrades[$student->id][$subject->id] ?? null;
+
+                    // Ensure either marks or special grade is provided, but not both
+                    if (!empty($marks) && !empty($specialGrade)) {
+                        $this->addError("marks.{$student->id}.{$subject->id}", 'Cannot provide both marks and a special grade.');
+                        continue;
+                    }
 
                     // Update or create the exam mark record for the student and subject
                     ExamMarks::updateOrCreate(
@@ -133,22 +162,26 @@ class AssignBatchMarks extends Component
                             'subject_id' => $subject->id,
                         ],
                         [
-                            'grading_range_id' => null,
                             'marks' => $marks,
+                            'special_grade' => $specialGrade,
                         ]
                     );
                 }
             }
 
-            $this->alert('success', 'Marks successfully assigned!');
-            $this->resetForm();
-        } catch (\Exception $e) {
-            $this->alert('error', 'An error occurred while assigning marks: ' . $e->getMessage());
-        } finally {
-            $this->buttonText = 'Submit Marks';
-        }
-    }
+            // Refresh the data to reflect the changes
+            $this->students = StudentRecord::whereHas('examMarks', function ($query) {
+                $query->where('exam_id', $this->selectedExam);
+            })->get();
 
+            $this->alert('success', 'Marks/Grades successfully assigned!');
+        } catch (\Exception $e) {
+            $this->alert('error', 'An error occurred while assigning marks/grades: ' . $e->getMessage());
+        } finally {
+            $this->buttonText = 'Submit Marks/Grades';
+        }
+        $this->resetErrorBag();
+    }
     private function validateMarks()
     {
         $rules = [];
@@ -158,10 +191,14 @@ class AssignBatchMarks extends Component
             foreach ($this->subjects as $subject) {
                 if (!$isSubjectSelectionEnabled || $this->isStudentEnrolledInSubject($student->id, $subject->id)) {
                     $rules["marks.{$student->id}.{$subject->id}"] = [
-                        'required',
+                        'nullable',
                         'integer',
                         'min:0',
                         'max:100',
+                    ];
+                    $rules["specialGrades.{$student->id}.{$subject->id}"] = [
+                        'nullable',
+                        'in:X,Y,Z',
                     ];
                 }
             }
@@ -169,7 +206,6 @@ class AssignBatchMarks extends Component
 
         $this->validate($rules);
     }
-
 
 
 
@@ -238,6 +274,8 @@ class AssignBatchMarks extends Component
 
     public $editable = []; // To track which students are editable
 
+
+
     public function editMarks($studentId)
     {
         // Toggle the editable state for the specific student
@@ -262,8 +300,8 @@ class AssignBatchMarks extends Component
                         'subject_id' => $subject->id,
                     ],
                     [
-                        'grading_range_id' => null,
                         'marks' => $this->marks[$studentId][$subject->id] ?? null,
+                        'special_grade' => $this->specialGrades[$studentId][$subject->id] ?? null,
                     ]
                 );
             }
@@ -272,7 +310,7 @@ class AssignBatchMarks extends Component
         // Remove the editable state after updating
         unset($this->editable[$studentId]);
 
-        $this->alert('success', 'Marks successfully updated for student ' . $studentId . '!');
+        $this->alert('success', 'Marks/Grades successfully updated for student ' . $studentId . '!');
     }
 
 

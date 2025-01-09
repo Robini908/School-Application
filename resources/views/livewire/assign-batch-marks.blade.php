@@ -86,76 +86,89 @@
 
 
                 @if ($selectedSection)
-                    <div class="mt-3">
-                        <div class="alert alert-info">
-                            <b class="text-lg text-semibold">{{ count($students) }}</b> students found in this section.
-                        </div>
+                <div class="mt-3">
+                    <div class="alert alert-info">
+                        <b>{{ count($students) }}</b> students found in this section.
                     </div>
-
-                    <form wire:submit.prevent="assignMarks" class="mt-3" id="marks-form">
-                        <div class="table-responsive" style="overflow-x: auto;">
-                            <table class="table table-bordered table-striped">
-                                <thead>
+                </div>
+            
+                <form wire:submit.prevent="assignMarks" class="mt-3" id="marks-form">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th scope="col" style="width: 5%;">#</th>
+                                    <th scope="col" style="width: 25%;">Student Name</th>
+                                    <th scope="col" style="width: 15%;">Admission No</th>
+                                    @foreach ($subjects as $subject)
+                                        <th scope="col" style="width: 20%;">{{ $subject->subject_name }}</th>
+                                    @endforeach
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if ($students->isEmpty())
                                     <tr>
-                                        <th style="width: 50px;">S/N</th>
-                                        <th style="width: 200px;">Student Name</th>
-                                        <th style="width: 150px;">Admission No</th>
-                                        @foreach ($subjects as $subject)
-                                            <th style="width: 150px;">{{ $subject->subject_name }}</th>
-                                        @endforeach
+                                        <td colspan="{{ count($subjects) + 3 }}" class="text-center text-muted">
+                                            No students available for this section.
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    @if ($students->isEmpty())
+                                @else
+                                    @foreach ($students as $index => $student)
+                                        @php
+                                            $isSubjectSelectionEnabled = $this->isSubjectSelectionEnabled($student->my_class_id);
+                                        @endphp
                                         <tr>
-                                            <td colspan="{{ count($subjects) + 3 }}" class="text-danger text-center">
-                                                No students available for this section.
-                                            </td>
-                                        </tr>
-                                    @else
-                                        @foreach ($students as $index => $student)
-                                            @php
-                                                $isSubjectSelectionEnabled = $this->isSubjectSelectionEnabled(
-                                                    $student->my_class_id,
-                                                );
-                                            @endphp
-                                            <tr>
-                                                <td>{{ $index + 1 }}</td>
-                                                <td>{{ $student->first_name }} {{ $student->last_name }}</td>
-                                                <td>{{ $student->adm_no }}</td>
-                                                @foreach ($subjects as $subject)
-                                                    <td style="width: 150px;">
-                                                        @if (!$isSubjectSelectionEnabled || $student->subjects->contains($subject->id))
+                                            <th scope="row">{{ $index + 1 }}</th>
+                                            <td>{{ $student->first_name }} {{ $student->last_name }}</td>
+                                            <td>{{ $student->adm_no }}</td>
+                                            @foreach ($subjects as $subject)
+                                                <td>
+                                                    @if (!$isSubjectSelectionEnabled || $student->subjects->contains($subject->id))
+                                                        <div class="d-flex gap-2 align-items-center">
                                                             <input type="number" class="form-control"
-                                                                style="background-color: #d1f7d6; border-color: #28a745; width: 150px;"
-                                                                wire:model.defer="marks.{{ $student->id }}.{{ $subject->id }}"
-                                                                min="0" max="100" placeholder="Enter marks">
-                                                            @error("marks.{$student->id}.{$subject->id}")
-                                                                <div class="text-danger">{{ $message }}</div>
-                                                            @enderror
-                                                        @else
-                                                            <input type="text" class="form-control"
-                                                                style="background-color: #f8d7da; border-color: #dc3545; color: #721c24; width: 150px; opacity: 0.5; cursor: not-allowed;"
-                                                                value="Not Enrolled" disabled>
-                                                        @endif
-                                                    </td>
-                                                @endforeach
-                                            </tr>
-                                        @endforeach
-                                    @endif
-                                </tbody>
-
-                            </table>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary mt-3">
-                            {{ $buttonText }}
+                                                                wire:model="marks.{{ $student->id }}.{{ $subject->id }}"
+                                                                min="0" max="100" placeholder="Marks"
+                                                                style="width: 100px;"
+                                                                @if (!empty($this->specialGrades[$student->id][$subject->id])) disabled @endif>
+                                                            <select class="form-control"
+                                                                wire:model="specialGrades.{{ $student->id }}.{{ $subject->id }}"
+                                                                style="width: 100px;"
+                                                                @if (!empty($this->marks[$student->id][$subject->id])) disabled @endif>
+                                                                <option value="">Grade</option>
+                                                                <option value="X">X</option>
+                                                                <option value="Y">Y</option>
+                                                                <option value="Z">Z</option>
+                                                            </select>
+                                                        </div>
+                                                        @error("marks.{$student->id}.{$subject->id}")
+                                                            <small class="text-danger">{{ $message }}</small>
+                                                        @enderror
+                                                        @error("specialGrades.{$student->id}.{$subject->id}")
+                                                            <small class="text-danger">{{ $message }}</small>
+                                                        @enderror
+                                                    @else
+                                                        <span class="text-muted">Not Enrolled</span>
+                                                    @endif
+                                                </td>
+                                            @endforeach
+                                        </tr>
+                                    @endforeach
+                                @endif
+                            </tbody>
+                        </table>
+                    </div>
+            
+                    <div class="mt-3 text-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> {{ $buttonText }}
                         </button>
-                    </form>
-                @else
-                    <p class="text-danger mt-3">You have not selected any section. Please select a section to proceed.
-                    </p>
-                @endif
+                    </div>
+                </form>
+            @else
+                <div class="alert alert-warning mt-3">
+                    <i class="fas fa-exclamation-circle"></i> Please select a section to proceed.
+                </div>
+            @endif
             @else
                 <p class="text-danger mt-3">No sections available for this class and exam combination.</p>
             @endif

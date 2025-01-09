@@ -8,28 +8,29 @@
     <meta id="csrf-token" name="csrf-token" content="{{ csrf_token() }}">
     <meta name="author" content="CJ Inspired">
 
-
     <title>@yield('page_title') | {{ config('app.name') }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <x-livewire-alert::scripts />
-
-
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('partials.inc_top')
     @livewireStyles
 </head>
 
-<body
-    class="{{ in_array(Route::currentRouteName(), ['payments.invoice', 'marks.tabulation', 'marks.show', 'ttr.manage', 'ttr.show']) ? 'sidebar-xs' : '' }}">
+<body class="{{ in_array(Route::currentRouteName(), ['payments.invoice', 'marks.tabulation', 'marks.show', 'ttr.manage', 'ttr.show']) ? 'sidebar-xs' : '' }}">
 
+    <!-- Top Navigation Bar -->
     @include('partials.top_menu')
-    <div class="page-content">
-        @include('partials.menu')
-        <div class="content-wrapper">
 
+    <div class="page-content d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar sidebar-dark sidebar-main sidebar-expand-md position-sticky" 
+             style="top: 56px; height: calc(100vh - 56px); overflow-y: auto;">
+            @include('partials.menu')
+        </div>
 
+        <!-- Content Area -->
+        <div class="content-wrapper flex-grow-1" style="overflow-y: auto; height: calc(100vh - 56px);">
             <div class="content">
                 {{-- Error Alert Area --}}
                 @if ($errors->any())
@@ -49,12 +50,8 @@
     @yield('scripts')
     @stack('scripts')
     @include('partials.inc_bottom')
-    
     @livewireScripts
     @filepondScripts
-
-
-    {{-- <x-toaster-hub /> --}}
 </body>
 
 </html>

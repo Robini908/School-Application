@@ -3,7 +3,14 @@
         <div class="col-md-12">
             <!-- Header -->
             <div class="d-flex justify-content-between align-items-center mb-1">
-                @if (!$isCreating && !$isEditing && !$isAssigningDormMaster && !$isViewingDormMasters && !$isAddingStudents)
+                @if (
+                    !$isCreating &&
+                        !$isEditing &&
+                        !$isAssigningDormMaster &&
+                        !$isViewingDormMasters &&
+                        !$isAddingStudents &&
+                        !$showOccupancyCard &&
+                        !$showStudentsList)
                     <div>
                         <h1 class="font-weight-bold text-secondary mb-2">Manage Dorms</h1>
                         <p class="text-muted md-col-6">
@@ -18,7 +25,13 @@
                         <i class="fas fa-arrow-left"></i>
                     </button> --}}
                 @else
-                    @if (!$isAddingStudents)
+                    @if (
+                        !$isAddingStudents &&
+                            !$isAssigningDormMaster &&
+                            !$isViewingDormMasters &&
+                            !$isAddingStudents &&
+                            !$showOccupancyCard &&
+                            !$showStudentsList)
                         @if ($dorms->count() > 0)
                             <button class="btn btn-primary" wire:click="create">
                                 <i class="fas fa-plus"></i> New
@@ -44,7 +57,8 @@
                     !$isAssigningDormMaster &&
                     !$isViewingDormMasters &&
                     !$isAddingStudents &&
-                    !$showOccupancyCard)
+                    !$showOccupancyCard &&
+                    !$showStudentsList)
                 @if ($dorms->count() > 0)
 
                     <div>
@@ -53,7 +67,7 @@
                                 <tr>
                                     <th>Name</th>
                                     <th>Capacity</th>
-                                    <th>Description</th>
+                                    <th>Occupancy ({{ date('Y') }})</th>
                                     <th class="text-center">Actions</th>
                                 </tr>
                             </thead>
@@ -62,8 +76,14 @@
                                     <tr>
                                         <td class="align-middle">{{ $dorm->name }}</td>
                                         <td class="align-middle">{{ $dorm->capacity }}</td>
-                                        <td class="align-middle">{{ $dorm->description }}</td>
-
+                                        <td class="align-middle">
+                                            <!-- Clickable link to view students for the current year -->
+                                            <a href="#"
+                                                wire:click="setSelectedDormIdAndViewStudents({{ $dorm->id }}, '{{ date('Y') }}')"
+                                                class="btn btn-link font-weight-bold">
+                                                {{ $this->getCurrentYearOccupancy($dorm->id) }} / {{ $dorm->capacity }}
+                                            </a>
+                                        </td>
                                         <td class="text-center">
                                             <div class="list-icons">
                                                 <div class="dropdown">
@@ -132,14 +152,16 @@
             @endif
 
             @if ($showOccupancyCard && !$showStudentsList)
-                <div class="card mt-3">
-                    <div class="card-header bg-primary text-white">
+                <div class="mt-2">
+                    <div class="d-flex justify-content-between align-items-center text-secondary display-3">
                         <h5 class="card-title mb-0">Occupancy Over the Years - {{ $dormName }}</h5>
                         <button wire:click="closeOccupancyCard" class="btn btn-sm btn-light float-right">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
                     <div class="card-body">
+                        {{-- <livewire:occupancy-chart :dormId="$selectedDormId" /> --}}
+
                         @if (count($occupancyData) > 0)
                             <table class="table table-bordered">
                                 <thead>
@@ -158,7 +180,7 @@
                                             <td>{{ $data->year }}</td>
                                             <td>
                                                 <a href="#" wire:click="viewStudents('{{ $data->year }}')"
-                                                    class="text-primary">
+                                                    class="btn btn-link font-weight-bold">
                                                     {{ $data->occupancy }} / {{ $this->dormCapacity }}
                                                 </a>
                                             </td>
@@ -193,8 +215,8 @@
             @endif
 
             @if ($showStudentsList)
-                <div class="card mt-3">
-                    <div class="card-header bg-secondary text-white">
+                <div class="mt-2">
+                    <div class="d-flex justify-content-between align-items-center text-secondary font-weight-bold">
                         <h5 class="card-title mb-0">Students in {{ $dormName }} ({{ $selectedYear }})</h5>
                         <button wire:click="closeStudentsList" class="btn btn-sm btn-light float-right">
                             <i class="fas fa-times"></i>
@@ -282,8 +304,8 @@
             @endif
 
             @if ($isAddingStudents)
-                <div class="card">
-                    <div class="card-header bg-primary text-white">
+                <div>
+                    <div class="card-header  text-secondary display-1">
                         <h5 class="card-title mb-0">Add Students to Dorm</h5>
                     </div>
                     <div class="card-body">
@@ -329,6 +351,9 @@
                                                 <button wire:click="selectAll" class="btn btn-sm btn-primary">
                                                     Select All
                                                 </button>
+                                                <span wire:click="clearSelection" class="btn btn-link">
+                                                    <i class="fas fa-times-circle"></i>
+                                                </span>
                                             </th>
                                             <th>Admission No</th>
                                             <th>Name</th>
@@ -397,9 +422,7 @@
                         <button wire:click="cancelAddingStudents" class="btn btn-secondary">
                             <i class="fas fa-times"></i> Cancel
                         </button>
-                        <button wire:click="clearSelection" class="btn btn-warning">
-                            <i class="fas fa-times-circle"></i> Clear Selection
-                        </button>
+
                     </div>
                 </div>
             @endif
@@ -460,9 +483,6 @@
             @if ($isViewingDormMasters)
                 @if ($dormMasters->count() > 0)
                     <div>
-
-
-
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-1">
 
@@ -474,7 +494,8 @@
                             <table class="table table-hover">
                                 <thead class="thead-light">
                                     <tr>
-                                        <th>Teacher</th>
+                                        <th>Teacher name</th>
+                                        <th>Code</th>
                                         <th>Session</th>
                                     </tr>
                                 </thead>
@@ -482,6 +503,7 @@
                                     @foreach ($dormMasters as $teacher)
                                         <tr>
                                             <td>{{ $teacher->name }}</td>
+                                            <td>{{ $teacher->code }}</td>
                                             <td>{{ $teacher->pivot->session }}</td>
                                         </tr>
                                     @endforeach
@@ -506,14 +528,45 @@
 </div>
 @script
     <script>
-        document.addEventListener('livewire:load', function() {
-            const studentsList = document.querySelector('.table-responsive');
+        // Get the students list element
+        const studentsList = document.querySelector('.table-responsive');
 
+        if (studentsList) {
+            // Add a scroll event listener to the students list
             studentsList.addEventListener('scroll', function() {
+                // Check if the user has scrolled to the bottom of the list
                 if (studentsList.scrollTop + studentsList.clientHeight >= studentsList.scrollHeight - 10) {
+                    // Trigger the Livewire `loadMore` method
                     @this.loadMore();
                 }
             });
-        });
+        }
+
+        const occupancyData = @json($occupancyData);
+
+        // Calculate metrics
+        const totalOccupancy = occupancyData.reduce((sum, data) => sum + data.occupancy, 0);
+        const averageOccupancy = (totalOccupancy / occupancyData.length).toFixed(2);
+        const maxOccupancy = Math.max(...occupancyData.map(data => data.occupancy));
+
+        // Animate counters
+        animateCounter('totalOccupancyCounter', totalOccupancy);
+        animateCounter('averageOccupancyCounter', averageOccupancy);
+        animateCounter('maxOccupancyCounter', maxOccupancy);
+
+        function animateCounter(elementId, targetValue) {
+            let current = 0;
+            const increment = targetValue / 100;
+            const counterElement = document.getElementById(elementId);
+
+            const interval = setInterval(() => {
+                current += increment;
+                if (current >= targetValue) {
+                    clearInterval(interval);
+                    current = targetValue;
+                }
+                counterElement.textContent = Math.round(current);
+            }, 10);
+        }
     </script>
 @endscript

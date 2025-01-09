@@ -7,7 +7,7 @@
     <a  href="{{ route('exams.set') }}"  class="btn btn-primary">Back to Exams</a>
 </div>
 
-<div class="card">
+<div class="card col-md-12  p-2 shadow-lg border rounded" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
     <div class="card-header header-elements-inline">
         <h6 class="card-title">Assign Exam Marks</h6>
         {!! Qs::getPanelOptions() !!}

@@ -72,6 +72,16 @@ class UsersTableSeeder extends Seeder
                 'code' => strtoupper(Str::random(10)),
                 'remember_token' => Str::random(10),
             ],
+
+            // [
+            //     'name' => 'Testing Teacher',
+            //     'email' => 'test@test.com',
+            //     'username' => 'teacher@test',
+            //     'password' => $password,
+            //     'user_type' => 'teacher',
+            //     'code' => strtoupper(Str::random(10)),
+            //     'remember_token' => Str::random(10),
+            // ],
         ];
 
         foreach ($users as $user) {

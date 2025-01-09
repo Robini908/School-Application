@@ -3,28 +3,32 @@
 use App\Models\StudentRecord;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
-//use App\Http\Controllers\AdmissionController;
 use App\Mail\DisapprovalNotification;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\SubjectRanges;
 use App\Http\Controllers\MpesaController;
-use App\Http\Controllers\StudentRecordController;
+use App\Http\Controllers\NotificationController;
+use App\Notifications\SystemNotification;
+
+
 
 
 Auth::routes();
 
 
-Route::get('/send-test-email', function () {
-    $student = (object) [
-        'first_name' => 'John',
-        'last_name' => 'Doe',
-        'email' => 'abrahamopuba@gmail.com' // Replace with a valid email for testing
-    ];
 
-    $disapprovalReason = 'Your application was not approved due to incomplete documentation.';
-    Mail::to($student->email)->send(new DisapprovalNotification($student, $disapprovalReason));
+Route::middleware('auth')->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+});
 
-    return 'Test email sent!';
+Route::get('/test-notification', function () {
+    $user = Auth::user();
+
+    if ($user) {
+        $user->notify(new SystemNotification('This is a test notification!'));
+        return 'Test notification sent!';
+    }
+
+    return 'No authenticated user found.';
 });
 
 // mpesa
@@ -232,6 +236,9 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('dorms', 'DormController');
         Route::resource('payments', 'PaymentController');
     });
+
+
+
 
     /************************ AJAX ****************************/
     Route::group(['prefix' => 'ajax'], function () {

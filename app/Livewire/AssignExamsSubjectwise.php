@@ -20,6 +20,7 @@ class AssignExamsSubjectwise extends Component
     use LivewireAlert;
 
     public $selectedClass;
+    public $specialGrades = [];
     public $selectedExamName;
     public $marksMessage = null; // Add a public property to store the success
     public $selectedExam;
@@ -239,8 +240,10 @@ class AssignExamsSubjectwise extends Component
                 'selectedExam' => 'required|exists:exams,id',
                 'selectedSubject' => 'required|exists:subjects,id',
                 'selectedSection' => 'required|exists:sections,id',
-                'marks' => 'required|array',
+                'marks' => 'nullable|array',
                 'marks.*' => 'nullable|numeric|min:0|max:100',
+                'specialGrades' => 'nullable|array',
+                'specialGrades.*' => 'nullable|in:X,Y,Z',
             ]);
 
             DB::beginTransaction();
@@ -250,25 +253,34 @@ class AssignExamsSubjectwise extends Component
             $skippedCount = 0;
             $errorCount = 0;
 
-            foreach ($this->marks as $studentId => $mark) {
+            foreach ($this->students as $student) {
+                $studentId = $student->id;
+                $mark = $this->marks[$studentId] ?? null;
+                $specialGrade = $this->specialGrades[$studentId] ?? null;
+
+                // Skip if neither marks nor special grade is provided
+                if (is_null($mark) && is_null($specialGrade)) {
+                    $skippedCount++;
+                    continue;
+                }
+
+                // Skip if the student is not enrolled in the subject
+                if (!$this->isStudentEnrolledInSubject($studentId, $this->selectedSubject)) {
+                    $skippedCount++;
+                    continue;
+                }
+
                 try {
-                    if (is_null($mark) || !is_numeric($mark) || $mark < 0 || $mark > 100) {
-                        $skippedCount++;
-                        continue;
-                    }
-
-                    if (!$this->isStudentEnrolledInSubject($studentId, $this->selectedSubject)) {
-                        $skippedCount++;
-                        continue;
-                    }
-
                     $examMark = ExamMarks::updateOrCreate(
                         [
                             'student_id' => $studentId,
                             'exam_id' => $this->selectedExam,
                             'subject_id' => $this->selectedSubject,
                         ],
-                        ['marks' => $mark]
+                        [
+                            'marks' => $mark,
+                            'special_grade' => $specialGrade,
+                        ]
                     );
 
                     if ($examMark->wasRecentlyCreated) {
@@ -285,23 +297,20 @@ class AssignExamsSubjectwise extends Component
             DB::commit();
 
             if ($insertedCount > 0 || $updatedCount > 0) {
-                $this->alert('success', "Marks assigned successfully! Inserted: {$insertedCount}, Updated: {$updatedCount}");
+                $this->alert('success', "Marks/Grades assigned successfully! Inserted: {$insertedCount}, Updated: {$updatedCount}");
             }
 
             if ($skippedCount > 0) {
-                $this->alert('warning', "{$skippedCount} students were skipped (unenrolled or invalid marks).");
+                $this->alert('warning', "{$skippedCount} students were skipped (unenrolled or no data provided).");
             }
 
             if ($errorCount > 0) {
-                $this->alert('error', "{$errorCount} errors occurred while processing marks. Check logs for details.");
-            }
-
-            if ($insertedCount === 0 && $updatedCount === 0 && $skippedCount === 0 && $errorCount === 0) {
-                $this->alert('info', "No changes were made. Marks remained unchanged.");
+                $this->alert('error', "{$errorCount} errors occurred while processing marks/grades. Check logs for details.");
             }
 
             $this->refreshAssignedMarks();
             $this->marks = [];
+            $this->specialGrades = [];
         } catch (\Illuminate\Validation\ValidationException $e) {
             $this->alert('error', 'Validation error: ' . implode(', ', $e->errors()));
         } catch (\Exception $e) {
@@ -311,8 +320,42 @@ class AssignExamsSubjectwise extends Component
         }
     }
 
+    public function updatedMarks($value, $studentId)
+    {
+        // If marks are entered, clear the special grade for this student
+        if (!empty($value)) {
+            $this->specialGrades[$studentId] = null; // Clear special grade
+        }
+    }
+    
+    // When special grades are updated
+    public function updatedSpecialGrades($value, $studentId)
+    {
+        // If a special grade is selected, clear the marks for this student
+        if (!empty($value)) {
+            $this->marks[$studentId] = null; // Clear marks
+        }
+    }
+    
+ 
 
+// Custom method to handle marks input
+public function handleMarksInput($value, $studentId)
+{
+    // If marks are entered, clear and disable the special grade field for this student
+    if (!empty($value)) {
+        $this->specialGrades[$studentId] = null; // Clear special grade
+    }
+}
 
+// Custom method to handle special grade selection
+public function handleSpecialGradeInput($value, $studentId)
+{
+    // If a special grade is selected, clear the marks field for this student
+    if (!empty($value)) {
+        $this->marks[$studentId] = null; // Clear marks
+    }
+}
 
     public function refreshAssignedMarks()
     {
@@ -330,45 +373,47 @@ class AssignExamsSubjectwise extends Component
 
     public function editMark($studentId)
     {
-        if (!$this->isStudentEnrolledInSubject($studentId, $this->selectedSubject)) {
-            $this->alert('warning', 'This student is not enrolled in the selected subject.');
-            return;
-        }
-
         $this->editingMarkId = $studentId;
 
-        $examMark = ExamMarks::where('student_id', $studentId)
+        // Pre-fill the form with existing marks or special grade
+        $assignedMark = ExamMarks::where('student_id', $studentId)
             ->where('exam_id', $this->selectedExam)
             ->where('subject_id', $this->selectedSubject)
             ->first();
 
-        $this->marks[$studentId] = $examMark ? $examMark->marks : null;
+        if ($assignedMark) {
+            $this->marks[$studentId] = $assignedMark->marks;
+            $this->specialGrades[$studentId] = $assignedMark->special_grade;
+        }
     }
-
-
 
     public function updateMark($studentId)
     {
-        if (!$this->isStudentEnrolledInSubject($studentId, $this->selectedSubject)) {
-            $this->alert('warning', 'This student is not enrolled in the selected subject.');
+        $this->validate([
+            "marks.$studentId" => 'nullable|numeric|min:0|max:100',
+            "specialGrades.$studentId" => 'nullable|in:X,Y,Z',
+        ]);
+
+        // Ensure either marks or special grade is provided, but not both
+        if (!empty($this->marks[$studentId]) && !empty($this->specialGrades[$studentId])) {
+            $this->addError("marks.$studentId", 'Cannot provide both marks and a special grade.');
             return;
         }
 
-        if ($this->editingMarkId) {
-            $examMark = ExamMarks::where('student_id', $studentId)
-                ->where('exam_id', $this->selectedExam)
-                ->where('subject_id', $this->selectedSubject)
-                ->first();
+        ExamMarks::updateOrCreate(
+            [
+                'student_id' => $studentId,
+                'exam_id' => $this->selectedExam,
+                'subject_id' => $this->selectedSubject,
+            ],
+            [
+                'marks' => $this->marks[$studentId],
+                'special_grade' => $this->specialGrades[$studentId],
+            ]
+        );
 
-            if ($examMark) {
-                $examMark->marks = $this->marks[$studentId];
-                $examMark->save();
-
-                $this->alert('success', 'Marks updated successfully!');
-            }
-
-            $this->editingMarkId = null;
-            $this->refreshAssignedMarks();
-        }
+        $this->editingMarkId = null;
+        $this->refreshAssignedMarks();
+        $this->alert('success', 'Marks/Grade updated successfully.');
     }
 }

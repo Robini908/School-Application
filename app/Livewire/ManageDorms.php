@@ -268,8 +268,23 @@ class ManageDorms extends Component
         $this->reset(['isAddingStudents', 'selectedStudents', 'searchQuery']);
     }
 
+    public function setSelectedDormIdAndViewStudents($dormId, $year)
+    {
+        $this->selectedDormId = $dormId; // Set the selected dorm ID
+        $this->viewStudents($year); // Call the viewStudents method
+    }
 
 
+    
+
+    public function getCurrentYearOccupancy($dormId)
+    {
+        $currentYear = date('Y'); // Get the current year
+        return DB::table('dorm_student')
+            ->where('dorm_id', $dormId)
+            ->where('year', $currentYear) // Filter by the current year
+            ->count();
+    }
     public function getOccupancy($dormId)
     {
         return DB::table('dorm_student')
@@ -322,6 +337,8 @@ class ManageDorms extends Component
             ->get();
     }
 
+
+
     public function closeStudentsList()
     {
         $this->showStudentsList = false;
@@ -338,7 +355,7 @@ class ManageDorms extends Component
         $this->dormCapacity = 0;
         $this->closeStudentsList();
     }
-    
+
     public function getYearsRange()
     {
         $currentYear = date('Y');

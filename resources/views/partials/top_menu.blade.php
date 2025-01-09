@@ -1,4 +1,4 @@
-<div class="navbar navbar-expand-md navbar-dark">
+<div class="navbar navbar-expand-md navbar-dark bg-dark">
     <div class="mt-2 mr-5">
         <a href="{{ route('dashboard') }}">
             <h4 class="text-bold text-white">MBUKU ERP-1.0</h4>
@@ -7,10 +7,10 @@
 
     <div class="d-md-none">
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-mobile">
-            <i class="icon-tree5"></i>
+            <i class="fas fa-bars"></i> <!-- Font Awesome Bars Icon -->
         </button>
         <button class="navbar-toggler sidebar-mobile-main-toggle" type="button">
-            <i class="icon-paragraph-justify3"></i>
+            <i class="fas fa-align-justify"></i> <!-- Font Awesome Align Justify Icon -->
         </button>
     </div>
 
@@ -18,7 +18,7 @@
         <ul class="navbar-nav">
             <li class="nav-item">
                 <a href="#" class="navbar-nav-link sidebar-control sidebar-main-toggle d-none d-md-block">
-                    <i class="icon-paragraph-justify3"></i>
+                    <i class="fas fa-align-justify"></i> <!-- Font Awesome Align Justify Icon -->
                 </a>
             </li>
         </ul>
@@ -29,6 +29,12 @@
         </div>
 
         <ul class="navbar-nav">
+            <!-- Livewire Notification Component -->
+            <li class="nav-item dropdown">
+                @livewire('notifications') <!-- Include the Livewire Notifications component -->
+            </li>
+
+            <!-- User Dropdown -->
             <li class="nav-item dropdown dropdown-user">
                 <a href="#" class="navbar-nav-link dropdown-toggle" data-toggle="dropdown">
                     @if(Auth::check())
@@ -44,14 +50,14 @@
                             $studentRecordId = Qs::userIsStudent() ? Qs::findStudentRecord(Auth::user()->id)->id : null;
                         @endphp
                         <a href="{{ Qs::userIsStudent() ? route('students.show', Qs::hash($studentRecordId)) : route('users.show', Qs::hash(Auth::user()->id)) }}" class="dropdown-item">
-                            <i class="icon-user-plus"></i> My profile
+                            <i class="fas fa-user-plus me-2"></i> My profile
                         </a>
                         <div class="dropdown-divider"></div>
                         <a href="{{ route('my_account') }}" class="dropdown-item">
-                            <i class="icon-cog5"></i> Account settings
+                            <i class="fas fa-cog me-2"></i> Account settings
                         </a>
                         <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="dropdown-item">
-                            <i class="icon-switch2"></i> Logout
+                            <i class="fas fa-sign-out-alt me-2"></i> Logout
                         </a>
                         <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                             @csrf

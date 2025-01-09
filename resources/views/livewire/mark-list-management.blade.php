@@ -86,43 +86,55 @@
 
 
         @if ($marks && $marks->isNotEmpty())
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Student Name</th>
-                            <th>Admission Number</th>
-                            @foreach ($marks->first()['marks'] as $subjectName => $value)
-                                <th>{{ $subjectName }}</th>
-                            @endforeach
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($marks as $mark)
-                            <tr wire:key="student-{{ $mark['adm_no'] }}">
-                                <td>{{ $mark['student_name'] ?? 'N/A' }}</td>
-                                <td>{{ $mark['adm_no'] ?? 'N/A' }}</td>
-                                @foreach ($marks->first()['marks'] as $subjectName => $subjectMark)
-                                    <td>{{ $mark['marks'][$subjectName] ?? '--' }}</td>
-                                @endforeach
-                                <td>
-                                    <button wire:click="fetchStudentDetails('{{ $mark['adm_no'] }}')"
-                                        class="btn btn-primary d-flex align-items-center">
-                                        Generate Report
-                                        <div wire:loading wire:target="fetchStudentDetails('{{ $mark['adm_no'] }}')"
-                                            class="spinner-border spinner-border-sm text-light ms-2" role="status">
-                                        </div>
-                                    </button>
-                                </td>
-                            </tr>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead class="table-light">
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Admission Number</th>
+                        @foreach ($marks->first()['marks'] as $subjectName => $value)
+                            <th>{{ $subjectName }}</th>
                         @endforeach
-                    </tbody>
-                </table>
-            </div>
-        @else
-            <p class="mt-4 text-muted">No marks available for the selected criteria.</p>
-        @endif
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($marks as $mark)
+                        @php
+                            // Check if the student has any special grades
+                            $hasSpecialGrade = collect($mark['marks'])->contains(function ($value) {
+                                return in_array($value, ['X', 'Y', 'Z']);
+                            });
+                        @endphp
+                        <tr wire:key="student-{{ $mark['adm_no'] }}" class="{{ $hasSpecialGrade ? 'special-grade-row' : '' }}">
+                            <td>{{ $mark['student_name'] ?? 'N/A' }}</td>
+                            <td>{{ $mark['adm_no'] ?? 'N/A' }}</td>
+                            @foreach ($marks->first()['marks'] as $subjectName => $subjectMark)
+                                <td>
+                                    @if (in_array($mark['marks'][$subjectName] ?? '--', ['X', 'Y', 'Z']))
+                                        <span class="special-grade">{{ $mark['marks'][$subjectName] }}</span>
+                                    @else
+                                        {{ $mark['marks'][$subjectName] ?? '--' }}
+                                    @endif
+                                </td>
+                            @endforeach
+                            <td>
+                                <button wire:click="fetchStudentDetails('{{ $mark['adm_no'] }}')"
+                                    class="btn btn-primary d-flex align-items-center">
+                                    Generate Report
+                                    <div wire:loading wire:target="fetchStudentDetails('{{ $mark['adm_no'] }}')"
+                                        class="spinner-border spinner-border-sm text-light ms-2" role="status">
+                                    </div>
+                                </button>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @else
+        <p class="mt-4 text-muted">No marks available for the selected criteria.</p>
+    @endif
     @endif
 
 
@@ -225,10 +237,10 @@
                         <thead class="thead-light" style="background-color: #007bff; color: white;">
                             <tr>
                                 <th style="font-family: 'Montserrat', sans-serif;">Subject</th>
-                                <th style="font-family: 'Montserrat', sans-serif;">Marks</th>
                                 <th style="font-family: 'Montserrat', sans-serif;">Grade</th>
                                 <th style="font-family: 'Montserrat', sans-serif;">Remark</th>
                                 <th style="font-family: 'Montserrat', sans-serif;">GPA</th>
+                                <th style="font-family: 'Montserrat', sans-serif;">Marks</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -237,25 +249,33 @@
                                     <td style="font-family: 'Roboto', sans-serif;">
                                         {{ $detail['subject_name'] ?? 'N/A' }}
                                     </td>
-                                    <td style="font-family: 'Roboto', sans-serif;">{{ $detail['marks'] ?? 'N/A' }}
-                                    </td>
-                                    <td style="font-family: 'Roboto', sans-serif;">{{ $detail['grade'] ?? 'N/A' }}
+                                    <td style="font-family: 'Roboto', sans-serif;">
+                                        {{ $detail['grade'] ?? 'N/A' }}
                                     </td>
                                     <td style="font-family: 'Roboto', sans-serif;">
                                         {{ $detail['remark'] ?? 'N/A' }}
                                     </td>
-                                    <td style="font-family: 'Roboto', sans-serif;">{{ $detail['gpa'] ?? 'N/A' }}
+                                    <td style="font-family: 'Roboto', sans-serif;">
+                                        {{ $detail['gpa'] ?? 'N/A' }}
+                                    </td>
+                                    <td style="font-family: 'Roboto', sans-serif;">
+                                        @if ($detail['special_grade'])
+                                            {{ $detail['special_grade'] }} <!-- Display special grade if it exists -->
+                                        @else
+                                            {{ $detail['marks'] ?? 'N/A' }} <!-- Display marks if no special grade -->
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
 
+
                     <div class="card mt-4" style="border-radius: 15px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
                         <div class="card-header" style="background-color: #f8f9fa;">
                             <h6 style="font-weight: bold; text-align: center; font-family: 'Montserrat', sans-serif;">
-                                Overall
-                                Performance</h6>
+                                Overall Performance
+                            </h6>
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -268,11 +288,11 @@
                                         {{ $totalPoints ?? 'N/A' }}</p>
                                 </div>
                                 <div class="col-md-6">
-                                    <p style="font-family: 'Roboto', sans-serif;"><strong>Position in
-                                            Class:</strong>
+                                    <p style="font-family: 'Roboto', sans-serif;"><strong>Mean Grade:</strong>
+                                        {{ $meanGrade ?? 'N/A' }}</p>
+                                    <p style="font-family: 'Roboto', sans-serif;"><strong>Position in Class:</strong>
                                         {{ $classPosition ?? 'N/A' }}</p>
-                                    <p style="font-family: 'Roboto', sans-serif;"><strong>Position in
-                                            Stream:</strong>
+                                    <p style="font-family: 'Roboto', sans-serif;"><strong>Position in Stream:</strong>
                                         {{ $streamPosition ?? 'N/A' }}</p>
                                 </div>
                             </div>

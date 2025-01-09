@@ -1,5 +1,5 @@
-<div wire:replace class="sidebar sidebar-dark sidebar-main sidebar-expand-md fixed-top">
-    <!-- Sidebar mobile toggler -->
+<div wire:replace class="sidebar sidebar-dark sidebar-main sidebar-expand-md fixed-top position-sticky" 
+     style="top: 56px; height: calc(100vh - 56px); overflow-y: auto;">    <!-- Sidebar mobile toggler -->
     <div class="sidebar-mobile-toggler text-center">
         <a href="#" class="sidebar-mobile-main-toggle">
             <i class="icon-arrow-left8"></i>

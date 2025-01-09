@@ -15,6 +15,7 @@ class ExamMarks extends Model
         'subject_id',
         'grading_range_id',
         'marks',
+        'special_grade', // Add this field for special grades (X, Y, Z)
     ];
 
     /**
@@ -48,6 +49,7 @@ class ExamMarks extends Model
     {
         return $this->belongsTo(GradingRange::class, 'grading_range_id');
     }
+
     public function studentRecord()
     {
         return $this->hasOne(StudentRecord::class, 'id', 'student_id');
@@ -68,5 +70,44 @@ class ExamMarks extends Model
     public function getPercentageAttribute($maxMarks = 100)
     {
         return ($this->marks / $maxMarks) * 100;
+    }
+
+    /**
+     * Define special grades and their meanings.
+     */
+    public static function getSpecialGrades()
+    {
+        return [
+            'X' => 'Absence from the exam or a significant portion of it.',
+            'Y' => 'Cancellation of results due to exam malpractice or irregularity.',
+            'Z' => 'Nullification of the candidate\'s entire results for severe misconduct or violation of exam regulations.',
+        ];
+    }
+
+    /**
+     * Validation rules for ExamMarks.
+     */
+    public static function rules()
+    {
+        return [
+            'student_id' => 'required|exists:student_records,id',
+            'exam_id' => 'required|exists:exams,id',
+            'subject_id' => 'required|exists:subjects,id',
+            'marks' => 'nullable|numeric|min:0|max:100',
+            'special_grade' => 'nullable|in:X,Y,Z',
+        ];
+    }
+
+    /**
+     * Ensure either marks or special_grade is provided, but not both.
+     */
+    public static function validateMarksOrSpecialGrade($data)
+    {
+        if (empty($data['marks']) && empty($data['special_grade'])) {
+            throw new \Exception('Either marks or a special grade must be provided.');
+        }
+        if (!empty($data['marks']) && !empty($data['special_grade'])) {
+            throw new \Exception('Cannot provide both marks and a special grade.');
+        }
     }
 }

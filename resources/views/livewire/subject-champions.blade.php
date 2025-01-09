@@ -1,5 +1,4 @@
 <div class="card  p-3 shadow-lg border rounded" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
-
     <div class="card-header">
         <h2 class="h5">Champion Leaderboard</h2>
     </div>
