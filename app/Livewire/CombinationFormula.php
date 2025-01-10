@@ -105,12 +105,12 @@ class CombinationFormula extends Component
     {
         // Fetch the student's data from the combined results
         $studentData = collect($this->combinedResults)->firstWhere('student_id', $studentId);
-    
+
         if ($studentData) {
             // Ensure `selectedExamNames` and `examPercentages` are defined and not empty
             $exams = $this->selectedExamNames ?? [];
             $percentages = $this->examPercentages ?? [];
-    
+
             // Prepare the report data
             $this->reportData = [
                 'student_name' => $studentData['student_name'],
@@ -126,15 +126,15 @@ class CombinationFormula extends Component
                 'exams' => $exams, // Use the exams array
                 'percentages' => $percentages, // Use the percentages array
             ];
-    
+
             // Show the report view
             $this->showReport = true;
         } else {
             $this->alert('error', 'Student data not found!');
         }
     }
-        // Fetch the student's data from the combined results
-        
+    // Fetch the student's data from the combined results
+
 
     public function closeReport()
     {
@@ -607,7 +607,14 @@ class CombinationFormula extends Component
     private function prepareCombinedResults($examsData)
     {
         $combinedStudentData = [];
-        $subjects = $examsData[0]['exam']->gradingSystem->subjects; // Use subjects from the first exam
+
+        // Validate exam data
+        if (empty($examsData)) {
+            throw new \Exception("No exam data provided.");
+        }
+
+        // Use subjects from the first exam
+        $subjects = $examsData[0]['exam']->gradingSystem->subjects ?? null;
 
         if (empty($subjects)) {
             throw new \Exception("No subjects found for the selected exams.");
@@ -616,7 +623,12 @@ class CombinationFormula extends Component
         // Group students by ID
         $students = [];
         foreach ($examsData as $examData) {
-            $examPercentage = $examData['percentage'];
+            // Validate exam percentage
+            $examPercentage = $examData['percentage'] ?? 0;
+            if (!is_numeric($examPercentage) || $examPercentage < 0 || $examPercentage > 100) {
+                Log::error("Invalid exam percentage: {$examPercentage}");
+                throw new \Exception("Invalid exam percentage. Must be between 0 and 100.");
+            }
 
             foreach ($examData['students'] as $student) {
                 if (!isset($students[$student->id])) {
@@ -646,7 +658,9 @@ class CombinationFormula extends Component
                     if ($marksValue === '--' || $marksValue === null) {
                         $students[$student->id]['marks'][$subject->id][] = '--'; // Store as '--'
                     } else {
-                        $students[$student->id]['marks'][$subject->id][] = (int) $marksValue * $examPercentage; // Apply percentage
+                        // Apply percentage and round to the nearest whole number
+                        $weightedMark = (int) round((int) $marksValue * $examPercentage / 100);
+                        $students[$student->id]['marks'][$subject->id][] = $weightedMark;
                     }
                 }
             }
@@ -735,7 +749,7 @@ class CombinationFormula extends Component
             }
 
             // Calculate mean score and mean grade
-            $meanScore = $validSubjects > 0 ? (int) round($totalMarks / $validSubjects) : 0; // Round and cast to integer
+            $meanScore = $validSubjects > 0 ? (int) round($totalMarks / $validSubjects) : 0; // Round to the nearest whole number
 
             // Determine the mean grade for students with special grades
             if ($hasSpecialGrade) {

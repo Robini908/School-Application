@@ -420,13 +420,14 @@
 
                         <!-- Analyze and Save Button -->
                         @if ($selectedClass)
+                            <!-- Progress Bar and Remaining Percentage -->
                             <div class="mb-3 mt-2">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="w-100 me-2">
                                         @php
                                             $totalPercentage = array_sum(array_map('intval', $examPercentages));
                                             $progressColor = 'bg-success'; // Default color
-                                            $message = '';
+                                            $message = 'Total: 100%'; // Default message
 
                                             if ($totalPercentage < 100) {
                                                 $progressColor = 'bg-warning'; // Warning color for below 100%
@@ -435,11 +436,10 @@
                                                 $progressColor = 'bg-danger'; // Error color for exceeding 100%
                                                 $message = 'Percentage exceeded!';
                                                 $totalPercentage = 100; // Cap the progress bar at 100%
-                                            } else {
-                                                $message = 'Total: 100%'; // Success message for exactly 100%
                                             }
                                         @endphp
 
+                                        <!-- Progress Bar -->
                                         <div class="progress" style="height: 20px;">
                                             <div class="progress-bar {{ $progressColor }}" role="progressbar"
                                                 style="width: {{ $totalPercentage }}%;"
@@ -454,35 +454,36 @@
                                     </div>
                                 </div>
                             </div>
+
                             <!-- Exams Table -->
                             <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
                                 <table class="table table-bordered table-hover">
                                     <thead class="table-primary sticky-top">
                                         <tr>
                                             <th class="text-center">Select</th>
+                                            <th>Percentage Contribution</th>
                                             <th>Exam Name</th>
                                             <th>Year</th>
                                             <th>Term</th>
-                                            <th>Percentage Contribution</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @forelse ($this->exams as $exam)
                                             <tr wire:key="exam-row-{{ $exam->id }}">
+                                                <!-- Select Checkbox -->
                                                 <td class="text-center">
                                                     <div class="form-check">
                                                         <input type="checkbox" wire:model.live="selectedExams"
                                                             value="{{ $exam->id }}"
                                                             id="exam_{{ $exam->id }}"
                                                             class="form-check-input @error('selectedExams') is-invalid @enderror">
+                                                        @error('selectedExams')
+                                                            <div class="invalid-feedback">{{ $message }}</div>
+                                                        @enderror
                                                     </div>
-                                                    @error('selectedExams')
-                                                        <div class="invalid-feedback">{{ $message }}</div>
-                                                    @enderror
                                                 </td>
-                                                <td>{{ $exam->name }}</td>
-                                                <td>{{ $exam->year }}</td>
-                                                <td>Term {{ $exam->term }}</td>
+
+                                                <!-- Percentage Input -->
                                                 <td>
                                                     <div class="input-group">
                                                         <input type="number"
@@ -490,13 +491,19 @@
                                                             class="form-control @error('examPercentages.' . $exam->id) is-invalid @enderror"
                                                             min="0" max="100"
                                                             oninput="this.value = Math.abs(this.value) > 100 ? 100 : Math.abs(this.value)"
-                                                            {{ !in_array($exam->id, $this->selectedExams ?? []) ? 'disabled' : '' }}>
+                                                            {{ !in_array($exam->id, $this->selectedExams ?? []) ? 'disabled' : '' }}
+                                                            aria-label="Percentage contribution for {{ $exam->name }}">
                                                         <span class="input-group-text">%</span>
                                                     </div>
                                                     @error('examPercentages.' . $exam->id)
                                                         <div class="invalid-feedback">{{ $message }}</div>
                                                     @enderror
                                                 </td>
+
+                                                <!-- Exam Details -->
+                                                <td>{{ $exam->name }}</td>
+                                                <td>{{ $exam->year }}</td>
+                                                <td>Term {{ $exam->term }}</td>
                                             </tr>
                                         @empty
                                             <tr>
@@ -506,20 +513,27 @@
                                     </tbody>
                                 </table>
 
-                                <!-- Display general errors -->
-
+                                <!-- Display General Errors -->
+                                @if ($errors->any())
+                                    <div class="alert alert-danger mt-3">
+                                        <ul class="mb-0">
+                                            @foreach ($errors->all() as $error)
+                                                <li>{{ $error }}</li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @endif
                             </div>
-
                             <!-- Prompt to select exams -->
                             @if (empty($selectedExams))
-                                <div class="alert alert-info">
+                                <div class="alert alert-info mt-3">
                                     Please select one or more exams to assign percentages.
                                 </div>
                             @endif
 
                             @if (!empty($selectedExams))
                                 @if ($errors->any())
-                                    <div class="alert alert-danger">
+                                    <div class="alert alert-danger mt-3">
                                         <ul>
                                             @foreach ($errors->all() as $error)
                                                 <li>{{ $error }}</li>
@@ -632,50 +646,54 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                       @foreach ($combinedResults as $result)
-    @php
-        $rowClass = '';
-        if ($result['has_special_grade']) {
-            $rowClass = 'table-warning'; // Yellow for special grades
-        }
-    @endphp
-    <tr class="{{ $rowClass }}">
-        <td class="align-middle">{{ $result['student_name'] ?? '-' }}</td>
-        <td class="align-middle">{{ $result['stream'] ?? '-' }}</td>
-        @foreach ($subjects as $subject)
-            @php
-                $subjectMark = $result['marks'][$subject->id] ?? '--';
-                $grade = $result['grades'][$subject->id] ?? '--';
-            @endphp
-            <td class="align-middle text-center">
-                @if ($subjectMark === '--' && $grade === '--')
-                    --
-                @else
-                    {{ $subjectMark !== '--' ? $subjectMark : '' }}
-                    {{ $grade }}
-                @endif
-            </td>
-        @endforeach
-        <td class="align-middle text-center">{{ $result['total_marks'] }}</td>
-        <td class="align-middle text-center">{{ $result['total_points'] }}</td>
-        <td class="align-middle text-center">{{ $result['position'] ?? '-' }}</td>
-        <td class="align-middle text-center">{{ $result['stream_position'] ?? '-' }}</td>
-        <td class="align-middle text-center">{{ $result['mean_score'] }}</td>
-        <td class="align-middle text-center">
-            @if ($result['has_special_grade'])
-                {{ $result['mean_grade'] }}
-            @else
-                {{ $result['mean_grade'] }}
-            @endif
-        </td>
-        <!-- Add the Generate Report Button -->
-        <td class="align-middle text-center">
-            <button wire:click="generateReport({{ $result['student_id'] }})" class="btn btn-sm btn-primary">
-                Generate Report
-            </button>
-        </td>
-    </tr>
-@endforeach
+                                        @foreach ($combinedResults as $result)
+                                            @php
+                                                $rowClass = '';
+                                                if ($result['has_special_grade']) {
+                                                    $rowClass = 'table-warning'; // Yellow for special grades
+                                                }
+                                            @endphp
+                                            <tr class="{{ $rowClass }}">
+                                                <td class="align-middle">{{ $result['student_name'] ?? '-' }}</td>
+                                                <td class="align-middle">{{ $result['stream'] ?? '-' }}</td>
+                                                @foreach ($subjects as $subject)
+                                                    @php
+                                                        $subjectMark = $result['marks'][$subject->id] ?? '--';
+                                                        $grade = $result['grades'][$subject->id] ?? '--';
+                                                    @endphp
+                                                    <td class="align-middle text-center">
+                                                        @if ($subjectMark === '--' && $grade === '--')
+                                                            --
+                                                        @else
+                                                            {{ $subjectMark !== '--' ? $subjectMark : '' }}
+                                                            {{ $grade }}
+                                                        @endif
+                                                    </td>
+                                                @endforeach
+                                                <td class="align-middle text-center">{{ $result['total_marks'] }}</td>
+                                                <td class="align-middle text-center">{{ $result['total_points'] }}
+                                                </td>
+                                                <td class="align-middle text-center">{{ $result['position'] ?? '-' }}
+                                                </td>
+                                                <td class="align-middle text-center">
+                                                    {{ $result['stream_position'] ?? '-' }}</td>
+                                                <td class="align-middle text-center">{{ $result['mean_score'] }}</td>
+                                                <td class="align-middle text-center">
+                                                    @if ($result['has_special_grade'])
+                                                        {{ $result['mean_grade'] }}
+                                                    @else
+                                                        {{ $result['mean_grade'] }}
+                                                    @endif
+                                                </td>
+                                                <!-- Add the Generate Report Button -->
+                                                <td class="align-middle text-center">
+                                                    <button wire:click="generateReport({{ $result['student_id'] }})"
+                                                        class="btn btn-sm btn-primary">
+                                                        Generate Report
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        @endforeach
                                     </tbody>
                                 </table>
                             </div>
