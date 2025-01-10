@@ -2,16 +2,16 @@
 @section('page_title', 'Student Promotions and Demotions')
 @section('content')
 
-<div class="card">
-    <div class="card-header header-elements-inline">
-        <h6 class="card-title">Manage</h6>
-        {!! Qs::getPanelOptions() !!}
-    </div>
+    <div class="card  p-3 shadow-lg border rounded" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
+        <div class="card-header header-elements-inline">
+            <h6 class="card-title">Manage</h6>
+            {!! Qs::getPanelOptions() !!}
+        </div>
 
-    <div class="card-body">
-        @livewire('manage_promotions')
-        {{-- <livewire:manage_promotions lazy /> --}}
+        <div class="card-body">
+            {{-- @livewire('manage-student-transitions') --}}
+            <livewire:manage-student-transitions lazy />
+        </div>
     </div>
-</div>
 
 @endsection

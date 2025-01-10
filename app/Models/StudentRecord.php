@@ -54,6 +54,28 @@ class StudentRecord extends Model
         'suspension_end_date' => 'datetime',
     ];
 
+    public function transitions(): HasMany
+    {
+        return $this->hasMany(StudentTransition::class, 'student_id');
+    }
+
+    /**
+     * Get the current class and section for the student.
+     */
+    public function getCurrentClassAndSection($academicYear)
+    {
+        $latestTransition = $this->transitions()
+            ->where('transition_year', $academicYear)
+            ->latest('decision_date')
+            ->first();
+
+        return $latestTransition ? [
+            'class' => $latestTransition->targetClass,
+            'section' => $latestTransition->targetSection,
+        ] : null;
+    }
+
+
     public function subjects(): BelongsToMany
     {
         return $this->belongsToMany(Subject::class, 'student_subject', 'student_id', 'subject_id')
@@ -65,27 +87,16 @@ class StudentRecord extends Model
         return $this->hasMany(Payment::class, 'student_id');
     }
 
-    public function transitions(): HasMany
-    {
-        return $this->hasMany(StudentTransition::class, 'student_id', 'id');
-    }
 
     public function examMarks(): HasMany
     {
         return $this->hasMany(ExamMarks::class, 'student_id');
     }
 
-
-
-
     public function parent_detail()
     {
         return $this->belongsTo(ParentDetail::class, 'parent_id_no', 'parent_id_no');
     }
-
-
-
-
 
     public function my_class()
     {
@@ -125,8 +136,6 @@ class StudentRecord extends Model
             ->withPivot('year') // Include the year in the pivot table
             ->withTimestamps();
     }
-
-
 
     public function marks(): HasMany
     {

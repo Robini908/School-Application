@@ -63,10 +63,7 @@ class User extends Authenticatable
         return $this->belongsTo(UserType::class, 'user_type');
     }
 
-    public function studentTransitions(): HasMany
-    {
-        return $this->hasMany(StudentTransition::class, 'approved_by', 'id');
-    }
+   
 
     public function state()
     {

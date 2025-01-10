@@ -21,7 +21,10 @@ class Section extends Model
     {
         return $this->belongsTo(MyClass::class, 'my_class_id');
     }
-
+    public function transitions(): HasMany
+    {
+        return $this->hasMany(StudentTransition::class, 'target_section_id');
+    }
     /**
      * Define the relationship with the Teacher.
      * Each section can have one teacher assigned.
@@ -43,10 +46,6 @@ class Section extends Model
         return $this->hasMany(StudentRecord::class);
     }
 
-    public function transitions()
-    {
-        return $this->hasMany(StudentTransition::class, 'new_section_id', 'id');
-    }
 
 
     /**
