@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+
 
 class ParentDetail extends Model
 {
@@ -24,6 +26,11 @@ class ParentDetail extends Model
         'parent_email',
         'parent_password',
     ];
+
+    // public function getAuthPassword()
+    // {
+    //     return $this->parent_password;
+    // }
 
     public function student_records()
     {

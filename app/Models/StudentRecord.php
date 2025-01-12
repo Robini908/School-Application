@@ -4,13 +4,16 @@ namespace App\Models;
 
 use Laravel\Scout\Searchable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+
 
 class StudentRecord extends Model
 {
-    use HasFactory;
+    use HasFactory; use Notifiable;
 
     protected $primaryKey = 'id';
     public $incrementing = true;
@@ -23,7 +26,7 @@ class StudentRecord extends Model
         'adm_no',
         'dorm_id',
         'year_admitted',
-        'kcpe',
+        'kcpe', 
         'first_name',
         'middle_name',
         'last_name',
@@ -31,10 +34,12 @@ class StudentRecord extends Model
         'gender',
         'phone',
         'dob',
+        'nationality', // Added
+        'state', // Added
+        'town', // Added
         'nal_id',
         'state_id',
         'lga_id',
-        'town',
         'bg_id',
         'photo',
         'status',
@@ -47,12 +52,18 @@ class StudentRecord extends Model
         'suspension_type',
         'suspension_end_date',
         'disapproval_reason',
+        'upi_number', // Added
     ];
 
     protected $casts = [
         'suspension_date' => 'datetime',
         'suspension_end_date' => 'datetime',
     ];
+
+    public function getAuthPassword()
+    {
+        return $this->student_password;
+    }
 
     public function transitions(): HasMany
     {

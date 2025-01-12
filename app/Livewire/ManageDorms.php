@@ -414,7 +414,13 @@ class ManageDorms extends Component
         );
 
         $this->resetForm();
-        $this->alert('success', 'Dorm saved successfully.');
+        $this->alert('success', 'Dorm saved successfully!', [
+            'position' => 'top-end',
+            'timer' => 5000,
+            'toast' => true,
+            'timerProgressBar' => true,
+        ]);
+
     }
 
     // Delete a dorm

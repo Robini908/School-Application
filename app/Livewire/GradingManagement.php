@@ -184,7 +184,10 @@ class GradingManagement extends Component
 
     public function render()
     {
-        $gradingSystems = GradingSystem::with('subjects')->paginate(4);
+        $gradingSystems = GradingSystem::with('subjects')
+        ->orderBy('created_at', 'desc')
+        ->paginate(4);
+    
         return view('livewire.grading-management', [
             'gradingSystems' => $gradingSystems,
         ]);

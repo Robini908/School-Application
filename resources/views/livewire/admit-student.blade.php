@@ -1,377 +1,362 @@
-<div  class="card mt-4 col-12 p-3 shadow-lg border rounded" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
-
-    <form method="post" enctype="multipart/form-data" class="wizard-form steps-validation"
-        action="{{ route('students.store') }}" data-fouc>
-        @csrf
-
+<div class="card mt-4 col-12 p-3 shadow-lg border rounded" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
+    <form wire:submit.prevent="submit" class="wizard-form steps-validation" enctype="multipart/form-data">
         <!-- Step 1: Personal Data -->
-        <h6>Personal Data</h6>
-        <fieldset>
+        <div x-show="$wire.currentStep === 1">
+            <h6>Personal Data</h6>
             <div class="row">
+                <!-- First Name -->
                 <div class="col-md-2">
                     <div class="form-group">
                         <label>First Name: <span class="text-danger">*</span></label>
-                        <input value="{{ old('first_name') }}" required type="text" name="first_name"
-                            placeholder="F-Name" class="form-control" id="first_name">
-                        <small class="form-text text-muted text-right" id="count-first-name">0/255</small>
+                        <input wire:model="first_name" type="text" placeholder="F-Name" class="form-control">
+                        @error('first_name')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
+                <!-- Middle Name -->
                 <div class="col-md-2">
                     <div class="form-group">
                         <label>Middle Name: <span class="text-danger">*</span></label>
-                        <input value="{{ old('middle_name') }}" required type="text" name="middle_name"
-                            placeholder="M-Name" class="form-control" id="middle_name">
-                        <small class="form-text text-muted text-right" id="count-middle-name">0/255</small>
+                        <input wire:model="middle_name" type="text" placeholder="M-Name" class="form-control">
+                        @error('middle_name')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
+                <!-- Last Name -->
                 <div class="col-md-2">
                     <div class="form-group">
                         <label>Last Name: <span class="text-danger">*</span></label>
-                        <input value="{{ old('last_name') }}" required type="text" name="last_name" placeholder="L-Name"
-                            class="form-control" id="last_name">
-                        <small class="form-text text-muted text-right" id="count-last-name">0/255</small>
+                        <input wire:model="last_name" type="text" placeholder="L-Name" class="form-control">
+                        @error('last_name')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
+                <!-- Email -->
                 <div class="col-md-3">
                     <div class="form-group">
                         <label>Email address:</label>
-                        <input type="email" value="{{ old('email') }}" name="email" class="form-control"
-                            placeholder="Email Address" id="email">
+                        <input wire:model="email" type="email" placeholder="Email Address" class="form-control">
+                        @error('email')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
+                <!-- Gender -->
                 <div class="col-md-3">
                     <div class="form-group">
                         <label for="gender">Gender: <span class="text-danger">*</span></label>
-                        <select class="custom-select form-control" id="gender" name="gender" required data-fouc
-                            data-placeholder="Choose..">
-                            <option value=""></option>
-                            <option {{ (old('gender')=='Male' ) ? 'selected' : '' }} value="Male">Male
-                            </option>
-                            <option {{ (old('gender')=='Female' ) ? 'selected' : '' }} value="Female">
-                                Female
-                            </option>
+                        <select wire:model="gender" class="custom-select form-control" required>
+                            <option value="">Choose..</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
                         </select>
+                        @error('gender')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
             </div>
 
             <div class="row">
+                <!-- Phone -->
                 <div class="col-md-3">
                     <div class="form-group">
                         <label>Phone:</label>
-                        <input value="{{ old('phone') }}" type="text" placeholder="Phone No." name="phone"
-                            class="form-control" placeholder="" id="phone">
+                        <input wire:model="phone" type="text" placeholder="Phone No." class="form-control">
+                        @error('phone')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
+                <!-- Date of Birth -->
                 <div class="col-md-3">
                     <div class="form-group">
                         <label>Date of Birth:</label>
-                        <input name="dob" value="{{ old('dob') }}" type="text" class="form-control date-pick"
-                            placeholder="Select Date..." id="dob">
+                        <input wire:model="dob" type="date" class="form-control">
+                        @error('dob')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
+                <!-- Nationality -->
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label for="nal_id">Nationality: <span class="text-danger">*</span></label>
-                        <select data-placeholder="Choose..." required name="nal_id" id="nal_id"
-                            class="custom-select form-control">
-                            <option value=""></option>
-                            @foreach($nationals as $nal)
-                            <option {{ (old('nal_id')==$nal->id ? 'selected' : '') }}
-                                value="{{ $nal->id }}">
-                                {{ $nal->name }}
-                            </option>
-                            @endforeach
-                        </select>
+                        <label for="nationality">Nationality: <span class="text-danger">*</span></label>
+                        <input wire:model="nationality" type="text" placeholder="Enter Nationality"
+                            class="form-control" required>
+                        @error('nationality')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
+                <!-- County/State -->
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label for="state_id">County/State: <span class="text-danger">*</span></label>
-                        <select onchange="getLGA(this.value)" required data-placeholder="Choose.."
-                            class="custom-select form-control" name="state_id" id="state_id">
-                            <option value=""></option>
-                            @foreach($states as $st)
-                            <option {{ (old('state_id')==$st->id ? 'selected' : '') }}
-                                value="{{ $st->id }}">
-                                {{ $st->name }}
-                            </option>
-                            @endforeach
-                        </select>
+                        <label for="state">County/State: <span class="text-danger">*</span></label>
+                        <input wire:model="state" type="text" placeholder="Enter County/State" class="form-control"
+                            required>
+                        @error('state')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
-            </div>
-
-            <div class="row">
+                <!-- Town -->
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label for="lga_id">Town: <span class="text-danger">*</span></label>
-                        <input type="text" name="town" placeholder="town" class="form-control" id="town">
+                        <label for="town">Town: <span class="text-danger">*</span></label>
+                        <input wire:model="town" type="text" placeholder="Enter Town" class="form-control" required>
+                        @error('town')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
+                <!-- Blood Group -->
                 <div class="col-md-3">
                     <div class="form-group">
                         <label for="bg_id">Blood Group:</label>
-                        <select class="custom-select form-control" id="bg_id" name="bg_id" data-fouc
-                            data-placeholder="Choose..">
-                            <option value=""></option>
-                            @foreach(App\Models\BloodGroup::all() as $bg)
-                            <option {{ (old('bg_id')==$bg->id ? 'selected' : '') }}
-                                value="{{ $bg->id }}">
-                                {{ $bg->name }}
-                            </option>
+                        <select wire:model="bg_id" class="custom-select form-control">
+                            <option value="">Choose..</option>
+                            @foreach ($bloodGroups as $bg)
+                                <option value="{{ $bg->id }}">{{ $bg->name }}</option>
                             @endforeach
                         </select>
+                        @error('bg_id')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
+                <!-- Passport Photo -->
                 <div class="col-md-6">
                     <div class="form-group">
                         <label class="d-block">Upload Passport Photo:</label>
-                        <input value="{{ old('photo') }}" accept="image/*" type="file" name="photo"
-                            class="form-input-styled" data-fouc>
-                        <span class="form-text text-muted">Accepted Images: jpeg, png. Max file size
-                            2Mb</span>
+                        <input wire:model="photo" type="file" class="form-control">
+                        @error('photo')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
             </div>
-        </fieldset>
-
+            <button type="button" wire:click="nextStep" class="btn btn-primary">Next</button>
+        </div>
 
         <!-- Step 2: Student Data -->
-        <h6 class="card-title">Student Data</h6>
-        @csrf
-        <fieldset>
+        <div x-show="$wire.currentStep === 2">
+            <h6>Student Data</h6>
             <div class="row">
-                <!-- First Row: Class, Section, Session -->
+                <!-- Class -->
                 <div class="col-md-4">
                     <div class="form-group">
                         <label for="my_class_id">Class: <span class="text-danger">*</span></label>
-                        <select onchange="getClassSections(this.value)" data-placeholder="Choose..." required
-                            name="my_class_id" id="my_class_id" class="custom-select">
-                            <option value=""></option>
-                            @foreach($my_classes as $c)
-                            <option {{ (old('my_class_id')==$c->id ? 'selected' : '') }}
-                                value="{{ $c->id }}">
-                                {{ $c->name }}
-                            </option>
+                        <select wire:model.live="my_class_id" class="custom-select form-control" required>
+                            <option value="">Choose..</option>
+                            @foreach ($myClasses as $class)
+                                <option value="{{ $class->id }}">{{ $class->name }}</option>
                             @endforeach
                         </select>
+                        @error('my_class_id')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
+                <!-- Section -->
                 <div class="col-md-4">
                     <div class="form-group">
                         <label for="section_id">Section: <span class="text-danger">*</span></label>
-                        <select data-placeholder="Select Class First" required name="section_id" id="section_id"
-                            class="custom-select">
-                            <option {{ (old('section_id')) ? 'selected' : '' }} value="{{ old('section_id') }}">
-                                {{ (old('section_id')) ? 'Selected' : '' }}
-                            </option>
+                        <select wire:model.live="section_id" class="custom-select form-control" required>
+                            <option value="">Select Class First</option>
+                            @foreach ($sections as $section)
+                                <option value="{{ $section->id }}">{{ $section->name }}</option>
+                            @endforeach
                         </select>
+                        @error('section_id')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
-
-            </div>
-
-            <div class="row">
-                <!-- Second Row: Year Admitted, Dormitory, Dormitory Room No -->
+                <!-- Year Admitted -->
                 <div class="col-md-4">
                     <div class="form-group">
                         <label for="year_admitted">Year Admitted: <span class="text-danger">*</span></label>
-                        <select data-placeholder="Choose..." required name="year_admitted" id="year_admitted"
-                            class="custom-select">
-                            <option value=""></option>
-                            @for($y = date('Y', strtotime('- 40 years')); $y <= date('Y'); $y++) <option {{
-                                (old('year_admitted')==$y) ? 'selected' : '' }} value="{{ $y }}">
-                                {{ $y }}
-                                </option>
-                                @endfor
+                        <select wire:model="year_admitted" class="custom-select form-control" required>
+                            <option value="">Choose..</option>
+                            @for ($y = date('Y', strtotime('- 40 years')); $y <= date('Y'); $y++)
+                                <option value="{{ $y }}">{{ $y }}</option>
+                            @endfor
                         </select>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label for="dorm_id">Dormitory: </label>
-                        <select data-placeholder="Choose..." name="dorm_id" id="dorm_id" class="custom-select">
-                            <option value=""></option>
-                            @foreach($dorms as $d)
-                            <option {{ (old('dorm_id')==$d->id) ? 'selected' : '' }}
-                                value="{{ $d->id }}">
-                                {{ $d->name }}
-                            </option>
-                            @endforeach
-                        </select>
+                        @error('year_admitted')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
             </div>
 
             <div class="row">
-                <!-- Third Row: Sport House, Enter Number, Admission Number -->
-                <div class="form-group">
-                    <label for="upi_number">UPI Number:</label>
-                    <input type="text" name="upi_number" required placeholder="UPI Number" class="form-control"
-                        id="upi_number" value="{{ old('upi_number') }}">
+                <!-- Dormitory -->
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="dorm_id">Dormitory:</label>
+                        <select wire:model="dorm_id" class="custom-select form-control">
+                            <option value="">Choose..</option>
+                            @foreach ($dorms as $dorm)
+                                <option value="{{ $dorm->id }}">{{ $dorm->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('dorm_id')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
                 </div>
+                <!-- UPI Number -->
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="upi_number">UPI Number: <span class="text-danger">*</span></label>
+                        <input wire:model="upi_number" type="text" placeholder="UPI Number" class="form-control">
+                        @error('upi_number')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+                <!-- Admission Number -->
                 <div class="col-md-4">
                     <div class="form-group">
                         <label for="adm_no">Admission Number:</label>
-                        <input type="text" name="adm_no" placeholder="Admission Number" class="form-control"
-                            id="adm_no">
-                    </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label for="kcpe_marks">KCPE Marks:</label>
-                        <input type="number" name="kcpe_marks" placeholder="KCPE Marks" class="form-control"
-                            id="kcpe_marks" value="{{ old('kcpe_marks') }}">
-                    </div>
-
-                </div>
-
-                <div class="col-md-4">
-                    <div class="message-container">
-                        <div class="alert alert-warning alert-dismissible fade show" role="alert" id="suggestionAlert"
-                            style="display: none;">
-                            <strong>Warning!</strong> <span id="suggestionText"></span>
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert" id="errorAlert"
-                            style="display: none;">
-                            <strong>Error!</strong> <span id="errorText"></span>
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="alert alert-success alert-dismissible fade show" role="alert" id="successAlert"
-                            style="display: none;">
-                            <strong>Success!</strong> <span id="successText"></span>
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
+                        <input wire:model="adm_no" type="text" placeholder="Admission Number"
+                            class="form-control">
+                        @error('adm_no')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
             </div>
-        </fieldset>
+
+            <div class="row">
+                <!-- KCPE Marks -->
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="kcpe">KCPE Marks:</label>
+                        <input wire:model="kcpe" type="number" placeholder="KCPE Marks" class="form-control">
+                        @error('kcpe')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+            <button type="button" wire:click="previousStep" class="btn btn-secondary">Previous</button>
+            <button type="button" wire:click="nextStep" class="btn btn-primary">Next</button>
+        </div>
 
         <!-- Step 3: Parent Details -->
-        <h6>Parent Details</h6>
-        <fieldset>
+        <div x-show="$wire.currentStep === 3">
+            <h6>Parent Details</h6>
             <div class="row">
+                <!-- Parent ID Number -->
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label for="id_number">Id Number:</label>
-                        <input type="text" id="id_number" name="id_number" class="form-control"
-                            value="{{ old('id_number') }}" required>
+                        <label for="parent_id_no">National ID Number: <span class="text-danger">*</span></label>
+                        <input wire:model="parent_id_no" type="text" class="form-control">
+                        @error('parent_id_no')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
+                <!-- Parent First Name -->
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label for="parent_first_name">Parent's First Name:</label>
-                        <input type="text" id="parent_first_name" name="parent_first_name" class="form-control"
-                            value="{{ old('parent_first_name') }}" required>
+                        <label for="parent_first_name">First Name: <span class="text-danger">*</span></label>
+                        <input wire:model="parent_first_name" type="text" class="form-control">
+                        @error('parent_first_name')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
+                <!-- Parent Middle Name -->
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label for="parent_middle_name">Parent's Middle Name:</label>
-                        <input type="text" id="parent_middle_name" name="parent_middle_name" class="form-control"
-                            value="{{ old('parent_middle_name') }}" required>
+                        <label for="parent_middle_name">Middle Name:</label>
+                        <input wire:model="parent_middle_name" type="text" class="form-control">
+                        @error('parent_middle_name')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
+                <!-- Parent Last Name -->
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label for="parent_last_name">Parent's Last Name:</label>
-                        <input type="text" id="parent_last_name" name="parent_last_name" class="form-control"
-                            value="{{ old('parent_last_name') }}" required>
-                    </div>
-                </div>
-
-            </div>
-            <div class="row">
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label for="parent_phone">Parent's Phone Number:</label>
-                        <input type="text" id="parent_phone" name="parent_phone" class="form-control"
-                            value="{{ old('parent_phone') }}" required>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label for="parent_email">Parent's Email:</label>
-                        <input type="email" id="parent_email" name="parent_email" class="form-control"
-                            value="{{ old('parent_email') }}" required>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label for="parent_email">Parent's Password:</label>
-                        <input type="password" id="parent_password" name="parent_password" class="form-control"
-                            value="{{ old('parent_password') }}" required>
+                        <label for="parent_last_name">Last Name: <span class="text-danger">*</span></label>
+                        <input wire:model="parent_last_name" type="text" class="form-control">
+                        @error('parent_last_name')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
             </div>
-        </fieldset>
 
-        <h6>Password</h6>
-        <fieldset>
             <div class="row">
+                <!-- Parent Phone -->
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="parent_phone">Phone Number: <span class="text-danger">*</span></label>
+                        <input wire:model="parent_phone" type="text" class="form-control">
+                        @error('parent_phone')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+                <!-- Parent Email -->
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="parent_email">Email: <span class="text-danger">*</span></label>
+                        <input wire:model="parent_email" type="email" class="form-control">
+                        @error('parent_email')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+                <!-- Parent Password -->
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="parent_password">Password: <span class="text-danger">*</span></label>
+                        <input wire:model="parent_password" type="password" class="form-control">
+                        @error('parent_password')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+            <button type="button" wire:click="previousStep" class="btn btn-secondary">Previous</button>
+            <button type="button" wire:click="nextStep" class="btn btn-primary">Next</button>
+        </div>
+
+        <!-- Step 4: Password -->
+        <div x-show="$wire.currentStep === 4">
+            <h6>Password</h6>
+            <div class="row">
+                <!-- Password -->
                 <div class="col-md-6">
                     <div class="form-group">
                         <label>Password: <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <input type="password" name="password" id="password" class="form-control" required
-                                data-toggle="tooltip" data-placement="right"
-                                title="Use your admission number as the password. You can later change this in your profile.">
-                            <div class="input-group-append">
-                                <span class="input-group-text" id="password-tooltip" style="cursor: pointer;"
-                                    data-toggle="tooltip" data-placement="left"
-                                    title="Use your admission number as the password. You can later change this in your profile.">
-                                    <i class="fas fa-info-circle"></i>
-                                </span>
-                            </div>
-                        </div>
-                        <small class="form-text text-muted">Password strength: <span
-                                id="password-strength"></span></small>
+                        <input wire:model="password" type="password" class="form-control">
+                        @error('password')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
+                <!-- Confirm Password -->
                 <div class="col-md-6">
                     <div class="form-group">
                         <label>Confirm Password: <span class="text-danger">*</span></label>
-                        <input type="password" name="password_confirmation" id="password_confirmation"
-                            class="form-control" required>
-                        <small class="form-text text-muted" id="password-match"></small>
+                        <input wire:model="password_confirmation" type="password" class="form-control">
+                        @error('password_confirmation')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
             </div>
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input" id="show-passwords">
-                        <label class="form-check-label" for="show-passwords">Show Passwords</label>
-                    </div>
-                </div>
-            </div>
-        </fieldset>
-        </form>
+            <button type="button" wire:click="previousStep" class="btn btn-secondary">Previous</button>
+            <button type="submit" class="btn btn-success">Submit</button>
+        </div>
+    </form>
 </div>
-
-@assets
-<script src="{{ asset('global_assets/js/main/add_student.js') }}"></script>
-<script src="{{ asset('global_assets/js/main/jquery.min.js') }}"></script>
-
-@endassets
-@script
-<script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('tabManager', () => ({
-            activeTab: 'manage-students',
-            showTab(tab) {
-                this.activeTab = tab;
-            }
-        }));
-    });
-</script>
-@endscript

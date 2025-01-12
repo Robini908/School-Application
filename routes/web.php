@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MpesaController;
 use App\Http\Controllers\NotificationController;
 use App\Notifications\SystemNotification;
+use App\Http\Controllers\Auth\LoginController;
 
 
 
@@ -20,16 +21,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 });
 
-Route::get('/test-notification', function () {
-    $user = Auth::user();
-
-    if ($user) {
-        $user->notify(new SystemNotification('This is a test notification!'));
-        return 'Test notification sent!';
-    }
-
-    return 'No authenticated user found.';
-});
 
 // mpesa
 Route::post('mpesa/callback', [MpesaController::class, 'callback'])->name('mpesa.callback');
@@ -84,7 +75,16 @@ Route::put('classmasters/{id}', 'ClassMasterController@update')->name('classmast
 Route::resource('dormasters', 'DormMasterController');
 Route::get('dormasters/{id}/edit', 'DormMasterController@edit')->name('dormasters.edit');
 Route::put('dormasters/{id}', 'DormMasterController@update')->name('dormasters.update');
+// Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+// Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
+// Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
+// // Home/Dashboard Route (Protected by Auth Middleware)
+// Route::middleware('auth')->group(function () {
+//     Route::get('/home', function () {
+//         return view('home'); // Your home/dashboard view
+//     })->name('home');
+// });
 
 
 Route::resource('grading_system', 'GradingSystemController')->name('grading_system', ['except' => ['show']]);

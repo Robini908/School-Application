@@ -644,7 +644,8 @@ class ManageStudents extends Component
         $this->resetPage(); // Reset pagination if using it
     }
 
-    public function editStudent($studentId)
+   
+     public function editStudent($studentId)
     {
         $this->selectedStudent = StudentRecord::findOrFail($studentId); // Retrieve the student record
         $this->isEditingStudent = true; // Set editing flag

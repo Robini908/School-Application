@@ -10,8 +10,6 @@
 
     <title>@yield('page_title') | {{ config('app.name') }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-    <x-livewire-alert::scripts />
-
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('partials.inc_top')
     @livewireStyles
@@ -51,6 +49,8 @@
     @stack('scripts')
     @include('partials.inc_bottom')
     @livewireScripts
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <x-livewire-alert::scripts />
     @filepondScripts
 </body>
 

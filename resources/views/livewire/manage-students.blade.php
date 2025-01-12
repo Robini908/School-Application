@@ -26,24 +26,19 @@
     @endif
 
     {{-- Display different views based on the boolean flags --}}
+    
     @if ($isEditingStudent)
-        {{-- Editing Student Page --}}
-
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h3>Edit Student</h3>
+    <div wire:key="edit-student-{{ $selectedStudent->id }}">
+        <!-- Button placed on the far right -->
+        <div class="d-flex justify-content-end mb-3">
             <button wire:click="closeAction" class="btn btn-secondary">Close</button>
         </div>
-        <div class="card-body">
-            {{-- Form for editing student --}}
-            <form>
-                <div class="form-group">
-                    <label for="studentName">Name:</label>
-                    <input type="text" id="studentName" class="form-control" wire:model.live="selectedStudent.name">
-                </div>
-                {{-- Other form fields can go here --}}
-                <button type="submit" class="btn btn-primary">Save</button>
-            </form>
-        </div>
+        <!-- Edit Student Component -->
+        <livewire:edit-student :studentId="$selectedStudent->id" />
+    </div>
+
+
+       
         @elseif ($isViewingDetails && $selectedStudent)
             <div class="card mt-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -470,8 +465,10 @@
                     <x-data-table id="studentTable" title="Student List" message="List of registered students"
                         :columns="[
                             'Admission',
+                            'Admission Year',
                             'Student Photo',
                             'Name',
+                            
                             'Gender',
                             'Class',
                             'Section',
@@ -490,6 +487,7 @@
                             @foreach ($students as $student)
                                 <tr @if ($student->is_suspended) style="background-color: #f8d7da;" @endif>
                                     <td>{{ $student->adm_no }}</td>
+                                    <td>{{ $student->year_admitted }}</td>
                                     <td>
                                         @if ($student->photo)
                                             <img src="{{ asset($student->photo) }}" alt="Student Photo"
@@ -525,55 +523,90 @@
                                     <td class="text-center">
                                         <div class="list-icons">
                                             <div class="dropdown @if ($student->is_suspended) bg-light @endif">
-                                                <button type="button" class="btn btn-link dropdown-toggle"
-                                                    data-toggle="dropdown" aria-expanded="false">
-                                                    <i class="icon-menu9"></i>
+                                                <!-- Dropdown Toggle Button -->
+                                                <button type="button" class="btn btn-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                                    <i class="fas fa-ellipsis-v"></i> <!-- FontAwesome ellipsis icon -->
                                                 </button>
-                                                <ul
-                                                    class="dropdown-menu dropdown-menu-right @if ($student->is_suspended) bg-white @endif">
+                                        
+                                                <!-- Dropdown Menu -->
+                                                <ul class="dropdown-menu dropdown-menu-right @if ($student->is_suspended) bg-white @endif">
+                                                    <!-- Edit Button -->
                                                     <li>
                                                         <button wire:click="editStudent({{ $student->id }})"
-                                                            class="dropdown-item @if ($student->is_suspended) disabled @endif">
-                                                            <i class="bi bi-pencil"></i> Edit
+                                                            class="dropdown-item @if ($student->is_suspended) disabled @endif"
+                                                            wire:loading.attr="disabled">
+                                                            <i class="fas fa-edit text-primary"></i> Edit
+                                                            <span wire:loading wire:target="editStudent({{ $student->id }})" class="spinner-border spinner-border-sm text-primary"></span>
                                                         </button>
                                                     </li>
-                                                    <button wire:click="deleteRecord({{ $student->id }})"
-                                                        class="dropdown-item @if ($student->is_suspended) disabled @endif">
-                                                        <i class="bi bi-trash"></i> Delete </button>
+                                        
+                                                    <!-- Delete Button -->
+                                                    <li>
+                                                        <button wire:click="deleteRecord({{ $student->id }})"
+                                                            class="dropdown-item @if ($student->is_suspended) disabled @endif"
+                                                            wire:loading.attr="disabled">
+                                                            <i class="fas fa-trash text-danger"></i> Delete
+                                                            <span wire:loading wire:target="deleteRecord({{ $student->id }})" class="spinner-border spinner-border-sm text-danger"></span>
+                                                        </button>
+                                                    </li>
+                                        
+                                                    <!-- View Details Button -->
                                                     <li>
                                                         <button wire:click="viewStudent({{ $student->id }})"
-                                                            class="dropdown-item">
-                                                            <i class="bi bi-eye"></i> View Details
+                                                            class="dropdown-item"
+                                                            wire:loading.attr="disabled">
+                                                            <i class="fas fa-eye text-info"></i> View Details
+                                                            <span wire:loading wire:target="viewStudent({{ $student->id }})" class="spinner-border spinner-border-sm text-info"></span>
                                                         </button>
                                                     </li>
+                                        
+                                                    <!-- Suspension Button -->
                                                     <li>
                                                         <button wire:click="suspendStudent({{ $student->id }})"
-                                                            class="dropdown-item @if ($student->is_suspended) disabled @endif">
-                                                            <i class="bi bi-pause"></i> Suspension
+                                                            class="dropdown-item @if ($student->is_suspended) disabled @endif"
+                                                            wire:loading.attr="disabled">
+                                                            <i class="fas fa-pause text-warning"></i> Suspension
+                                                            <span wire:loading wire:target="suspendStudent({{ $student->id }})" class="spinner-border spinner-border-sm text-warning"></span>
                                                         </button>
                                                     </li>
+                                        
+                                                    <!-- Student History Button -->
                                                     <li>
                                                         <button wire:click="favoriteStudent({{ $student->id }})"
-                                                            class="dropdown-item">
-                                                            <i class="bi bi-star"></i> Student History
+                                                            class="dropdown-item"
+                                                            wire:loading.attr="disabled">
+                                                            <i class="fas fa-star text-success"></i> Student History
+                                                            <span wire:loading wire:target="favoriteStudent({{ $student->id }})" class="spinner-border spinner-border-sm text-success"></span>
                                                         </button>
                                                     </li>
+                                        
+                                                    <!-- Approve Button -->
                                                     <li>
                                                         <button wire:click="approveStudent({{ $student->id }})"
-                                                            class="dropdown-item @if ($student->is_suspended) disabled @endif">
-                                                            <i class="bi bi-check"></i> Approve
+                                                            class="dropdown-item @if ($student->is_suspended) disabled @endif"
+                                                            wire:loading.attr="disabled">
+                                                            <i class="fas fa-check text-success"></i> Approve
+                                                            <span wire:loading wire:target="approveStudent({{ $student->id }})" class="spinner-border spinner-border-sm text-success"></span>
                                                         </button>
                                                     </li>
+                                        
+                                                    <!-- Expulsion Button -->
                                                     <li>
                                                         <button wire:click="studentExpulsion({{ $student->id }})"
-                                                            class="dropdown-item @if ($student->is_expelled) disabled @endif">
-                                                            <i class="bi bi-exclamation-triangle"></i> Expulsion
+                                                            class="dropdown-item @if ($student->is_expelled) disabled @endif"
+                                                            wire:loading.attr="disabled">
+                                                            <i class="fas fa-exclamation-triangle text-danger"></i> Expulsion
+                                                            <span wire:loading wire:target="studentExpulsion({{ $student->id }})" class="spinner-border spinner-border-sm text-danger"></span>
                                                         </button>
                                                     </li>
+                                        
+                                                    <!-- Send Mail Button -->
                                                     <li>
                                                         <button wire:click="isSendingStudentMail({{ $student->id }})"
-                                                            class="dropdown-item @if ($student->is_suspended) disabled @endif">
-                                                            <i class="bi bi-x"></i> Send Mail
+                                                            class="dropdown-item @if ($student->is_suspended) disabled @endif"
+                                                            wire:loading.attr="disabled">
+                                                            <i class="fas fa-envelope text-primary"></i> Send Mail
+                                                            <span wire:loading wire:target="isSendingStudentMail({{ $student->id }})" class="spinner-border spinner-border-sm text-primary"></span>
                                                         </button>
                                                     </li>
                                                 </ul>

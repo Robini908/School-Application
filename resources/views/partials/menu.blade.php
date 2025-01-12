@@ -81,10 +81,10 @@
                                     Classes</span></a>
                         </li>
                         {{--Manage Sections--}}
-                        <li class="nav-item">
+                        {{-- <li class="nav-item">
                             <a href="{{ route('sections.index') }}"
                                 class="nav-link {{ in_array(Route::currentRouteName(), ['sections.index','sections.edit',]) ? 'active' : '' }}"><span>Streams</span></a>
-                        </li>
+                        </li> --}}
                         {{--Manage Dorms--}}
                         <li class="nav-item">
                             <a href="{{ route('dorms.index') }}"
@@ -95,8 +95,7 @@
                         @if(Qs::userIsTeamSA())
                         <li class="nav-item">
                             <a  href="{{ route('students.create') }}"
-                                class="nav-link {{ (Route::is('students.create')) ? 'active' : '' }}">Manage
-                                Students</a>
+                                class="nav-link {{ (Route::is('students.create')) ? 'active' : '' }}">Admissions</a>
                         </li>
                         @endif
 
