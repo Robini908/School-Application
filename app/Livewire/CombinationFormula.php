@@ -15,8 +15,9 @@ use Livewire\WithPagination;
 
 use App\Models\StudentRecord;
 use App\Models\StudentResult;
-use Illuminate\Support\Facades\DB;
+use App\Helpers\StudentHelper;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Parallel;
@@ -438,7 +439,8 @@ class CombinationFormula extends Component
             $this->combinedResults = $this->prepareCombinedResults($examsData);
 
             // Calculate positions for combined results
-            $this->combinedResults = $this->calculatePositions($this->combinedResults);
+            $this->combinedResults = $this->calculatePositionsWithHelper($this->combinedResults, $exam);
+
 
             // Ensure subjects are passed to the view
             $this->subjects = $examsData[0]['exam']->gradingSystem->subjects;
@@ -496,6 +498,181 @@ class CombinationFormula extends Component
         }
     }
 
+    private function prepareCombinedResults($examsData)
+    {
+        $combinedStudentData = [];
+
+        // Validate exam data
+        if (empty($examsData)) {
+            throw new \Exception("No exam data provided.");
+        }
+
+        // Use subjects from the first exam
+        $subjects = $examsData[0]['exam']->gradingSystem->subjects ?? null;
+
+        if (empty($subjects)) {
+            throw new \Exception("No subjects found for the selected exams.");
+        }
+
+        // Group students by ID
+        $students = [];
+        foreach ($examsData as $examData) {
+            // Validate exam percentage
+            $examPercentage = $examData['percentage'] ?? 0;
+            if (!is_numeric($examPercentage) || $examPercentage < 0 || $examPercentage > 100) {
+                Log::error("Invalid exam percentage: {$examPercentage}");
+                throw new \Exception("Invalid exam percentage. Must be between 0 and 100.");
+            }
+
+            foreach ($examData['students'] as $student) {
+                if (!isset($students[$student->id])) {
+                    $students[$student->id] = [
+                        'student' => $student,
+                        'marks' => [],
+                        'grades' => [],
+                        'total_marks' => 0,
+                        'total_points' => 0,
+                        'mean_score' => 0,
+                        'mean_grade' => '--',
+                        'stream' => $student->section->name ?? '-',
+                        'has_special_grade' => false,
+                    ];
+                }
+
+                // Fetch marks for each subject in this exam using StudentHelper
+                foreach ($subjects as $subject) {
+                    $marksValue = StudentHelper::getStudentMarks($student, $subject);
+                    $specialGrade = StudentHelper::getStudentSpecialGrade($student, $subject);
+
+                    if (!isset($students[$student->id]['marks'][$subject->id])) {
+                        $students[$student->id]['marks'][$subject->id] = [];
+                    }
+
+                    // Treat missing marks as '--' instead of 0
+                    if ($marksValue === '--' || $marksValue === null) {
+                        $students[$student->id]['marks'][$subject->id][] = '--'; // Store as '--'
+                    } else {
+                        // Apply percentage and round to the nearest whole number
+                        $weightedMark = (int) round((int) $marksValue * $examPercentage);
+                        $students[$student->id]['marks'][$subject->id][] = $weightedMark;
+                    }
+                }
+            }
+        }
+
+        if (empty($students)) {
+            throw new \Exception("No student data found for the selected exams.");
+        }
+
+        // Calculate weighted averages for each student
+        foreach ($students as $studentId => $studentData) {
+            $studentMarks = [];
+            $studentGrades = [];
+            $totalMarks = 0;
+            $totalPoints = 0;
+            $validSubjects = 0;
+            $hasSpecialGrade = false;
+            $specialGradeCounts = ['X' => 0, 'Y' => 0, 'Z' => 0]; // Track counts of special grades
+
+            // Get marks for all subjects
+            $allMarks = [];
+            foreach ($subjects as $subject) {
+                $marksArray = $studentData['marks'][$subject->id] ?? [];
+                if (empty($marksArray)) {
+                    Log::warning("No marks found for student ID: {$studentId}, subject ID: {$subject->id}");
+                    continue;
+                }
+
+                // Check if any marks are missing (i.e., '--')
+                if (in_array('--', $marksArray)) {
+                    $weightedMarks = '--'; // Treat as missing
+                } else {
+                    // Sum weighted marks and divide by 100 to get the final weighted mark
+                    $weightedMarks = array_sum($marksArray) / 100;
+                }
+
+                $specialGrade = StudentHelper::getStudentSpecialGrade($studentData['student'], $subject);
+
+                if ($specialGrade !== null) {
+                    $hasSpecialGrade = true;
+                    $specialGradeCounts[$specialGrade]++; // Increment count for the special grade
+                }
+
+                // Store marks and special grades
+                $allMarks[$subject->id] = [
+                    'subject' => $subject,
+                    'marks' => $weightedMarks,
+                    'special_grade' => $specialGrade,
+                ];
+            }
+
+            // Calculate total marks and points for selected subjects
+            foreach ($allMarks as $subjectId => $markData) {
+                $subject = $markData['subject'];
+                $marksValue = $markData['marks'];
+                $specialGrade = $markData['special_grade'];
+
+                if ($specialGrade !== null) {
+                    // If special grade exists, assign it and skip marks calculation
+                    $gradeData = ['grade' => $specialGrade, 'points' => 0];
+                } else {
+                    // Calculate grade data based on marks using StudentHelper
+                    if ($marksValue === '--') {
+                        $gradeData = ['grade' => '--', 'points' => 0]; // Treat missing marks as '--'
+                    } else {
+                        $gradeData = StudentHelper::getGradeData($marksValue, $examsData[0]['exam']->gradingSystem->id, $subject->id);
+                    }
+                }
+
+                // Ensure gradeData is valid
+                if (!$gradeData || !isset($gradeData['points'])) {
+                    Log::warning("Invalid grade data for student ID: {$studentId}, subject ID: {$subject->id}");
+                    $gradeData = ['grade' => '--', 'points' => 0];
+                }
+
+                $gradeData['points'] = is_numeric($gradeData['points'] ?? null) ? $gradeData['points'] : 0;
+
+                $studentMarks[$subject->id] = $marksValue;
+                $studentGrades[$subject->id] = $gradeData['grade'] ?? '--';
+
+                // Only add to total marks and points if there are no special grades and marks are not missing
+                if ($specialGrade === null && $marksValue !== '--') {
+                    $totalMarks += is_numeric($marksValue) ? (int) $marksValue : 0;
+                    $totalPoints += $gradeData['points'];
+                    $validSubjects++;
+                }
+            }
+
+            // Calculate mean score and mean grade
+            $meanScore = $validSubjects > 0 ? (int) round($totalMarks / $validSubjects) : 0; // Round to the nearest whole number
+
+            // Determine the mean grade for students with special grades
+            if ($hasSpecialGrade) {
+                // Find the dominant special grade
+                $dominantSpecialGrade = array_search(max($specialGradeCounts), $specialGradeCounts);
+                $meanGrade = $dominantSpecialGrade; // Assign the dominant special grade as the mean grade
+            } else {
+                // Calculate mean grade based on total points using StudentHelper
+                $meanGrade = StudentHelper::getMeanGrade($totalPoints, $examsData[0]['exam']->gradingSystem->id);
+            }
+
+            $combinedStudentData[] = [
+                'student_id' => $studentId,
+                'student_name' => "{$studentData['student']->first_name} {$studentData['student']->last_name}",
+                'marks' => $studentMarks,
+                'grades' => $studentGrades,
+                'total_marks' => $totalMarks,
+                'total_points' => $totalPoints,
+                'mean_score' => $meanScore,
+                'mean_grade' => $meanGrade,
+                'stream' => $studentData['stream'],
+                'has_special_grade' => $hasSpecialGrade,
+            ];
+        }
+
+        return $combinedStudentData;
+    }
+
     public function quickAnalyzeCombinedResults()
     {
         // Validate inputs
@@ -547,10 +724,11 @@ class CombinationFormula extends Component
                     continue;
                 }
 
+                // Store exam data with percentage contribution
                 $examsData[] = [
                     'exam' => $exam,
                     'students' => $students,
-                    'percentage' => $this->examPercentages[$exam->id] / 100, // Convert percentage to decimal
+                    'percentage' => $this->examPercentages[$exam->id], // Use percentage directly (e.g., 30 for 30%)
                 ];
             }
 
@@ -562,7 +740,7 @@ class CombinationFormula extends Component
             $this->combinedResults = $this->prepareCombinedResults($examsData);
 
             // Calculate positions for combined results
-            $this->combinedResults = $this->calculatePositions($this->combinedResults);
+            $this->combinedResults = $this->calculatePositionsWithHelper($this->combinedResults,$exam);
 
             // Ensure subjects are passed to the view
             $this->subjects = $examsData[0]['exam']->gradingSystem->subjects;
@@ -597,187 +775,6 @@ class CombinationFormula extends Component
             $this->loading = false;
         }
     }
-
-    public function closeCombinedExamForm()
-    {
-        $this->showCombinedExamForm = false;
-    }
-
-
-    private function prepareCombinedResults($examsData)
-    {
-        $combinedStudentData = [];
-
-        // Validate exam data
-        if (empty($examsData)) {
-            throw new \Exception("No exam data provided.");
-        }
-
-        // Use subjects from the first exam
-        $subjects = $examsData[0]['exam']->gradingSystem->subjects ?? null;
-
-        if (empty($subjects)) {
-            throw new \Exception("No subjects found for the selected exams.");
-        }
-
-        // Group students by ID
-        $students = [];
-        foreach ($examsData as $examData) {
-            // Validate exam percentage
-            $examPercentage = $examData['percentage'] ?? 0;
-            if (!is_numeric($examPercentage) || $examPercentage < 0 || $examPercentage > 100) {
-                Log::error("Invalid exam percentage: {$examPercentage}");
-                throw new \Exception("Invalid exam percentage. Must be between 0 and 100.");
-            }
-
-            foreach ($examData['students'] as $student) {
-                if (!isset($students[$student->id])) {
-                    $students[$student->id] = [
-                        'student' => $student,
-                        'marks' => [],
-                        'grades' => [],
-                        'total_marks' => 0,
-                        'total_points' => 0,
-                        'mean_score' => 0,
-                        'mean_grade' => '--',
-                        'stream' => $student->section->name ?? '-',
-                        'has_special_grade' => false,
-                    ];
-                }
-
-                // Fetch marks for each subject in this exam
-                foreach ($subjects as $subject) {
-                    $marksValue = $this->getStudentMarks($student, $subject);
-                    $specialGrade = $this->getStudentSpecialGrade($student, $subject);
-
-                    if (!isset($students[$student->id]['marks'][$subject->id])) {
-                        $students[$student->id]['marks'][$subject->id] = [];
-                    }
-
-                    // Treat missing marks as '--' instead of 0
-                    if ($marksValue === '--' || $marksValue === null) {
-                        $students[$student->id]['marks'][$subject->id][] = '--'; // Store as '--'
-                    } else {
-                        // Apply percentage and round to the nearest whole number
-                        $weightedMark = (int) round((int) $marksValue * $examPercentage / 100);
-                        $students[$student->id]['marks'][$subject->id][] = $weightedMark;
-                    }
-                }
-            }
-        }
-
-        if (empty($students)) {
-            throw new \Exception("No student data found for the selected exams.");
-        }
-
-        // Calculate weighted averages for each student
-        foreach ($students as $studentId => $studentData) {
-            $studentMarks = [];
-            $studentGrades = [];
-            $totalMarks = 0;
-            $totalPoints = 0;
-            $validSubjects = 0;
-            $hasSpecialGrade = false;
-            $specialGradeCounts = ['X' => 0, 'Y' => 0, 'Z' => 0]; // Track counts of special grades
-
-            // Get marks for all subjects
-            $allMarks = [];
-            foreach ($subjects as $subject) {
-                $marksArray = $studentData['marks'][$subject->id] ?? [];
-                if (empty($marksArray)) {
-                    Log::warning("No marks found for student ID: {$studentId}, subject ID: {$subject->id}");
-                    continue;
-                }
-
-                // Check if any marks are missing (i.e., '--')
-                if (in_array('--', $marksArray)) {
-                    $weightedMarks = '--'; // Treat as missing
-                } else {
-                    $weightedMarks = array_sum($marksArray); // Sum of weighted marks
-                }
-
-                $specialGrade = $this->getStudentSpecialGrade($studentData['student'], $subject);
-
-                if ($specialGrade !== null) {
-                    $hasSpecialGrade = true;
-                    $specialGradeCounts[$specialGrade]++; // Increment count for the special grade
-                }
-
-                // Store marks and special grades
-                $allMarks[$subject->id] = [
-                    'subject' => $subject,
-                    'marks' => $weightedMarks,
-                    'special_grade' => $specialGrade,
-                ];
-            }
-
-            // Calculate total marks and points for selected subjects
-            foreach ($allMarks as $subjectId => $markData) {
-                $subject = $markData['subject'];
-                $marksValue = $markData['marks'];
-                $specialGrade = $markData['special_grade'];
-
-                if ($specialGrade !== null) {
-                    // If special grade exists, assign it and skip marks calculation
-                    $gradeData = ['grade' => $specialGrade, 'points' => 0];
-                } else {
-                    // Calculate grade data based on marks
-                    if ($marksValue === '--') {
-                        $gradeData = ['grade' => '--', 'points' => 0]; // Treat missing marks as '--'
-                    } else {
-                        $gradeData = $this->getGradeData($marksValue, $examsData[0]['exam']->gradingSystem->id, $subject->id);
-                    }
-                }
-
-                // Ensure gradeData is valid
-                if (!$gradeData || !isset($gradeData['points'])) {
-                    Log::warning("Invalid grade data for student ID: {$studentId}, subject ID: {$subject->id}");
-                    $gradeData = ['grade' => '--', 'points' => 0];
-                }
-
-                $gradeData['points'] = is_numeric($gradeData['points'] ?? null) ? $gradeData['points'] : 0;
-
-                $studentMarks[$subject->id] = $marksValue;
-                $studentGrades[$subject->id] = $gradeData['grade'] ?? '--';
-
-                // Only add to total marks and points if there are no special grades and marks are not missing
-                if ($specialGrade === null && $marksValue !== '--') {
-                    $totalMarks += is_numeric($marksValue) ? (int) $marksValue : 0;
-                    $totalPoints += $gradeData['points'];
-                    $validSubjects++;
-                }
-            }
-
-            // Calculate mean score and mean grade
-            $meanScore = $validSubjects > 0 ? (int) round($totalMarks / $validSubjects) : 0; // Round to the nearest whole number
-
-            // Determine the mean grade for students with special grades
-            if ($hasSpecialGrade) {
-                // Find the dominant special grade
-                $dominantSpecialGrade = array_search(max($specialGradeCounts), $specialGradeCounts);
-                $meanGrade = $dominantSpecialGrade; // Assign the dominant special grade as the mean grade
-            } else {
-                // Calculate mean grade based on total points
-                $meanGrade = $this->getMeanGrade($totalPoints, $examsData[0]['exam']->gradingSystem->id);
-            }
-
-            $combinedStudentData[] = [
-                'student_id' => $studentId,
-                'student_name' => "{$studentData['student']->first_name} {$studentData['student']->last_name}",
-                'marks' => $studentMarks,
-                'grades' => $studentGrades,
-                'total_marks' => $totalMarks,
-                'total_points' => $totalPoints,
-                'mean_score' => $meanScore,
-                'mean_grade' => $meanGrade,
-                'stream' => $studentData['stream'],
-                'has_special_grade' => $hasSpecialGrade,
-            ];
-        }
-
-        return $combinedStudentData;
-    }
-
 
     public function updatedSelectedClass($classId)
     {
@@ -878,6 +875,7 @@ class CombinationFormula extends Component
         Log::info("Fetching exam data for exam ID: $examId");
 
         try {
+            // Fetch the exam with its grading system and subjects
             $exam = Exam::with('gradingSystem.subjects')->find($examId);
             if (!$exam) {
                 Log::warning("No exam found for ID: $examId");
@@ -885,6 +883,7 @@ class CombinationFormula extends Component
                 return;
             }
 
+            // Fetch students based on the selected class and section
             $this->students = StudentRecord::with(['examMarks' => function ($query) use ($examId) {
                 $query->where('exam_id', $examId);
             }, 'section', 'parent_detail'])
@@ -896,11 +895,14 @@ class CombinationFormula extends Component
 
             Log::info("Fetched Students Count: " . $this->students->count());
 
+            // Set the subjects for the exam
             $this->subjects = $exam->gradingSystem->subjects;
 
+            // Prepare student data (marks, grades, etc.)
             $studentData = $this->prepareStudentData($exam);
 
-            $this->marks = $this->calculatePositions($studentData);
+            // Calculate positions using the StudentHelper class
+            $this->marks = $this->calculatePositionsWithHelper($studentData, exam: $exam);
 
             // Send a notification to the authenticated user
             $this->sendNotificationToUser($exam);
@@ -945,8 +947,6 @@ class CombinationFormula extends Component
         }
     }
 
-
-
     private function prepareStudentData($exam)
     {
         Log::info("Preparing student data for exam ID: {$exam->id}");
@@ -983,8 +983,8 @@ class CombinationFormula extends Component
                 // Get marks for all subjects
                 $allMarks = [];
                 foreach ($subjects as $subject) {
-                    $marksValue = $this->getStudentMarks($student, $subject);
-                    $specialGrade = $this->getStudentSpecialGrade($student, $subject);
+                    $marksValue = StudentHelper::getStudentMarks($student, $subject);
+                    $specialGrade = StudentHelper::getStudentSpecialGrade($student, $subject);
 
                     if ($specialGrade !== null) {
                         $hasSpecialGrade = true;
@@ -1023,7 +1023,7 @@ class CombinationFormula extends Component
                         $gradeData = ['grade' => $specialGrade, 'points' => 0];
                     } else {
                         // Calculate grade data based on marks
-                        $gradeData = $this->getGradeData($marksValue, $exam->gradingSystem->id, $subject->id);
+                        $gradeData = StudentHelper::getGradeData($marksValue, $exam->gradingSystem->id, $subject->id);
                     }
 
                     // Ensure gradeData is valid
@@ -1054,8 +1054,8 @@ class CombinationFormula extends Component
                     $dominantSpecialGrade = array_search(max($specialGradeCounts), $specialGradeCounts);
                     $meanGrade = $dominantSpecialGrade; // Assign the dominant special grade as the mean grade
                 } else {
-                    // Calculate mean grade based on total points
-                    $meanGrade = $this->getMeanGrade($totalPoints, $exam->gradingSystem->id);
+                    // Calculate mean grade based on total points using StudentHelper
+                    $meanGrade = StudentHelper::getMeanGrade($totalPoints, $exam->gradingSystem->id);
                 }
 
                 // Save or update the student result in the database
@@ -1090,8 +1090,8 @@ class CombinationFormula extends Component
                 }
             }
 
-            // Calculate positions for normal students
-            $studentData = $this->calculatePositions($studentData);
+            // Calculate positions for normal students using StudentHelper
+            $studentData = $this->calculatePositionsWithHelper($studentData, $exam);
 
             // Add special grade students at the bottom
             foreach ($specialGradeStudents as &$student) {
@@ -1108,39 +1108,26 @@ class CombinationFormula extends Component
         return $studentData;
     }
 
-    private function getStudentSpecialGrade($student, $subject)
+    private function calculatePositionsWithHelper(array $studentData, Exam $exam)
     {
-        $mark = $student->examMarks->firstWhere('subject_id', $subject->id);
-        return $mark ? $mark->special_grade : null;
-    }
+        // Sort students using the helper method
+        $studentData = StudentHelper::sortStudents($studentData);
 
-    // Get grade data based on marks
-    private function getGradeData($marksValue, $gradingSystemId, $subjectId)
-    {
-        if ($marksValue === '--' || $marksValue === null) {
-            return ['grade' => '--', 'points' => '--']; // Handle undefined marks
-        }
+        // Assign positions using the helper method
+        $studentData = StudentHelper::assignPositions($studentData);
 
-        try {
-            $gradingRange = GradingRange::where('grading_system_id', $gradingSystemId)
-                ->where('subject_id', $subjectId)
-                ->where('range_from', '<=', $marksValue)
-                ->where('range_to', '>=', $marksValue)
-                ->first();
+        // Calculate stream positions for each student
+        foreach ($studentData as $index => &$student) {
+            $studentRecord = StudentRecord::find($student['student_id']);
 
-            if (!$gradingRange) {
-                Log::warning("No grading range found for Marks: $marksValue, Grading System ID: $gradingSystemId, Subject ID: $subjectId");
-                return ['grade' => '--', 'points' => '--'];
+            if ($studentRecord) {
+                $student['stream_position'] = StudentHelper::calculateStreamPosition($studentRecord, $exam);
+            } else {
+                $student['stream_position'] = 'N/A';
             }
-
-            return [
-                'grade' => $gradingRange->grade,
-                'points' => $gradingRange->gpa ?? '--'
-            ];
-        } catch (\Throwable $e) {
-            Log::error("Error fetching grade data: " . $e->getMessage());
-            return ['grade' => '--', 'points' => '--'];
         }
+
+        return $studentData;
     }
     private function resetExamData()
     {
@@ -1149,95 +1136,8 @@ class CombinationFormula extends Component
         $this->loading = false;
     }
 
-    private function getStudentMarks($student, $subject)
-    {
-        $mark = $student->examMarks->firstWhere('subject_id', $subject->id);
-        return $mark ? $mark->marks : '--'; // Return '--' if marks are not available
-    }
 
 
-
-    private function calculatePositions($studentData)
-    {
-        try {
-            usort($studentData, function ($a, $b) {
-                if ($b['total_marks'] === $a['total_marks']) {
-                    if ($b['total_points'] === $a['total_points']) {
-                        return $b['mean_score'] <=> $a['mean_score'];
-                    }
-                    return $b['total_points'] <=> $a['total_points'];
-                }
-                return $b['total_marks'] <=> $a['total_marks'];
-            });
-
-            $position = 1;
-            foreach ($studentData as $index => &$data) {
-                if (
-                    $index > 0 &&
-                    $data['total_marks'] === $studentData[$index - 1]['total_marks'] &&
-                    $data['total_points'] === $studentData[$index - 1]['total_points'] &&
-                    $data['mean_score'] === $studentData[$index - 1]['mean_score']
-                ) {
-                    $data['position'] = $studentData[$index - 1]['position'];
-                } else {
-                    $data['position'] = $position;
-                }
-                $position++;
-            }
-
-            // Calculate stream positions
-            $this->calculateStreamPositions($studentData);
-        } catch (\Exception $e) {
-            Log::error("Error calculating positions: " . $e->getMessage());
-            $this->addError('calculatePositions', 'Error calculating positions: ' . $e->getMessage());
-        }
-
-        return $studentData;
-    }
-
-    private function calculateStreamPositions(&$studentData)
-    {
-        $streams = [];
-        foreach ($studentData as &$data) {
-            $streamKey = $data['stream'];
-            if (!isset($streams[$streamKey])) {
-                $streams[$streamKey] = [];
-            }
-            $streams[$streamKey][] = &$data; // Reference to the student data
-        }
-
-        foreach ($streams as $stream => $students) {
-            usort($students, function ($a, $b) {
-                if ($b['total_marks'] === $a['total_marks']) {
-                    if ($b['total_points'] === $a['total_points']) {
-                        return $b['mean_score'] <=> $a['mean_score'];
-                    }
-                    return $b['total_points'] <=> $a['total_points'];
-                }
-                return $b['total_marks'] <=> $a['total_marks'];
-            });
-
-            $position = 1;
-            foreach ($students as $index => &$data) {
-                $data['stream_position'] = $position++; // Assign stream position
-            }
-        }
-    }
-
-    private function getMeanGrade($totalPoints, $gradingSystemId)
-    {
-        try {
-            $gradeData = GradingGrade::where('grading_system_id', $gradingSystemId)
-                ->where('range_from', '<=', $totalPoints)
-                ->where('range_to', '>=', $totalPoints)
-                ->first();
-
-            return $gradeData ? $gradeData->grade : '--';
-        } catch (\Throwable $e) {
-            Log::error("Error fetching mean grade: " . $e->getMessage());
-            return '--';
-        }
-    }
 
     public function filterStudents()
     {

@@ -70,208 +70,156 @@
 
     <!-- Stream and Students Selection -->
     @if ($selectedClass && $selectedExam && $selectedSubject)
-        <div>
-            <h4 class="h5 text-muted">Marks Assignment for {{ $selectedSubjectName }}</h4>
+    <div>
+        <!-- Header -->
+        <h4 class="h5 text-muted mb-4">Marks Assignment for {{ $selectedSubjectName }}</h4>
 
-            <div class="form-group mb-4 alert alert-info">
-                <label>Select the Stream:</label>
-                <div class="d-flex flex-wrap">
-                    @foreach ($sections as $section)
-                        <div class="form-check mr-4 mb-2">
-                            <input type="radio" wire:model.live="selectedSection" value="{{ $section->id }}"
-                                id="section_{{ $section->id }}" class="form-check-input"
-                                wire:key="section-{{ $section->id }}">
-                            <label for="section_{{ $section->id }}"
-                                class="form-check-label">{{ $section->name }}</label>
+        <!-- Stream Selection -->
+        <div class="form-group mb-4 alert alert-info">
+            <label class="font-weight-bold">Select the Stream:</label>
+            <div class="d-flex flex-wrap">
+                @foreach ($sections as $section)
+                    <div class="form-check mr-4 mb-2">
+                        <input type="radio" wire:model.live="selectedSection" value="{{ $section->id }}"
+                            id="section_{{ $section->id }}" class="form-check-input"
+                            wire:key="section-{{ $section->id }}">
+                        <label for="section_{{ $section->id }}" class="form-check-label">{{ $section->name }}</label>
 
-                            @if ($selectedSection == $section->id)
-                                <div wire:loading wire:target="selectedSection" class="mt-1">
-                                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                                </div>
-                            @endif
-                        </div>
-                    @endforeach
-                </div>
+                        @if ($selectedSection == $section->id)
+                            <div wire:loading wire:target="selectedSection" class="mt-1">
+                                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                            </div>
+                        @endif
+                    </div>
+                @endforeach
             </div>
+        </div>
 
-            @if ($selectedSection)
-                <h5 class="h6 font-weight-bold">Students in
-                    {{ $classes->where('id', $selectedClass)->first()->name ?? 'N/A' }} -
-                    {{ $sections->where('id', $selectedSection)->first()->name ?? 'N/A' }} that sat
-                    for {{ $selectedSubjectName }}:</h5>
+        @if ($selectedSection)
+            <!-- Students List -->
+            <h5 class="h6 font-weight-bold mb-3">Students in {{ $selectedClassName }} - {{ $sections->where('id', $selectedSection)->first()->name ?? 'N/A' }} that sat for {{ $selectedSubjectName }}:</h5>
 
-                @if (collect($assignedMarksForTable)->isNotEmpty() || collect($students)->isNotEmpty())
-                    @if (collect($assignedMarks)->isEmpty())
-                        <div class="alert alert-warning">No marks have been assigned yet. Please enter the marks
-                            below:</div>
-                        <table class="table table-bordered">
-                            <thead>
+            @if ($students->isNotEmpty())
+                @if ($assignedMarks->isEmpty())
+                    <!-- No Marks Assigned -->
+                    <div class="alert alert-warning mb-4">No marks have been assigned yet. Please enter the marks below:</div>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Student (Admission No)</th>
+                                <th>Marks</th>
+                                <th>Special Grade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($students as $student)
                                 <tr>
-                                    <th>Student (Admission No)</th>
-                                    <th>Marks</th>
-                                    <th>Special Grade</th>
+                                    <td>{{ $student->first_name }} {{ $student->last_name }} ({{ $student->adm_no }})</td>
+                                    <td>
+                                        @if ($this->isSubjectSelectionEnabled($selectedClass) && !$this->isStudentEnrolledInSubject($student->id, $selectedSubject))
+                                            <input type="number" class="form-control" placeholder="Not Enrolled in {{ $selectedSubjectName }}" disabled style="background-color: #f8d7da; border-color: #f5c2c7; cursor: not-allowed; color: #dc3545; font-weight: bold;" title="Student not enrolled in this subject" />
+                                        @else
+                                            <input type="number" wire:model="marks.{{ $student->id }}" class="form-control" placeholder="Enter marks" min="0" max="100" @if (!empty($specialGrades[$student->id])) disabled @endif />
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($this->isSubjectSelectionEnabled($selectedClass) && !$this->isStudentEnrolledInSubject($student->id, $selectedSubject))
+                                            <select class="form-control" disabled style="background-color: #f8d7da; border-color: #f5c2c7; cursor: not-allowed; color: #dc3545; font-weight: bold;" title="Student not enrolled in this subject">
+                                                <option value="">Not Enrolled</option>
+                                            </select>
+                                        @else
+                                            <select wire:model="specialGrades.{{ $student->id }}" class="form-control" @if (!empty($marks[$student->id])) disabled @endif>
+                                                <option value="">Assign Special Grade</option>
+                                                <option value="X">X - Absence</option>
+                                                <option value="Y">Y - Malpractice</option>
+                                                <option value="Z">Z - Misconduct</option>
+                                            </select>
+                                        @endif
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($students as $student)
-                                    @php
-                                        // Check if subject selection is enabled and if the student is enrolled
-                                        $isEnrolled = $this->isStudentEnrolledInSubject($student->id, $selectedSubject);
-                                        $isSubjectSelectionEnabled = $this->isSubjectSelectionEnabled($selectedClass);
-                                    @endphp
-                                    <tr>
-                                        <td>{{ $student->first_name }} {{ $student->last_name }}
-                                            ({{ $student->adm_no }})
-                                        </td>
-                                        <td>
-                                            @if ($isSubjectSelectionEnabled && !$isEnrolled)
-                                                <input type="number" class="form-control"
-                                                    placeholder="Not Enrolled in {{ $selectedSubjectName }}" disabled
-                                                    style="background-color: #f8d7da; border-color: #f5c2c7; cursor: not-allowed; color: #dc3545; font-weight: bold;"
-                                                    title="Student not enrolled in this subject" />
+                            @endforeach
+                        </tbody>
+                    </table>
+                    <button wire:click="assignMarks" class="btn btn-primary mt-3">Assign Marks/Grades</button>
+                @else
+                    <!-- Marks Already Assigned -->
+                    <h5 class="h6 font-weight-bold mb-3">Marks Assignment for {{ $selectedSubjectName }}:</h5>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Student (Admission No)</th>
+                                <th>Marks</th>
+                                <th>Special Grade</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($students as $student)
+                                <tr>
+                                    <td>{{ $student->first_name }} {{ $student->last_name }} ({{ $student->adm_no }})</td>
+                                    <td>
+                                        @if ($editingMarkId === $student->id)
+                                            <input type="number" wire:model="marks.{{ $student->id }}" class="form-control" placeholder="Enter marks" min="0" max="100" @if ($this->getStudentSpecialGrade($student->id) || ($this->isSubjectSelectionEnabled($selectedClass) && !$this->isStudentEnrolledInSubject($student->id, $selectedSubject))) disabled @endif />
+                                        @else
+                                            @if ($this->getStudentMark($student->id))
+                                                {{ $this->getStudentMark($student->id) }}
+                                            @elseif ($this->isSubjectSelectionEnabled($selectedClass) && !$this->isStudentEnrolledInSubject($student->id, $selectedSubject))
+                                                <input type="number" class="form-control" placeholder="Not Enrolled in {{ $selectedSubjectName }}" disabled style="background-color: #f8d7da; border-color: #f5c2c7; cursor: not-allowed; color: #dc3545; font-weight: bold;" title="Student not enrolled in this subject" />
                                             @else
-                                                <input type="number" wire:model="marks.{{ $student->id }}"
-                                                    class="form-control" placeholder="Enter marks" min="0"
-                                                    max="100" @if (!empty($this->specialGrades[$student->id])) disabled @endif />
+                                                <input type="number" wire:model="marks.{{ $student->id }}" class="form-control" placeholder="Enter marks" min="0" max="100" />
                                             @endif
-                                        </td>
-                                        <td>
-                                            @if ($isSubjectSelectionEnabled && !$isEnrolled)
-                                                <select class="form-control" disabled
-                                                    style="background-color: #f8d7da; border-color: #f5c2c7; cursor: not-allowed; color: #dc3545; font-weight: bold;"
-                                                    title="Student not enrolled in this subject">
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($editingMarkId === $student->id)
+                                            <select wire:model="specialGrades.{{ $student->id }}" class="form-control" @if ($this->getStudentMark($student->id) || ($this->isSubjectSelectionEnabled($selectedClass) && !$this->isStudentEnrolledInSubject($student->id, $selectedSubject))) disabled @endif>
+                                                <option value="">Select Grade</option>
+                                                <option value="X">X - Absence</option>
+                                                <option value="Y">Y - Malpractice</option>
+                                                <option value="Z">Z - Misconduct</option>
+                                            </select>
+                                        @else
+                                            @if ($this->getStudentSpecialGrade($student->id))
+                                                {{ $this->getStudentSpecialGrade($student->id) }}
+                                            @elseif ($this->isSubjectSelectionEnabled($selectedClass) && !$this->isStudentEnrolledInSubject($student->id, $selectedSubject))
+                                                <select class="form-control" disabled style="background-color: #f8d7da; border-color: #f5c2c7; cursor: not-allowed; color: #dc3545; font-weight: bold;" title="Student not enrolled in this subject">
                                                     <option value="">Not Enrolled</option>
                                                 </select>
                                             @else
-                                                <select wire:model="specialGrades.{{ $student->id }}"
-                                                    class="form-control"
-                                                    @if (!empty($this->marks[$student->id])) disabled @endif>
-                                                    <option value="">Assign Special Grade</option>
-                                                    <option value="X">X - Absence</option>
-                                                    <option value="Y">Y - Malpractice</option>
-                                                    <option value="Z">Z - Misconduct</option>
-                                                </select>
-                                            @endif
-                                        </td>
-                                        @error("marks.{$student->id}")
-                                            <div class="text-danger">{{ $message }}</div>
-                                        @enderror
-                                        @error("specialGrades.{$student->id}")
-                                            <div class="text-danger">{{ $message }}</div>
-                                        @enderror
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                        <button wire:click="assignMarks" class="btn btn-primary mt-3">Assign Marks/Grades</button>
-                    @else
-                        <h5 class="h6 font-weight-bold">Marks Assignment for {{ $selectedSubjectName }}:</h5>
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Student (Admission No)</th>
-                                    <th>Marks</th>
-                                    <th>Special Grade</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($students as $student)
-                                    @php
-                                        // Check if subject selection is enabled and if the student is enrolled
-                                        $isEnrolled = $this->isStudentEnrolledInSubject($student->id, $selectedSubject);
-                                        $isSubjectSelectionEnabled = $this->isSubjectSelectionEnabled($selectedClass);
-
-                                        // Get the assigned mark or special grade for the student
-                                        $assignedMark = collect($assignedMarks)
-                                            ->where('student_id', $student->id)
-                                            ->first();
-                                        $hasMarks = !empty($assignedMark->marks);
-                                        $hasSpecialGrade = !empty($assignedMark->special_grade);
-                                    @endphp
-                                    <tr>
-                                        <td>{{ $student->first_name }} {{ $student->last_name }}
-                                            ({{ $student->adm_no }})
-                                        </td>
-                                        <td>
-                                            @if ($editingMarkId === $student->id)
-                                                <input type="number" wire:model="marks.{{ $student->id }}"
-                                                    class="form-control" placeholder="Enter marks" min="0"
-                                                    max="100" @if ($hasSpecialGrade || ($isSubjectSelectionEnabled && !$isEnrolled)) disabled @endif />
-                                            @else
-                                                @if ($hasMarks)
-                                                    {{ $assignedMark->marks }}
-                                                @elseif ($isSubjectSelectionEnabled && !$isEnrolled)
-                                                    <input type="number" class="form-control"
-                                                        placeholder="Not Enrolled in {{ $selectedSubjectName }}"
-                                                        disabled
-                                                        style="background-color: #f8d7da; border-color: #f5c2c7; cursor: not-allowed; color: #dc3545; font-weight: bold;"
-                                                        title="Student not enrolled in this subject" />
-                                                @else
-                                                    <input type="number" wire:model="marks.{{ $student->id }}"
-                                                        class="form-control" placeholder="Enter marks" min="0"
-                                                        max="100" />
-                                                @endif
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if ($editingMarkId === $student->id)
-                                                <select wire:model="specialGrades.{{ $student->id }}"
-                                                    class="form-control"
-                                                    @if ($hasMarks || ($isSubjectSelectionEnabled && !$isEnrolled)) disabled @endif>
+                                                <select wire:model="specialGrades.{{ $student->id }}" class="form-control">
                                                     <option value="">Select Grade</option>
                                                     <option value="X">X - Absence</option>
                                                     <option value="Y">Y - Malpractice</option>
                                                     <option value="Z">Z - Misconduct</option>
                                                 </select>
+                                            @endif
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($this->getStudentMark($student->id) || $this->getStudentSpecialGrade($student->id))
+                                            @if ($editingMarkId === $student->id)
+                                                <button wire:click="updateMark({{ $student->id }})" class="btn btn-success btn-sm">Save</button>
+                                                <button wire:click="$set('editingMarkId', null)" class="btn btn-secondary btn-sm">Cancel</button>
                                             @else
-                                                @if ($hasSpecialGrade)
-                                                    {{ $assignedMark->special_grade }}
-                                                @elseif ($isSubjectSelectionEnabled && !$isEnrolled)
-                                                    <select class="form-control" disabled
-                                                        style="background-color: #f8d7da; border-color: #f5c2c7; cursor: not-allowed; color: #dc3545; font-weight: bold;"
-                                                        title="Student not enrolled in this subject">
-                                                        <option value="">Not Enrolled</option>
-                                                    </select>
-                                                @else
-                                                    <select wire:model="specialGrades.{{ $student->id }}"
-                                                        class="form-control">
-                                                        <option value="">Select Grade</option>
-                                                        <option value="X">X - Absence</option>
-                                                        <option value="Y">Y - Malpractice</option>
-                                                        <option value="Z">Z - Misconduct</option>
-                                                    </select>
-                                                @endif
+                                                <button wire:click="editMark({{ $student->id }})" class="btn btn-warning btn-sm">Edit</button>
                                             @endif
-                                        </td>
-                                        <td>
-                                            @if ($hasMarks || $hasSpecialGrade)
-                                                @if ($editingMarkId === $student->id)
-                                                    <button wire:click="updateMark({{ $student->id }})"
-                                                        class="btn btn-success btn-sm">Save</button>
-                                                    <button wire:click="$set('editingMarkId', null)"
-                                                        class="btn btn-secondary btn-sm">Cancel</button>
-                                                @else
-                                                    <button wire:click="editMark({{ $student->id }})"
-                                                        class="btn btn-warning btn-sm">Edit</button>
-                                                @endif
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                        <button wire:click="assignMarks" class="btn btn-primary mt-3">Assign Marks/Grades</button>
-                    @endif
-                @else
-                    <p class="mt-4 text-info">No students found in the selected stream for
-                        {{ $selectedSubjectName }}.</p>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                    <button wire:click="assignMarks" class="btn btn-primary mt-3">Assign Marks/Grades</button>
                 @endif
             @else
-                <p class="mt-4 text-warning">Please select a stream to view the students.</p>
+                <!-- No Students Found -->
+                <p class="mt-4 text-info">No students found in the selected stream for {{ $selectedSubjectName }}.</p>
             @endif
-        </div>
-</div>
+        @else
+            <!-- No Stream Selected -->
+            <p class="mt-4 text-warning">Please select a stream to view the students.</p>
+        @endif
+    </div>
 @endif
 
 </div>

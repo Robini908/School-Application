@@ -39,7 +39,7 @@
                                 <label for="examYear" class="form-label">Year</label>
                                 <div class="input-group">
                                     <input type="number" wire:model.live.debounce.500ms="selectedExamYear"
-                                        id="examYear" class="form-control" placeholder="Enter Exam Year">
+                                        id="examYear" class="form-control" placeholder="Enter Exam Year" disabled>
                                     <div wire:loading wire:target="selectedExamYear" class="input-group-append">
                                         <span class="input-group-text">
                                             <div class="spinner-border spinner-border-sm" role="status"></div>
@@ -53,7 +53,7 @@
                                 <label for="yearAdmitted" class="form-label">Year Admitted</label>
                                 <div class="input-group">
                                     <input type="number" wire:model.live.debounce.500ms="selectedYearAdmitted"
-                                        id="yearAdmitted" class="form-control" placeholder="Enter Year Admitted">
+                                        id="yearAdmitted" class="form-control" placeholder="Enter Year Admitted" disabled>
                                     <div wire:loading wire:target="selectedYearAdmitted" class="input-group-append">
                                         <span class="input-group-text">
                                             <div class="spinner-border spinner-border-sm" role="status"></div>
@@ -67,7 +67,7 @@
                                 <label for="term" class="form-label">Term</label>
                                 <div class="input-group">
                                     <select wire:model.live="selectedTerm" id="term" class="form-control select2"
-                                        wire:loading.attr="disabled">
+                                        wire:loading.attr="disabled" disabled>
                                         <option value="">Select Term</option>
                                         @foreach ($terms as $term)
                                             <option value="{{ $term->id }}">{{ $term->name }}</option>
@@ -108,7 +108,7 @@
                                 <label for="section" class="form-label">Section</label>
                                 <div class="input-group">
                                     <select wire:model.live="selectedSection" id="section"
-                                        class="form-control select2" wire:loading.attr="disabled">
+                                        class="form-control select2" wire:loading.attr="disabled" disabled>
                                         <option value="">Select Section</option>
                                         @foreach ($sections as $section)
                                             <option value="{{ $section->id }}">{{ $section->name }}</option>
@@ -147,58 +147,57 @@
                     </div>
 
                     <!-- Display applied filters with "x" icon for individual reset -->
-                    <div class=" row mt-2">
-                        @if ($selectedExamYear)
-                            <span class="badge badge-info">
-                                Year: {{ $selectedExamYear }}
-                                <button wire:click="resetFilter('selectedExamYear')"
-                                    class="btn btn-sm btn-light">x</button>
-                            </span>
-                        @endif
-                        @if ($selectedClass)
-                            <span class="badge badge-info">
-                                Class: {{ optional($classes->firstWhere('id', $selectedClass))->name }}
-                                <button wire:click="resetFilter('selectedClass')"
-                                    class="btn btn-sm btn-light">x</button>
-                            </span>
-                        @endif
-                        @if ($selectedYearAdmitted)
-                            <span class="badge badge-info">
-                                Year Admitted: {{ $selectedYearAdmitted }}
-                                <button wire:click="resetFilter('selectedYearAdmitted')"
-                                    class="btn btn-sm btn-light">x</button>
-                            </span>
-                        @endif
-                        @if ($selectedSection)
-                            <span class="badge badge-info">
-                                Section: {{ optional($sections->firstWhere('id', $selectedSection))->name }}
-                                <button wire:click="resetFilter('selectedSection')"
-                                    class="btn btn-sm btn-light">x</button>
-                            </span>
-                        @endif
-                        {{-- @if ($selectedTerm)
+                    <div class="row mt-2">
+                        <!-- Applied Filters -->
+                        <div class="col">
+                            @if ($selectedExamYear)
                                 <span class="badge badge-info">
-                                    Term: {{ optional($terms->firstWhere('id', $selectedTerm))->name }}
-                                    <button wire:click="resetFilter('selectedTerm')"
-                                        class="btn btn-sm btn-light">x</button>
+                                    Year: {{ $selectedExamYear }}
+                                    <button wire:click="resetFilter('selectedExamYear')"
+                                        class="btn btn-sm btn-light ml-1">x</button>
                                 </span>
-                            @endif --}}
-                        @if ($selectedExam)
-                            <span class="badge badge-info">
-                                Exam: {{ optional($exams->firstWhere('id', $selectedExam))->name }}
-                                <button wire:click="resetFilter('selectedExam')"
-                                    class="btn btn-sm btn-light">x</button>
-                            </span>
-                        @endif
+                            @endif
+                            @if ($selectedClass)
+                                <span class="badge badge-info">
+                                    Class: {{ optional($classes->firstWhere('id', $selectedClass))->name }}
+                                    <button wire:click="resetFilter('selectedClass')"
+                                        class="btn btn-sm btn-light ml-1">x</button>
+                                </span>
+                            @endif
+                            @if ($selectedYearAdmitted)
+                                <span class="badge badge-info">
+                                    Year Admitted: {{ $selectedYearAdmitted }}
+                                    <button wire:click="resetFilter('selectedYearAdmitted')"
+                                        class="btn btn-sm btn-light ml-1">x</button>
+                                </span>
+                            @endif
+                            @if ($selectedSection)
+                                <span class="badge badge-info">
+                                    Section: {{ optional($sections->firstWhere('id', $selectedSection))->name }}
+                                    <button wire:click="resetFilter('selectedSection')"
+                                        class="btn btn-sm btn-light ml-1">x</button>
+                                </span>
+                            @endif
+                            @if ($selectedExam)
+                                <span class="badge badge-info">
+                                    Exam: {{ optional($exams->firstWhere('id', $selectedExam))->name }}
+                                    <button wire:click="resetFilter('selectedExam')"
+                                        class="btn btn-sm btn-light ml-1">x</button>
+                                </span>
+                            @endif
+                        </div>
+                        <!-- Reset All Filters Button -->
+                        <div class="col-auto">
+                            @if ($selectedClass)
+                                <button wire:click="resetAllFilters" class="btn btn-secondary btn-sm ml-2"
+                                    wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top"
+                                    title="Reset Selections">
+                                    <i class="fas fa-sync-alt"></i> <!-- Font Awesome sync icon -->
+                                </button>
+                            @endif
+                        </div>
                     </div>
 
-                    @if ($selectedClass)
-                        <button wire:click="resetAllFilters" class="btn btn-secondary ml-2"
-                            wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top"
-                            title="Reset Selections">
-                            <i class="fas fa-sync-alt"></i> <!-- Font Awesome sync icon -->
-                        </button>
-                    @endif
                 </div>
 
                 <link
@@ -330,7 +329,7 @@
                                                         <!-- Display the dominant special grade -->
                                                     @else
                                                         @if (isset($mark['total_points']))
-                                                            {{ $this->getMeanGrade($mark['total_points'], $exam->gradingSystem->id) }}
+                                                            {{ \App\Helpers\StudentHelper::getMeanGrade($mark['total_points'], $exam->gradingSystem->id) }}
                                                         @else
                                                             N/A
                                                         @endif

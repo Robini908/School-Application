@@ -14,10 +14,12 @@ use App\Models\GradingRange;
 use Livewire\WithPagination;
 use App\Models\GradingSystem;
 use App\Models\StudentRecord;
+use App\Helpers\StudentHelper;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\StudentDetailsExport;
+use Illuminate\Support\Facades\Response;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
 
 class MarkListManagement extends Component
@@ -132,6 +134,48 @@ class MarkListManagement extends Component
         return $data;
     }
 
+    public function exportMarksPdf()
+    {
+        // Ensure all filters are applied
+        if (!$this->filtersApplied) {
+            session()->flash('error', 'Please select a class, exam, and section before exporting.');
+            return;
+        }
+
+        // Fetch the marks data based on the selected filters
+        $this->fetchMarks();
+
+        // Check if marks are available
+        if ($this->marks->isEmpty()) {
+            session()->flash('error', 'No marks available to export.');
+            return;
+        }
+
+        // Create a new mPDF instance
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'default_font' => 'helvetica',
+        ]);
+
+        // Generate the HTML content for the PDF
+        $html = view('pdf.marklist', [
+            'marks' => $this->marks,
+            'class' => MyClass::find($this->classId),
+            'section' => Section::find($this->sectionId),
+            'exam' => Exam::find($this->examId),
+        ])->render();
+
+        // Write the HTML content to the PDF
+        $mpdf->WriteHTML($html);
+
+        // Output the PDF as a download
+        $pdfContent = $mpdf->Output('', 'S'); // 'S' returns the PDF as a string
+        return Response::make($pdfContent, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="marklist.pdf"',
+        ]);
+    }
 
     // Add use statement for Mpdf
 
@@ -217,6 +261,63 @@ class MarkListManagement extends Component
             'gradingSystemDetails' => $this->gradingSystemDetails,
             'studentAdditionalDetails' => $this->studentAdditionalDetails,
         ]);
+    }
+
+    public function fetchMarks()
+    {
+        if ($this->sectionId && $this->examId) {
+            // Fetch student IDs from the selected section
+            $studentIds = StudentRecord::where('section_id', $this->sectionId)->pluck('id');
+
+            // Fetch marks using model IDs and eager load relationships
+            $marks = ExamMarks::with(['student', 'subject'])
+                ->where('exam_id', $this->examId)
+                ->whereIn('student_id', $studentIds)
+                ->get();
+
+            // Get all subjects that can be displayed in the table
+            $allSubjects = ExamMarks::with('subject')->where('exam_id', $this->examId)->pluck('subject_id')->unique();
+
+            // Check if subject selection is enabled for the class
+            $isSelectionEnabled = MyClass::where('id', function ($query) {
+                $query->select('my_class_id')->from('sections')->where('id', $this->sectionId);
+            })->first()?->subjectSelectionSetting?->is_subject_selection_enabled ?? false;
+
+            // Format marks to include student names and subject names
+            $this->marks = $marks->groupBy('student_id')->map(function ($marks, $studentId) use ($allSubjects, $isSelectionEnabled) {
+                $firstMark = $marks->first(); // Get the first mark to fetch student details
+
+                // Create a default array with '--' for all subjects if selection is enabled
+                $subjectMarks = $allSubjects->mapWithKeys(function ($subjectId) use ($marks, $studentId, $isSelectionEnabled) {
+                    $subjectMark = $marks->firstWhere('subject_id', $subjectId);
+                    $subjectName = $subjectMark ? $subjectMark->subject->subject_name : 'N/A';
+
+                    if ($isSelectionEnabled) {
+                        // Check if the student is enrolled in the subject
+                        $isEnrolled = $this->isStudentEnrolledInSubject($studentId, $subjectId);
+                        if (!$isEnrolled) {
+                            return [$subjectName => '--'];
+                        }
+                    }
+
+                    // If the student has a special grade, display it
+                    if ($subjectMark && $subjectMark->special_grade) {
+                        return [$subjectName => $subjectMark->special_grade];
+                    }
+
+                    // Otherwise, display the marks or '--'
+                    return [$subjectName => $subjectMark?->marks ?? '--'];
+                });
+
+                return [
+                    'student_name' => $firstMark->student->first_name . ' ' . $firstMark->student->last_name,
+                    'adm_no' => $firstMark->student->adm_no, // Add admission number
+                    'marks' => $subjectMarks,
+                ];
+            });
+        } else {
+            $this->marks = collect(); // Reset if no valid selections
+        }
     }
 
     public function updatedClassId()
@@ -330,61 +431,11 @@ class MarkListManagement extends Component
         $this->streamPosition = 'N/A';
     }
     // Calculate class position based on total marks
-    private function calculateClassPosition($student, $exam)
+    
+
+    public function getFiltersAppliedProperty()
     {
-        $students = StudentRecord::where('my_class_id', $student->my_class_id)->get();
-        $studentScores = [];
-
-        foreach ($students as $studentRecord) {
-            $totalMarks = ExamMarks::where('student_id', $studentRecord->id)
-                ->where('exam_id', $exam->id)
-                ->sum('marks');
-
-            $studentScores[] = ['student_id' => $studentRecord->id, 'total_marks' => $totalMarks];
-        }
-
-        // Sort students by total marks in descending order
-        usort($studentScores, function ($a, $b) {
-            return $b['total_marks'] <=> $a['total_marks'];
-        });
-
-        // Find position of the current student
-        foreach ($studentScores as $index => $studentScore) {
-            if ($studentScore['student_id'] == $student->id) {
-                return $index + 1; // Return position
-            }
-        }
-
-        return 'N/A';
-    }
-
-    // Calculate stream position based on total marks
-    private function calculateStreamPosition($student, $exam)
-    {
-        $students = StudentRecord::where('section_id', $student->section_id)->get();
-        $studentScores = [];
-
-        foreach ($students as $studentRecord) {
-            $totalMarks = ExamMarks::where('student_id', $studentRecord->id)
-                ->where('exam_id', $exam->id)
-                ->sum('marks');
-
-            $studentScores[] = ['student_id' => $studentRecord->id, 'total_marks' => $totalMarks];
-        }
-
-        // Sort students by total marks in descending order
-        usort($studentScores, function ($a, $b) {
-            return $b['total_marks'] <=> $a['total_marks'];
-        });
-
-        // Find position of the current student
-        foreach ($studentScores as $index => $studentScore) {
-            if ($studentScore['student_id'] == $student->id) {
-                return $index + 1;
-            }
-        }
-
-        return 'N/A';
+        return $this->classId && $this->examId && $this->sectionId;
     }
 
 
@@ -442,90 +493,36 @@ class MarkListManagement extends Component
         $this->studentDetails = []; // Reset student details
     }
 
-    public function fetchMarks()
-    {
-        if ($this->sectionId && $this->examId) {
-            // Fetch student IDs from the selected section
-            $studentIds = StudentRecord::where('section_id', $this->sectionId)->pluck('id');
 
-            // Fetch marks using model IDs and eager load relationships
-            $marks = ExamMarks::with(['student', 'subject'])
-                ->where('exam_id', $this->examId)
-                ->whereIn('student_id', $studentIds)
-                ->get();
 
-            // Get all subjects that can be displayed in the table
-            $allSubjects = ExamMarks::with('subject')->where('exam_id', $this->examId)->pluck('subject_id')->unique();
-
-            // Check if subject selection is enabled for the class
-            $isSelectionEnabled = MyClass::where('id', function ($query) {
-                $query->select('my_class_id')->from('sections')->where('id', $this->sectionId);
-            })->first()?->subjectSelectionSetting?->is_subject_selection_enabled ?? false;
-
-            // Format marks to include student names and subject names
-            $this->marks = $marks->groupBy('student_id')->map(function ($marks, $studentId) use ($allSubjects, $isSelectionEnabled) {
-                $firstMark = $marks->first(); // Get the first mark to fetch student details
-
-                // Create a default array with '--' for all subjects if selection is enabled
-                $subjectMarks = $allSubjects->mapWithKeys(function ($subjectId) use ($marks, $studentId, $isSelectionEnabled) {
-                    $subjectMark = $marks->firstWhere('subject_id', $subjectId);
-                    $subjectName = $subjectMark ? $subjectMark->subject->subject_name : 'N/A';
-
-                    if ($isSelectionEnabled) {
-                        // Check if the student is enrolled in the subject
-                        $isEnrolled = $this->isStudentEnrolledInSubject($studentId, $subjectId);
-                        if (!$isEnrolled) {
-                            return [$subjectName => '--'];
-                        }
-                    }
-
-                    // If the student has a special grade, display it
-                    if ($subjectMark && $subjectMark->special_grade) {
-                        return [$subjectName => $subjectMark->special_grade];
-                    }
-
-                    // Otherwise, display the marks or '--'
-                    return [$subjectName => $subjectMark?->marks ?? '--'];
-                });
-
-                return [
-                    'student_name' => $firstMark->student->first_name . ' ' . $firstMark->student->last_name,
-                    'adm_no' => $firstMark->student->adm_no, // Add admission number
-                    'marks' => $subjectMarks,
-                ];
-            });
-        } else {
-            $this->marks = collect(); // Reset if no valid selections
-        }
-    }
     public function fetchStudentDetails($admNo)
     {
         // Fetch the student by admission number
         $student = StudentRecord::with('my_class', 'section')->where('adm_no', $admNo)->first();
-
+    
         if (!$student) {
             return $this->resetStudentDetails();
         }
-
+    
         // Get the latest exam the student participated in
         $exam = Exam::whereHas('examMarks', function ($query) use ($student) {
             $query->where('student_id', $student->id);
         })->orderBy('created_at', 'desc')->first();
-
+    
         if (!$exam) {
             return $this->resetStudentDetails();
         }
-
+    
         // Initialize variables
         $this->initializeStudentDetails();
         $gradingSystem = $exam->gradingSystem;
-
+    
         if ($gradingSystem) {
             $this->fetchMarksAndDetails($student, $exam, $gradingSystem);
         } else {
             $this->fetchMarksWithoutGradingSystem($student);
         }
-
+    
         // Fetch class and section names
         $this->studentAdditionalDetails = [
             'class_name' => $student->my_class->name ?? 'N/A',
@@ -536,11 +533,11 @@ class MarkListManagement extends Component
             'middle_name' => $student->middle_name,
             'last_name' => $student->last_name,
         ];
-
-        // Calculate positions
-        $this->classPosition = $this->calculateClassPosition($student, $exam);
-        $this->streamPosition = $this->calculateStreamPosition($student, $exam);
-
+    
+        // Calculate positions using StudentHelper
+        $this->classPosition = StudentHelper::calculateClassPosition($student, $exam);
+        $this->streamPosition = StudentHelper::calculateStreamPosition($student, $exam);
+    
         // Set exam-related details
         $this->selectedAdmNo = $admNo;
         $this->examName = $exam->name;

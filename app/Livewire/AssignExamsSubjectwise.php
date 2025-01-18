@@ -10,6 +10,7 @@ use Livewire\Component;
 use App\Models\ExamMarks;
 use Livewire\WithPagination;
 use App\Models\StudentRecord;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
@@ -26,7 +27,9 @@ class AssignExamsSubjectwise extends Component
     public $selectedExam;
     public $selectedSubject;
     public $selectedSection;
-    public $students = [];
+    /** @var Collection<int, StudentRecord> */
+    public $students;
+
     public $marks = []; // Holds the marks assigned to each student
     public $selectedSubjectName; // Holds the selected subject name
     public $assignedMarks; // Holds the assigned marks for the selected exam and subject
@@ -34,16 +37,19 @@ class AssignExamsSubjectwise extends Component
 
     // For filtering in the table view
     public $filterClass;
+
     public $filterExam;
     public $filterSubject;
     public $selectedClassName; // Holds the selected class name
+    public $editingSpecialGradeId = null;
+
 
     public $filterSection;
 
     public function mount()
     {
         // Initialize collections and variables
-        $this->students = collect();
+        $this->students = collect(); // Initialize as an empty collection
         $this->assignedMarks = collect();
         $this->marks = [];
         $this->editingMarkId = null;
@@ -54,42 +60,70 @@ class AssignExamsSubjectwise extends Component
         $this->selectedSubject = null;
     }
 
+    
 
+    public function isStudentEnrolledInSubject($studentId, $subjectId)
+    {
+        $student = StudentRecord::find($studentId);
+        if (!$student) return false;
 
-    // Populate marks array for rendering in the view
+        $isSelectionEnabled = MyClass::find($student->my_class_id)
+            ->subjectSelectionSetting
+            ->is_subject_selection_enabled ?? false;
+
+        if (!$isSelectionEnabled) return true;
+
+        return $student->subjects->contains('id', $subjectId);
+    }
+
+    public function isSubjectSelectionEnabled($classId)
+    {
+        $class = MyClass::find($classId);
+        return $class?->subjectSelectionSetting?->is_subject_selection_enabled ?? false;
+    }
+
+    public function getStudentMark($studentId)
+    {
+        return $this->assignedMarks
+            ->where('student_id', $studentId)
+            ->first()
+            ->marks ?? null;
+    }
+
+    public function getStudentSpecialGrade($studentId)
+    {
+        return $this->assignedMarks
+            ->where('student_id', $studentId)
+            ->first()
+            ->special_grade ?? null;
+    }
+
     public function render()
     {
         $classes = MyClass::all();
-
-        // Fetch exams for the selected class
         $exams = $this->selectedClass
             ? Exam::where('class_id', $this->selectedClass)->get()
             : collect();
-
-        // Fetch subjects via the grading system associated with the selected exam
         $subjects = $this->selectedExam
             ? Subject::whereHas('gradingSystems', function ($query) {
                 $query->where('grading_systems.id', Exam::find($this->selectedExam)->grading_system_id);
             })->get()
             : collect();
-
         $sections = $this->selectedClass
             ? Section::where('my_class_id', $this->selectedClass)->get()
             : collect();
 
-
-
+        // Fetch students for the selected section
         $this->students = StudentRecord::with(['section', 'subjects'])
             ->where('my_class_id', $this->selectedClass)
             ->where('section_id', $this->selectedSection)
             ->get();
 
+        // Sort students: Enrolled students first, non-enrolled students last
+        $this->students = $this->students->sortBy(function ($student) {
+            return !$this->isStudentEnrolledInSubject($student->id, $this->selectedSubject);
+        });
 
-
-
-
-
-        // Set selected names for class, exam, and subject
         $this->selectedClassName = $this->selectedClass
             ? MyClass::find($this->selectedClass)->class_name
             : null;
@@ -97,18 +131,12 @@ class AssignExamsSubjectwise extends Component
             ? Exam::find($this->selectedExam)->name
             : null;
 
-
-
-        // Fetch marks assigned to students for the selected exam and subject
         $this->assignedMarks = ($this->selectedExam && $this->selectedSubject)
             ? ExamMarks::where('exam_id', $this->selectedExam)
             ->where('subject_id', $this->selectedSubject)
             ->with('student')
             ->get()
             : collect();
-
-        // Populate marks for rendering
-        $this->populateMarksArray();
 
         return view('livewire.assign-exams-subjectwise', [
             'classes' => $classes,
@@ -120,44 +148,6 @@ class AssignExamsSubjectwise extends Component
             'selectedSubjectName' => $this->selectedSubjectName,
         ]);
     }
-    /**
-     * Check if subject selection is enabled for a specific class.
-     *
-     * @param int $classId
-     * @return bool
-     */
-    protected function isSubjectSelectionEnabled($classId)
-    {
-        // Check the MyClass model via the subjectSelectionSetting relationship
-        $class = MyClass::find($classId);
-        return $class?->subjectSelectionSetting?->is_subject_selection_enabled ?? false;
-    }
-
-    private function isStudentEnrolledInSubject($studentId, $subjectId)
-    {
-        $student = StudentRecord::find($studentId);
-
-        if (!$student) {
-            return false;
-        }
-
-        // Check if subject selection is enabled for the class
-        $isSelectionEnabled = MyClass::find($student->my_class_id)
-            ->subjectSelectionSetting
-            ->is_subject_selection_enabled ?? false;
-
-        // If subject selection is disabled, treat all students as enrolled
-        if (!$isSelectionEnabled) {
-            return true;
-        }
-
-        // Otherwise, check if the student is explicitly enrolled in the subject
-        return $student->subjects->contains('id', $subjectId);
-    }
-
-
-
-
 
     public function populateMarksArray()
     {
@@ -167,22 +157,15 @@ class AssignExamsSubjectwise extends Component
         }
     }
 
-
-
-
-
-
     public function updatedSelectedClass($classId)
     {
         $this->reset(['selectedExam', 'selectedSubject', 'selectedSection', 'students', 'assignedMarks']);
     }
 
-
     public function updatedSelectedExam($examId)
     {
         $this->reset(['selectedSubject', 'selectedSection', 'students']);
     }
-
 
     public function updatedSelectedSection($sectionId)
     {
@@ -203,7 +186,6 @@ class AssignExamsSubjectwise extends Component
 
         $this->populateMarksArray(); // Update marks array for UI
     }
-
 
 
     public function updatedSelectedSubject($subjectId)
@@ -327,7 +309,7 @@ class AssignExamsSubjectwise extends Component
             $this->specialGrades[$studentId] = null; // Clear special grade
         }
     }
-    
+
     // When special grades are updated
     public function updatedSpecialGrades($value, $studentId)
     {
@@ -336,26 +318,26 @@ class AssignExamsSubjectwise extends Component
             $this->marks[$studentId] = null; // Clear marks
         }
     }
-    
- 
 
-// Custom method to handle marks input
-public function handleMarksInput($value, $studentId)
-{
-    // If marks are entered, clear and disable the special grade field for this student
-    if (!empty($value)) {
-        $this->specialGrades[$studentId] = null; // Clear special grade
-    }
-}
 
-// Custom method to handle special grade selection
-public function handleSpecialGradeInput($value, $studentId)
-{
-    // If a special grade is selected, clear the marks field for this student
-    if (!empty($value)) {
-        $this->marks[$studentId] = null; // Clear marks
+
+    // Custom method to handle marks input
+    public function handleMarksInput($value, $studentId)
+    {
+        // If marks are entered, clear and disable the special grade field for this student
+        if (!empty($value)) {
+            $this->specialGrades[$studentId] = null; // Clear special grade
+        }
     }
-}
+
+    // Custom method to handle special grade selection
+    public function handleSpecialGradeInput($value, $studentId)
+    {
+        // If a special grade is selected, clear the marks field for this student
+        if (!empty($value)) {
+            $this->marks[$studentId] = null; // Clear marks
+        }
+    }
 
     public function refreshAssignedMarks()
     {
