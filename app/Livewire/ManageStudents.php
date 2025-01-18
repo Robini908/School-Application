@@ -31,6 +31,7 @@ class ManageStudents extends Component
     public $file; // For file upload
     public $notificationContent; // For rich text editor content
 
+    public $searchTerm = '';
     public $showDeleteModal = false;
 
     protected $mystudent; // Change to protected
@@ -146,55 +147,64 @@ class ManageStudents extends Component
 
 
     public function sendStudentMail($studentId)
-    {
-        // Find the student based on the ID
-        $student = StudentRecord::findOrFail($studentId);
+{
+    // Find the student based on the ID
+    $student = StudentRecord::findOrFail($studentId);
 
-        // Validate the uploaded file
-        $this->validate([
-            'file' => 'nullable|mimes:pdf,jpg,png|max:10240', // Allow specific file types up to 10MB
-        ]);
+    // Validate the form inputs
+    $this->validate([
+        'notificationContent' => 'required|string', // Ensure email content is provided
+        'file' => 'nullable|mimes:pdf,jpg,png|max:10240', // Allow specific file types up to 10MB
+    ]);
 
-        // Store the file if uploaded
-        $filePath = $this->file ? $this->file->store('email_attachments', 'public') : null;
-
-        // Prepare email data
-        $emailData = [
-            'studentName' => "{$student->first_name} {$student->last_name}",
-            'parentName'  => $student->parent_detail->parent_first_name ?? '',
-            'notificationContent' => $this->notificationContent,
-            'filePath' => $filePath,
-        ];
-
-        // Try sending the email
+    // Store the file if uploaded
+    $filePath = null;
+    if ($this->file) {
         try {
-            Mail::send('emails.student-notification', $emailData, function ($message) use ($student, $filePath) {
-                $message->to($student->email)->subject('Important Notification for Student');
-                // Check if parent email exists and cc it
-                if ($student->parent_detail->parent_email) {
-                    $message->cc($student->parent_detail->parent_email, 'Parent Notification');
-                }
-                // Attach the file if uploaded
-                if ($filePath) {
-                    $message->attach(storage_path("app/public/{$filePath}"));
-                }
-            });
-
-            // If email sent successfully, notify user
-            $this->alert('success', 'Email sent successfully with attachment.');
+            $filePath = $this->file->store('email_attachments', 'public');
         } catch (\Exception $e) {
-            // Handle any errors that occur during email sending
-            $this->alert('error', 'Failed to send email: ' . $e->getMessage());
+            $this->alert('error', 'Failed to upload file: ' . $e->getMessage());
+            return;
         }
     }
 
+    // Prepare email data
+    $emailData = [
+        'studentName' => "{$student->first_name} {$student->last_name}",
+        'parentName'  => $student->parent_detail->parent_first_name ?? '',
+        'notificationContent' => $this->notificationContent, // TinyMCE content
+        'filePath' => $filePath,
+    ];
 
-    public function isSendingStudentMail($studentId)
+    // Try sending the email
+    try {
+        Mail::send('emails.student-notification', $emailData, function ($message) use ($student, $filePath) {
+            $message->to($student->email)->subject('Important Notification for Student');
+
+            // Check if parent email exists and cc it
+            if (!empty($student->parent_detail->parent_email)) {
+                $message->cc($student->parent_detail->parent_email, 'Parent Notification');
+            }
+
+            // Attach the file if uploaded
+            if ($filePath) {
+                $message->attach(storage_path("app/public/{$filePath}"));
+            }
+        });
+
+        // If email sent successfully, notify user and reset form fields
+        $this->alert('success', 'Email sent successfully with attachment.');
+        $this->reset(['notificationContent', 'file']); // Reset form fields
+
+    } catch (\Exception $e) {
+        // Handle any errors that occur during email sending
+        $this->alert('error', 'Failed to send email: ' . $e->getMessage());
+    }
+}    public function viewStudent($studentId)
     {
-        // View student details and set flags
-        $this->selectedStudent = StudentRecord::find($studentId);
-        $this->isSendingStudentMail = true;
-        $this->resetOtherFlags('isSendingStudentMail');
+        $this->selectedStudent = StudentRecord::findOrFail($studentId);
+        $this->isViewingDetails = true;
+        $this->resetOtherFlags('isViewingDetails');
     }
 
 
@@ -248,10 +258,29 @@ class ManageStudents extends Component
             $query->whereIn('id', $students->pluck('id'));
         }
 
+        // Apply search term if provided
+        if (!empty($this->searchTerm)) {
+            $searchTerm = '%' . $this->searchTerm . '%'; // Add wildcards for partial matching
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('parent_id_no', 'LIKE', $searchTerm)
+                    ->orWhere('adm_no', 'LIKE', $searchTerm)
+                    ->orWhere('year_admitted', 'LIKE', $searchTerm)
+                    ->orWhere('kcpe', 'LIKE', $searchTerm)
+                    ->orWhere('first_name', 'LIKE', $searchTerm)
+                    ->orWhere('middle_name', 'LIKE', $searchTerm)
+                    ->orWhere('last_name', 'LIKE', $searchTerm)
+                    ->orWhere('email', 'LIKE', $searchTerm)
+                    ->orWhere('gender', 'LIKE', $searchTerm)
+                    ->orWhere('phone', 'LIKE', $searchTerm)
+                    ->orWhere('nationality', 'LIKE', $searchTerm)
+                    ->orWhere('state', 'LIKE', $searchTerm)
+                    ->orWhere('town', 'LIKE', $searchTerm);
+            });
+        }
+
         // Return the paginated results directly in the view
         return $query->paginate(20);
     }
-
     public function render()
     {
         return view('livewire.manage-students', [
@@ -297,77 +326,7 @@ class ManageStudents extends Component
         }
     }
 
-    // View Student Details
-    public function viewStudent($studentId)
-    {
-        $this->selectedStudent = StudentRecord::findOrFail($studentId);
-        $this->isViewingDetails = true;
-        $this->resetOtherFlags('isViewingDetails');
-    }
-
-    public function editField($field)
-    {
-        $this->editingFields[$field] = true; // Enable editing mode for the field
-    }
-
-    public function saveField($field)
-    {
-        $this->validateOnly("selectedStudent.$field", [
-            "selectedStudent.$field" => 'required|string|max:255',
-        ]);
-
-        $this->selectedStudent->save(); // Save updated data to the database
-        unset($this->editingFields[$field]); // Exit editing mode for the field
-    }
-
-    public function cancelEdit($field)
-    {
-        unset($this->editingFields[$field]); // Exit editing mode for the field
-        $this->selectedStudent->refresh(); // Refresh data from the database
-    }
-
-    public function editAll()
-    {
-        $this->isEditingAll = true; // Enable editing mode for all fields
-    }
-
-    public function saveAll()
-    {
-        $this->validate([
-            'selectedStudent.first_name' => 'required|string|max:255',
-            'selectedStudent.last_name' => 'required|string|max:255',
-            'selectedStudent.email' => 'required|email',
-            'selectedStudent.parent_id_no' => 'nullable|string|max:255',
-            'selectedStudent.my_class_id' => 'required|integer|exists:my_classes,id',
-            'selectedStudent.section_id' => 'required|integer|exists:sections,id',
-            'selectedStudent.adm_no' => 'nullable|string|max:30|unique:student_records,adm_no,' . $this->selectedStudent->id,
-            'selectedStudent.dorm_id' => 'nullable|integer|exists:dorms,id',
-            'selectedStudent.year_admitted' => 'nullable|string|max:4',
-            'selectedStudent.kcpe' => 'required|string',
-            'selectedStudent.middle_name' => 'nullable|string|max:255',
-            'selectedStudent.gender' => 'required|string|in:male,female,other',
-            'selectedStudent.phone' => 'nullable|string|max:15',
-            'selectedStudent.dob' => 'nullable|date',
-            'selectedStudent.nal_id' => 'nullable|integer',
-            'selectedStudent.state_id' => 'nullable|integer',
-            'selectedStudent.lga_id' => 'nullable|integer',
-            'selectedStudent.town' => 'nullable|string|max:255',
-            'selectedStudent.bg_id' => 'nullable|integer',
-            'selectedStudent.photo' => 'nullable|string|max:255',
-            'selectedStudent.status' => 'nullable|string|max:255',
-
-        ]);
-
-        $this->selectedStudent->save(); // Save updated data to the database
-        $this->isEditingAll = false; // Exit editing mode for all fields
-    }
-
-    public function cancelEditAll()
-    {
-        $this->isEditingAll = false; // Exit editing mode for all fields
-        $this->selectedStudent->refresh(); // Refresh data from the database
-    }
-
+    
 
     public function studentExpulsion($studentId)
     {

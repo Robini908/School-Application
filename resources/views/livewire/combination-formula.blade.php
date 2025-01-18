@@ -53,7 +53,8 @@
                                 <label for="yearAdmitted" class="form-label">Year Admitted</label>
                                 <div class="input-group">
                                     <input type="number" wire:model.live.debounce.500ms="selectedYearAdmitted"
-                                        id="yearAdmitted" class="form-control" placeholder="Enter Year Admitted" disabled>
+                                        id="yearAdmitted" class="form-control" placeholder="Enter Year Admitted"
+                                        disabled>
                                     <div wire:loading wire:target="selectedYearAdmitted" class="input-group-append">
                                         <span class="input-group-text">
                                             <div class="spinner-border spinner-border-sm" role="status"></div>
@@ -580,9 +581,10 @@
 
                                         <!-- Button for Quick Analysis -->
                                         <button wire:click="quickAnalyzeCombinedResults"
-                                            class="btn btn-success bt-sm ml-2" wire:loading.attr="disabled">
-                                            <span wire:loading.remove wire:target="quickAnalyzeCombinedResults">Quick
-                                                Analyze</span>
+                                            class="btn btn-success btn-sm ml-2" wire:loading.attr="disabled">
+                                            <span wire:loading.remove wire:target="quickAnalyzeCombinedResults">
+                                                Quick Analyze
+                                            </span>
                                             <span wire:loading wire:target="quickAnalyzeCombinedResults">
                                                 <span class="spinner-border spinner-border-sm" role="status"
                                                     aria-hidden="true"></span>

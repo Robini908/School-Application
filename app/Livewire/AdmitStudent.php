@@ -9,6 +9,8 @@ use Livewire\Component;
 use App\Models\BloodGroup;
 use App\Models\ParentDetail;
 use App\Models\StudentRecord;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\StudentAdmissionMail;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\DB;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
@@ -16,7 +18,7 @@ use Jantinnerezo\LivewireAlert\LivewireAlert;
 class AdmitStudent extends Component
 {
     use WithFileUploads;
-     use LivewireAlert;
+    use LivewireAlert;
 
     // Step management
     public $currentStep = 1;
@@ -223,6 +225,7 @@ class AdmitStudent extends Component
     }
 
     // Submit the form
+
     public function submit()
     {
         $this->validate();
@@ -273,6 +276,9 @@ class AdmitStudent extends Component
             ]);
         }
 
+        // Send admission email to both parent and student
+        $this->sendAdmissionEmail($student, $parent);
+
         // Reset form
         $this->reset();
         $this->alert('success', 'Student admission successful!', [
@@ -281,9 +287,38 @@ class AdmitStudent extends Component
             'toast' => true,
             'timerProgressBar' => true,
         ]);
-
     }
 
+    protected function sendAdmissionEmail($student, $parent)
+    {
+        try {
+            // Load relationships for the student
+            $student->load('my_class', 'section', 'dorm');
+
+            // School details (replace with your actual school details or fetch from config)
+            $schoolName = config('app.name', 'Your School Name');
+            $schoolWebsite = config('app.url', 'https://yourschool.com');
+            $schoolEmail = config('mail.from.address', 'info@yourschool.com');
+
+            // Prepare email data
+            $emailData = [
+                'student' => $student,
+                'schoolName' => $schoolName,
+                'schoolWebsite' => $schoolWebsite,
+                'schoolEmail' => $schoolEmail,
+            ];
+
+            // Send email to the student
+            Mail::to($student->email)->send(new StudentAdmissionMail($emailData));
+
+            // Send email to the parent
+            Mail::to($parent->parent_email)->send(new StudentAdmissionMail($emailData));
+        } catch (\Exception $e) {
+            // Log the error and show a warning to the user
+            \Log::error('Failed to send admission email: ' . $e->getMessage());
+            $this->alert('warning', 'Admission email could not be sent. Please contact the student and parent manually.');
+        }
+    }
     public function render()
     {
         return view('livewire.admit-student', [

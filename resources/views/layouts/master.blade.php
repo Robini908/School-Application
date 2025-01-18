@@ -13,17 +13,27 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('partials.inc_top')
     @livewireStyles
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        tinymce.init({
+            selector: '#tinyMCE', // ID of the textarea
+            plugins: 'advlist autolink lists link image charmap preview anchor pagebreak',
+            toolbar: 'undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image',
+            height: 300,
+        });
+    </script>
 </head>
 
-<body class="{{ in_array(Route::currentRouteName(), ['payments.invoice', 'marks.tabulation', 'marks.show', 'ttr.manage', 'ttr.show']) ? 'sidebar-xs' : '' }}">
+<body
+    class="{{ in_array(Route::currentRouteName(), ['payments.invoice', 'marks.tabulation', 'marks.show', 'ttr.manage', 'ttr.show']) ? 'sidebar-xs' : '' }}">
 
     <!-- Top Navigation Bar -->
     @include('partials.top_menu')
 
     <div class="page-content d-flex">
         <!-- Sidebar -->
-        <div class="sidebar sidebar-dark sidebar-main sidebar-expand-md position-sticky" 
-             style="top: 56px; height: calc(100vh - 56px); overflow-y: auto;">
+        <div class="sidebar sidebar-dark sidebar-main sidebar-expand-md position-sticky"
+            style="top: 56px; height: calc(100vh - 56px); overflow-y: auto;">
             @include('partials.menu')
         </div>
 

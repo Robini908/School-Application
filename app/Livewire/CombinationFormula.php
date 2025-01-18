@@ -675,7 +675,6 @@ class CombinationFormula extends Component
 
     public function quickAnalyzeCombinedResults()
     {
-        // Validate inputs
         $this->validate([
             'selectedExams' => 'required|array|min:2',
             'selectedClass' => 'required|exists:my_classes,id',
@@ -690,7 +689,7 @@ class CombinationFormula extends Component
             ],
         ]);
 
-        $this->loading = true;
+        $this->loading = true; // Start loading
 
         try {
             // Fetch data for all selected exams
@@ -724,7 +723,6 @@ class CombinationFormula extends Component
                     continue;
                 }
 
-                // Store exam data with percentage contribution
                 $examsData[] = [
                     'exam' => $exam,
                     'students' => $students,
@@ -772,10 +770,9 @@ class CombinationFormula extends Component
             // Add error to Livewire error bag
             $this->addError('combined_analysis', "Failed to process combined exam data: {$e->getMessage()}");
         } finally {
-            $this->loading = false;
+            $this->loading = false; // Stop loading
         }
     }
-
     public function updatedSelectedClass($classId)
     {
         $this->loading = true;

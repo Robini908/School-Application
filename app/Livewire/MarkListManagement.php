@@ -17,8 +17,12 @@ use App\Models\StudentRecord;
 use App\Helpers\StudentHelper;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\StudentDetailsExport;
+use Illuminate\Support\Facades\Hash;
+
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Response;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
 
@@ -179,43 +183,6 @@ class MarkListManagement extends Component
 
     // Add use statement for Mpdf
 
-    public function exportToPDF()
-    {
-        try {
-            $data = $this->prepareExportData();
-
-            // Render the Blade view to HTML
-            $html = view('exports.student-details-pdf', $data)->render();
-
-            // Create an instance of Mpdf with landscape orientation
-            $mpdf = new \Mpdf\Mpdf([
-                'mode' => 'utf-8',
-                'format' => 'A4-L', // A4 size in landscape orientation
-                'default_font' => 'sans-serif', // Use a default font
-                'margin_left' => 10,
-                'margin_right' => 10,
-                'margin_top' => 10,
-                'margin_bottom' => 10,
-                'margin_header' => 5,
-                'margin_footer' => 5,
-            ]);
-
-            // Write the HTML to the PDF
-            $mpdf->WriteHTML($html);
-
-            // Generate the file name based on the student's name and admission number
-            $studentName = $data['studentAdditionalDetails']['first_name'] . '_' . $data['studentAdditionalDetails']['last_name'];
-            $admissionNo = $data['selectedAdmNo'];
-            $fileName = 'report_mark_for_' . str_replace(' ', '_', $studentName) . '_' . $admissionNo . '.pdf';
-
-            // Output the PDF as a download with the generated file name
-            return response()->streamDownload(function () use ($mpdf) {
-                echo $mpdf->Output('', 'S');
-            }, $fileName);
-        } catch (\Exception $e) {
-            $this->alert('error', 'Failed to export to PDF: ' . $e->getMessage());
-        }
-    }
 
 
 
@@ -431,7 +398,7 @@ class MarkListManagement extends Component
         $this->streamPosition = 'N/A';
     }
     // Calculate class position based on total marks
-    
+
 
     public function getFiltersAppliedProperty()
     {
@@ -494,35 +461,80 @@ class MarkListManagement extends Component
     }
 
 
+    public function exportToPDF()
+    {
+        try {
+            $data = $this->prepareExportData();
 
+            // Render the Blade view to HTML
+            $html = view('exports.student-details-pdf', $data)->render();
+
+            // Create an instance of Mpdf with landscape orientation
+            $mpdf = new \Mpdf\Mpdf([
+                'mode' => 'utf-8',
+                'format' => 'A4-L', // A4 size in landscape orientation
+                'default_font' => 'sans-serif', // Use a default font
+                'margin_left' => 10,
+                'margin_right' => 10,
+                'margin_top' => 10,
+                'margin_bottom' => 10,
+                'margin_header' => 5,
+                'margin_footer' => 5,
+            ]);
+
+            // Write the HTML to the PDF
+            $mpdf->WriteHTML($html);
+
+            // Generate the file name based on the student's name and admission number
+            $studentName = $data['studentAdditionalDetails']['first_name'] . '_' . $data['studentAdditionalDetails']['last_name'];
+            $admissionNo = $data['selectedAdmNo'];
+            $fileName = 'report_mark_for_' . str_replace(' ', '_', $studentName) . '_' . $admissionNo . '.pdf';
+
+            // Ensure the directory exists
+            $directory = storage_path('app/public/reports');
+            if (!file_exists($directory)) {
+                mkdir($directory, 0777, true);
+            }
+
+            // Save the PDF to a temporary file
+            $pdfPath = $directory . '/' . $fileName;
+            $mpdf->Output($pdfPath, 'F');
+
+            return $pdfPath;
+        } catch (\Exception $e) {
+            // Log the error and throw an exception
+            \Log::error('Failed to export to PDF: ' . $e->getMessage());
+            throw new \Exception('Failed to generate PDF: ' . $e->getMessage());
+        }
+    }
     public function fetchStudentDetails($admNo)
     {
         // Fetch the student by admission number
         $student = StudentRecord::with('my_class', 'section')->where('adm_no', $admNo)->first();
-    
+
         if (!$student) {
             return $this->resetStudentDetails();
         }
-    
+
         // Get the latest exam the student participated in
         $exam = Exam::whereHas('examMarks', function ($query) use ($student) {
             $query->where('student_id', $student->id);
         })->orderBy('created_at', 'desc')->first();
-    
+
         if (!$exam) {
             return $this->resetStudentDetails();
         }
-    
+
         // Initialize variables
         $this->initializeStudentDetails();
         $gradingSystem = $exam->gradingSystem;
-    
+
         if ($gradingSystem) {
             $this->fetchMarksAndDetails($student, $exam, $gradingSystem);
         } else {
             $this->fetchMarksWithoutGradingSystem($student);
         }
-    
+
         // Fetch class and section names
         $this->studentAdditionalDetails = [
             'class_name' => $student->my_class->name ?? 'N/A',
@@ -533,17 +545,63 @@ class MarkListManagement extends Component
             'middle_name' => $student->middle_name,
             'last_name' => $student->last_name,
         ];
-    
+
         // Calculate positions using StudentHelper
         $this->classPosition = StudentHelper::calculateClassPosition($student, $exam);
         $this->streamPosition = StudentHelper::calculateStreamPosition($student, $exam);
-    
+
         // Set exam-related details
         $this->selectedAdmNo = $admNo;
         $this->examName = $exam->name;
         $this->showingDetails = true;
+
+        // Generate and send the report (if data has changed)
+        $this->generateAndSendReport($student, $exam);
     }
 
+    protected function generateAndSendReport($student, $exam)
+    {
+        try {
+            // Prepare the data for hashing
+            $data = $this->prepareExportData();
+            $dataHash = md5(json_encode($data)); // Generate a hash of the data
+
+            // Check if the data has changed
+            $cacheKey = "report_data_hash_{$student->id}_{$exam->id}";
+            $previousHash = Cache::get($cacheKey);
+
+            if ($previousHash === $dataHash) {
+                // Data hasn't changed, don't send the email again
+                $this->alert('info', 'Report data has not changed. Email not sent again.');
+                return;
+            }
+
+            // Generate the PDF
+            $pdfPath = $this->exportToPDF();
+
+            // Ensure the PDF was generated successfully
+            if (!$pdfPath || !file_exists($pdfPath)) {
+                throw new \Exception('Failed to generate PDF: File not found.');
+            }
+
+            // Send the email with the PDF attachment
+            Mail::send('emails.student-report', ['student' => $student], function ($message) use ($student, $pdfPath) {
+                $message->to($student->email)
+                    ->subject('Your Academic Performance Report')
+                    ->attach($pdfPath, [
+                        'as' => 'student_report.pdf',
+                        'mime' => 'application/pdf',
+                    ]);
+            });
+
+            // Store the new data hash in the cache
+            Cache::put($cacheKey, $dataHash, now()->addHours(24)); // Cache for 24 hours
+
+            $this->alert('success', 'Report generated and sent successfully.');
+        } catch (\Exception $e) {
+            $this->alert('error', 'Failed to send report: ' . $e->getMessage());
+        }
+    }
     private function initializeStudentDetails()
     {
         $this->studentDetails = [];
@@ -568,6 +626,16 @@ class MarkListManagement extends Component
         // Fetch all subjects in the grading system with their categories
         $subjects = $gradingSystem->subjects->load('category');
 
+        // Check if subject selection is enabled for the student's class
+        $isSubjectSelectionEnabled = $this->isSubjectSelectionEnabled($student->my_class->id);
+
+        // If subject selection is enabled, filter subjects based on enrollment
+        if ($isSubjectSelectionEnabled) {
+            $subjects = $subjects->filter(function ($subject) use ($student) {
+                return $this->isStudentEnrolledInSubject($student->id, $subject->id);
+            });
+        }
+
         // Group subjects into science and non-science
         $scienceSubjects = $subjects->filter(fn($subject) => $subject->category->name === 'Sciences');
         $otherSubjects = $subjects->filter(fn($subject) => $subject->category->name !== 'Sciences');
@@ -584,26 +652,32 @@ class MarkListManagement extends Component
             ];
         });
 
-        // Select the best 2 science subjects (ignore subjects with no marks or special grades)
-        $scienceMarks = $allMarks->filter(function ($mark) use ($scienceSubjects) {
-            return $scienceSubjects->contains('id', $mark['subject']->id) &&
-                ($mark['marks'] !== null || $mark['special_grade'] !== null);
-        })->sortByDesc(function ($mark) {
-            // Sort by marks if available, otherwise treat as lowest priority
-            return $mark['marks'] ?? -1;
-        })->take(2);
+        // If subject selection is enabled, select the best 2 science subjects and top 5 other subjects
+        if ($isSubjectSelectionEnabled) {
+            // Select the best 2 science subjects (ignore subjects with no marks or special grades)
+            $scienceMarks = $allMarks->filter(function ($mark) use ($scienceSubjects) {
+                return $scienceSubjects->contains('id', $mark['subject']->id) &&
+                    ($mark['marks'] !== null || $mark['special_grade'] !== null);
+            })->sortByDesc(function ($mark) {
+                // Sort by marks if available, otherwise treat as lowest priority
+                return $mark['marks'] ?? -1;
+            })->take(2);
 
-        // Select the top 5 other subjects (ignore subjects with no marks or special grades)
-        $otherMarks = $allMarks->filter(function ($mark) use ($otherSubjects) {
-            return $otherSubjects->contains('id', $mark['subject']->id) &&
-                ($mark['marks'] !== null || $mark['special_grade'] !== null);
-        })->sortByDesc(function ($mark) {
-            // Sort by marks if available, otherwise treat as lowest priority
-            return $mark['marks'] ?? -1;
-        })->take(5);
+            // Select the top 5 other subjects (ignore subjects with no marks or special grades)
+            $otherMarks = $allMarks->filter(function ($mark) use ($otherSubjects) {
+                return $otherSubjects->contains('id', $mark['subject']->id) &&
+                    ($mark['marks'] !== null || $mark['special_grade'] !== null);
+            })->sortByDesc(function ($mark) {
+                // Sort by marks if available, otherwise treat as lowest priority
+                return $mark['marks'] ?? -1;
+            })->take(5);
 
-        // Combine the selected subjects
-        $selectedSubjects = $scienceMarks->merge($otherMarks);
+            // Combine the selected subjects
+            $selectedSubjects = $scienceMarks->merge($otherMarks);
+        } else {
+            // If subject selection is disabled, include all subjects
+            $selectedSubjects = $allMarks;
+        }
 
         // Initialize variables for totals and special grades
         $this->totalMarks = 0;

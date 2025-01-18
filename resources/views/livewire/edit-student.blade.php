@@ -1,7 +1,5 @@
 <div>
-    <h2 class="text-center  mb-2">
-        Edit <strong class="text-success">{{ $first_name }} {{ $middle_name }} {{ $last_name }} (Adm: {{ $adm_no }})</strong> details.
-    </h2>
+    
     <!-- Success Message -->
     @if (session()->has('message'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -18,7 +16,7 @@
                 {{ $editPersonalDetails ? 'Cancel' : 'Edit' }}
             </button>
         </div>
-        <div class="card shadow-sm p-4">
+        <div class="p-4">
             @if ($editPersonalDetails)
                 <form wire:submit.prevent="save">
                     <div class="row g-4">
@@ -122,7 +120,7 @@
                 {{ $editAcademicDetails ? 'Cancel' : 'Edit' }}
             </button>
         </div>
-        <div class="card shadow-sm p-4">
+        <div class="p-4">
             @if ($editAcademicDetails)
                 <form wire:submit.prevent="save">
                     <div class="row g-4">
@@ -204,7 +202,7 @@
                 {{ $editParentDetails ? 'Cancel' : 'Edit' }}
             </button>
         </div>
-        <div class="card shadow-sm p-4">
+        <div class="p-4">
             @if ($editParentDetails)
                 <form wire:submit.prevent="save">
                     <div class="row g-4">
@@ -305,7 +303,7 @@
                 {{ $editPassword ? 'Cancel' : 'Edit' }}
             </button>
         </div>
-        <div class="card shadow-sm p-4">
+        <div class="p-4">
             @if ($editPassword)
                 <form wire:submit.prevent="savePassword">
                     <div class="row g-4">

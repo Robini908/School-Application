@@ -63,7 +63,7 @@
 
                     <div>
                         <table class="table table-bordered" style="width: 100%; table-layout: auto;">
-                            <thead class="thead-light">
+                            <thead class="thead-light sticky-md-top">
                                 <tr>
                                     <th>Name</th>
                                     <th>Capacity</th>
@@ -225,7 +225,7 @@
                     <div class="card-body">
                         @if (count($studentsInDorm) > 0)
                             <table class="table table-bordered">
-                                <thead>
+                                <thead class="sticky-top">
                                     <tr>
                                         <th>SN</th>
                                         <th>Name</th>
