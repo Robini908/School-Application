@@ -143,8 +143,18 @@ class MarkListManagement extends Component
             // Render the Blade view to HTML
             $html = view('exports.student-details-pdf', $data)->render();
 
-            // Create an instance of Mpdf
-            $mpdf = new Mpdf();
+            // Create an instance of Mpdf with landscape orientation
+            $mpdf = new \Mpdf\Mpdf([
+                'mode' => 'utf-8',
+                'format' => 'A4-L', // A4 size in landscape orientation
+                'default_font' => 'sans-serif', // Use a default font
+                'margin_left' => 10,
+                'margin_right' => 10,
+                'margin_top' => 10,
+                'margin_bottom' => 10,
+                'margin_header' => 5,
+                'margin_footer' => 5,
+            ]);
 
             // Write the HTML to the PDF
             $mpdf->WriteHTML($html);
@@ -162,7 +172,6 @@ class MarkListManagement extends Component
             $this->alert('error', 'Failed to export to PDF: ' . $e->getMessage());
         }
     }
-
 
 
 
@@ -549,106 +558,119 @@ class MarkListManagement extends Component
 
     private function fetchMarksAndDetails($student, $exam, $gradingSystem)
     {
-        // Fetch all marks for the student in the exam
-        $marks = ExamMarks::with('subject')
+        // Reset all properties to avoid stale data
+        $this->resetProperties();
+
+        // Fetch all marks for the student in the exam with subject and category details
+        $marks = ExamMarks::with(['subject.category'])
             ->where('student_id', $student->id)
             ->where('exam_id', $exam->id)
             ->get()
             ->keyBy('subject_id');
 
-        // Fetch all subjects in the grading system
-        $subjects = $gradingSystem->subjects;
+        // Fetch all subjects in the grading system with their categories
+        $subjects = $gradingSystem->subjects->load('category');
 
         // Group subjects into science and non-science
-        $scienceSubjects = $subjects->filter(function ($subject) {
-            return $subject->category->name === 'Sciences'; // Adjust category name as needed
-        });
+        $scienceSubjects = $subjects->filter(fn($subject) => $subject->category->name === 'Sciences');
+        $otherSubjects = $subjects->filter(fn($subject) => $subject->category->name !== 'Sciences');
 
-        $otherSubjects = $subjects->filter(function ($subject) {
-            return $subject->category->name !== 'Sciences'; // Adjust category name as needed
-        });
-
-        // Get all marks for science and non-science subjects
-        $allMarks = [];
-        foreach ($subjects as $subject) {
-            $marksValue = $marks->get($subject->id)->marks ?? null;
-            $specialGrade = $marks->get($subject->id)->special_grade ?? null;
-
-            if ($marksValue === null && $specialGrade === null) {
-                continue; // Skip subjects with no marks or special grades
-            }
-
-            $allMarks[$subject->id] = [
-                'subject' => $subject,
-                'marks' => $marksValue,
-                'special_grade' => $specialGrade,
+        // Collect all marks for science and non-science subjects
+        $allMarks = $subjects->mapWithKeys(function ($subject) use ($marks) {
+            $mark = $marks->get($subject->id);
+            return [
+                $subject->id => [
+                    'subject' => $subject,
+                    'marks' => $mark ? $mark->marks : null,
+                    'special_grade' => $mark ? $mark->special_grade : null,
+                ],
             ];
-        }
+        });
 
-        // Select the best 2 science subjects
-        $scienceMarks = collect($allMarks)->filter(function ($mark) use ($scienceSubjects) {
-            return $scienceSubjects->contains('id', $mark['subject']->id);
-        })->sortByDesc('marks')->take(2);
+        // Select the best 2 science subjects (ignore subjects with no marks or special grades)
+        $scienceMarks = $allMarks->filter(function ($mark) use ($scienceSubjects) {
+            return $scienceSubjects->contains('id', $mark['subject']->id) &&
+                ($mark['marks'] !== null || $mark['special_grade'] !== null);
+        })->sortByDesc(function ($mark) {
+            // Sort by marks if available, otherwise treat as lowest priority
+            return $mark['marks'] ?? -1;
+        })->take(2);
 
-        // Select the top 5 other subjects
-        $otherMarks = collect($allMarks)->filter(function ($mark) use ($otherSubjects) {
-            return $otherSubjects->contains('id', $mark['subject']->id);
-        })->sortByDesc('marks')->take(5);
+        // Select the top 5 other subjects (ignore subjects with no marks or special grades)
+        $otherMarks = $allMarks->filter(function ($mark) use ($otherSubjects) {
+            return $otherSubjects->contains('id', $mark['subject']->id) &&
+                ($mark['marks'] !== null || $mark['special_grade'] !== null);
+        })->sortByDesc(function ($mark) {
+            // Sort by marks if available, otherwise treat as lowest priority
+            return $mark['marks'] ?? -1;
+        })->take(5);
 
         // Combine the selected subjects
         $selectedSubjects = $scienceMarks->merge($otherMarks);
 
-        // Process the selected subjects
+        // Initialize variables for totals and special grades
+        $this->totalMarks = 0;
+        $this->totalPoints = 0;
         $specialGradesCount = [];
-        foreach ($selectedSubjects as $subjectId => $markData) {
+
+        // Process the selected subjects
+        $selectedSubjects->each(function ($markData) use ($gradingSystem, &$specialGradesCount) {
             $subject = $markData['subject'];
             $marksValue = $markData['marks'];
             $specialGrade = $markData['special_grade'];
 
+            // Ensure $marksValue is treated as a numeric value
+            $marksValue = is_numeric($marksValue) ? (float)$marksValue : null;
+
             if ($specialGrade) {
                 // Count the occurrence of each special grade
                 $specialGradesCount[$specialGrade] = ($specialGradesCount[$specialGrade] ?? 0) + 1;
+
                 $this->studentDetails[] = [
                     'subject_name' => $subject->subject_name,
-                    'marks' => null, // Marks are null for special grades
+                    'marks' => null,
                     'grade' => $specialGrade,
                     'remark' => ExamMarks::getSpecialGrades()[$specialGrade] ?? 'N/A',
                     'gpa' => 'N/A',
-                    'special_grade' => $specialGrade, // Add special grade to the details
+                    'special_grade' => $specialGrade,
                 ];
             } else {
+                // Find the grading range for the marks
                 $gradingRange = GradingRange::where('grading_system_id', $gradingSystem->id)
                     ->where('subject_id', $subject->id)
                     ->where('range_from', '<=', $marksValue)
                     ->where('range_to', '>=', $marksValue)
                     ->first();
 
+                // Handle cases where GPA is not provided
+                $gpa = $gradingRange->gpa ?? 0; // Default to 0 if GPA is not provided
+
                 $this->studentDetails[] = [
                     'subject_name' => $subject->subject_name,
                     'marks' => $marksValue,
                     'grade' => $gradingRange->grade ?? 'N/A',
                     'remark' => $gradingRange->remark ?? 'N/A',
-                    'gpa' => $gradingRange->gpa ?? 'N/A',
-                    'special_grade' => null, // No special grade
+                    'gpa' => $gpa,
+                    'special_grade' => null,
                 ];
 
-                $this->totalMarks += $marksValue;
-                $this->totalPoints += $gradingRange->gpa ?? 0;
+                // Update totals only if marks are present and numeric
+                if ($marksValue !== null && is_numeric($marksValue)) {
+                    $marksValue = (float)$marksValue; // Explicitly cast to float
+                    $this->totalMarks += $marksValue;
+                    $this->totalPoints += $gpa; // Use the default GPA value if not provided
+                }
             }
-        }
-
-        // Calculate mean score (only for subjects with marks, not special grades)
-        $subjectsWithMarks = $selectedSubjects->filter(function ($mark) {
-            return $mark['marks'] !== null;
         });
 
+        // Calculate mean score (only for subjects with marks, not special grades)
+        $subjectsWithMarks = $selectedSubjects->filter(fn($mark) => $mark['marks'] !== null && is_numeric($mark['marks']));
         $this->meanScore = $subjectsWithMarks->count() > 0 ? $this->totalMarks / $subjectsWithMarks->count() : '--';
 
         // Determine the dominant special grade
         if (!empty($specialGradesCount)) {
             arsort($specialGradesCount);
-            $dominantSpecialGrade = array_key_first($specialGradesCount);
-            $this->meanGrade = $dominantSpecialGrade; // Set mean grade to the dominant special grade
+            $this->meanGrade = array_key_first($specialGradesCount);
             $this->meanScore = '--'; // Set mean score to '--' for students with special grades
         } else {
             // Calculate mean grade for students with no special grades
@@ -663,6 +685,18 @@ class MarkListManagement extends Component
         ];
     }
 
+    /**
+     * Reset all properties to avoid stale data.
+     */
+    private function resetProperties()
+    {
+        $this->studentDetails = [];
+        $this->totalMarks = 0;
+        $this->totalPoints = 0;
+        $this->meanScore = '--';
+        $this->meanGrade = null;
+        $this->gradingSystemDetails = [];
+    }
     public function getMeanGrade($totalPoints, $gradingSystemId)
     {
         try {

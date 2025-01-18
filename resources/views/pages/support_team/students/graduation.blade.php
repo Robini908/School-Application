@@ -9,8 +9,7 @@
         </div>
 
         <div class="card-body">
-            {{-- @livewire('manage-student-transitions') --}}
-            <livewire:promote-students lazy />
+            <livewire:graduate-students lazy />
         </div>
     </div>
 

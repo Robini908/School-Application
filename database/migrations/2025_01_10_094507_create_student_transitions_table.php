@@ -15,7 +15,7 @@ class CreateStudentTransitionsTable extends Migration
             $table->id(); // Primary key
             $table->unsignedInteger('student_id')->constrained('student_records')->onDelete('cascade'); // Links to the student
             $table->year('transition_year'); // Academic year of the transition
-            $table->enum('transition_type', ['promotion', 'demotion', 'repetition', 'graduation']); // Type of transition
+            $table->enum('transition_type', allowed: ['promotion', 'demotion', 'repetition', 'graduation']); // Type of transition
             $table->unsignedInteger('target_class_id')->nullable()->constrained('my_classes')->onDelete('set null'); // Target class (if applicable)
             $table->unsignedInteger('target_section_id')->nullable()->constrained('sections')->onDelete('set null'); // Target section (if applicable)
             $table->text('reason')->nullable(); // Reason for the transition

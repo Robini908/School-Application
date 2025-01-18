@@ -11,7 +11,10 @@ return [
         'toast' => true,
         'text' => null,
         'showCancelButton' => false,
-        'showConfirmButton' => false
+        'showConfirmButton' => false,
+        'timerProgressBar' => true // Enable progress bar
+       
+
     ],
     'confirm' => [
         'icon' => 'warning',
@@ -24,7 +27,7 @@ return [
         'confirmButtonColor' => '#3085d6',
         'cancelButtonColor' => '#d33'
     ],
-    'toast_with_progress' => [
+    'toast' => [
         'position' => 'top-end',
         'timer' => 5000,
         'toast' => true,

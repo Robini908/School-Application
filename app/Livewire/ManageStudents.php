@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\DisapprovalNotification;
 use App\Notifications\StudentExpelled;
 use App\Notifications\StudentSuspended;
+use App\Helpers\StudentHelper; // Import the helper
 
 
 class ManageStudents extends Component
@@ -50,9 +51,12 @@ class ManageStudents extends Component
     public $isViewingDetails = false;
     public $isExpellingStudent = false;
 
+    public $transitionYearFilter; // New filter for transition 
+
     public $isSuspendingStudent = false; // Renamed from isExpellingStudent
     public $currentStep = 1;
     public $suspensionEndDate; // Renamed from expulsionEndDate
+
 
     public $isRejectingStudent = false;
     public $noResults = false;
@@ -69,7 +73,7 @@ class ManageStudents extends Component
     public $forms = [];
     public $isDisapproving = false;
     public $sections = [];
-    public $statuses = ['Active', 'Inactive'];
+    public $statuses = ['verified', 'unverified'];
 
 
 
@@ -203,7 +207,16 @@ class ManageStudents extends Component
         $this->loadStudents();
     }
 
+    public function getTransitionYears()
+    {
+        $currentYear = now()->year;
+        $startYear = 2020; // You can adjust this start year as needed
+        return range($startYear, $currentYear);
+    }
+
+
     // Inside your Livewire component
+
     public function loadStudents()
     {
         // Start the query with eager loading of related models
@@ -227,6 +240,14 @@ class ManageStudents extends Component
             $query->where('status', $this->statusFilter);
         }
 
+        // Apply transition year filter if selected
+        if (!empty($this->transitionYearFilter)) {
+            // Use the helper to get students for the selected transition year
+            $students = StudentHelper::getStudentsByTransitionYear($this->transitionYearFilter);
+            // Merge the filtered students with the existing query
+            $query->whereIn('id', $students->pluck('id'));
+        }
+
         // Return the paginated results directly in the view
         return $query->paginate(20);
     }
@@ -234,44 +255,9 @@ class ManageStudents extends Component
     public function render()
     {
         return view('livewire.manage-students', [
-
             'students' => $this->loadStudents(), // Pass paginated results directly to the view
+            'transitionYears' => $this->getTransitionYears(), // Pass years for the dropdown
         ]);
-    }
-
-    public function generatePdfReport()
-    {
-        $students = $this->loadStudents();
-
-        // Generate PDF report using MPDF
-        $mpdf = \MPDF::Create('L', 'mm', 'A4');
-
-        // Set the title and author of the PDF
-        $mpdf->SetTitle('Student Report');
-        $mpdf->SetAuthor('Your Name');
-
-        // Add a page to the PDF
-        $mpdf->AddPage();
-
-        // Set the font and size for the report
-        $mpdf->SetFont('Arial', '', 15);
-
-        // Add a header row to the report
-        $mpdf->Cell(200, 10, 'Name', 0, 1, 'C');
-        $mpdf->Cell(200, 10, 'Class', 0, 1, 'C');
-        $mpdf->Cell(200, 10, 'Section', 0, 1, 'C');
-
-        // Add each student's data to the report
-        foreach ($students as $student) {
-            $mpdf->Cell(200, 10, $student->name, 0, 1);
-            $mpdf->Cell(200, 10, $student->my_class->name, 0, 1);
-            $mpdf->Cell(200, 10, $student->section->name, 0, 1);
-        }
-
-        // Output the PDF to a file
-        $filename = 'student_report.pdf';
-        $path = public_path($filename);
-        $mpdf->Output($path, 'D');
     }
 
 
@@ -353,9 +339,9 @@ class ManageStudents extends Component
             'selectedStudent.email' => 'required|email',
             'selectedStudent.parent_id_no' => 'nullable|string|max:255',
             'selectedStudent.my_class_id' => 'required|integer|exists:my_classes,id',
-            'selectedStudent.section_id' => 'required|integer|exists:sections,id', 
+            'selectedStudent.section_id' => 'required|integer|exists:sections,id',
             'selectedStudent.adm_no' => 'nullable|string|max:30|unique:student_records,adm_no,' . $this->selectedStudent->id,
-            'selectedStudent.dorm_id' => 'nullable|integer|exists:dorms,id', 
+            'selectedStudent.dorm_id' => 'nullable|integer|exists:dorms,id',
             'selectedStudent.year_admitted' => 'nullable|string|max:4',
             'selectedStudent.kcpe' => 'required|string',
             'selectedStudent.middle_name' => 'nullable|string|max:255',
@@ -644,8 +630,8 @@ class ManageStudents extends Component
         $this->resetPage(); // Reset pagination if using it
     }
 
-   
-     public function editStudent($studentId)
+
+    public function editStudent($studentId)
     {
         $this->selectedStudent = StudentRecord::findOrFail($studentId); // Retrieve the student record
         $this->isEditingStudent = true; // Set editing flag

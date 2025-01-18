@@ -355,7 +355,7 @@
                 <div class="card">
 
                     <div class="row g-3 align-items-center d-flex m-1">
-                        <div class="col-12 col-md-4">
+                        <div class="col-12 col-md-3">
                             <label for="formFilter" class="form-label">Form:</label>
                             <select id="form" class="form-select form-control p-1" wire:model.live="formFilter">
                                 <option value="">Select Form...</option>
@@ -366,7 +366,7 @@
                             </select>
                         </div>
 
-                        <div class="col-12 col-md-4">
+                        <div class="col-12 col-md-3">
                             <label for="section" class="form-label">Stream:</label>
                             <select id="section" class="form-select form-control p-1"
                                 wire:model.live="sectionFilter">
@@ -380,7 +380,7 @@
                             </select>
                         </div>
 
-                        <div class="col-12 col-md-4">
+                        <div class="col-12 col-md-3">
                             <label for="status" class="form-label">Status:</label>
                             <select id="status" class="form-select form-control p-1"
                                 wire:model.live="statusFilter">
@@ -391,6 +391,17 @@
                                 @endforeach
                             </select>
                         </div>
+
+                        <div class="col-12 col-md-3">
+                            <label for="year" class="form-label">Year:</label>
+                            <select wire:model.live="transitionYearFilter" class="form-select form-control">
+                                <option value="">Select Transition Year</option>
+                                @foreach ($transitionYears as $year)
+                                    <option value="{{ $year }}">{{ $year }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+    
                     </div>
 
 

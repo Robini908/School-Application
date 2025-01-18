@@ -42,6 +42,10 @@ class MyClass extends Model
     {
         return $this->hasMany(StudentRecord::class);
     }
+    public function sections(): HasMany
+    {
+        return $this->hasMany(Section::class, 'my_class_id');
+    }
 
     public function exams(): BelongsToMany
     {
@@ -100,10 +104,7 @@ class MyClass extends Model
     }
 
 
-    public function sections(): HasMany
-    {
-        return $this->hasMany(Section::class, 'my_class_id');
-    }
+   
 
     
 }

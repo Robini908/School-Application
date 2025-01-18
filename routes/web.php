@@ -62,6 +62,12 @@ Route::get('/pages/support_team/students/promotions_demotions', function () {
     return view('pages.support_team.students.promotions_demotions');
 })->name('students.promotions_demotions');
 
+Route::get('/pages/support_team/students/graduation', function () {
+    // Pass the examId to the view
+    return view('pages.support_team.students.graduation');
+})->name('students.graduation');
+
+
 //Route to view class details
 Route::resource('view-class', 'ViewClassController');
 Route::get('view-class', 'ViewClassController@index')->name('view-class.index');
@@ -75,16 +81,7 @@ Route::put('classmasters/{id}', 'ClassMasterController@update')->name('classmast
 Route::resource('dormasters', 'DormMasterController');
 Route::get('dormasters/{id}/edit', 'DormMasterController@edit')->name('dormasters.edit');
 Route::put('dormasters/{id}', 'DormMasterController@update')->name('dormasters.update');
-// Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-// Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
-// Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-// // Home/Dashboard Route (Protected by Auth Middleware)
-// Route::middleware('auth')->group(function () {
-//     Route::get('/home', function () {
-//         return view('home'); // Your home/dashboard view
-//     })->name('home');
-// });
 
 
 Route::resource('grading_system', 'GradingSystemController')->name('grading_system', ['except' => ['show']]);
