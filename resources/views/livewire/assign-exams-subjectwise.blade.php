@@ -1,8 +1,8 @@
-<div class="container mt-1">
+<div>
     <x-flash-messages />
     {{-- Filter Selection --}}
     <div>
-        <h4 class="h5 text-muted">Filters for Viewing and Assigning Marks</h4>
+        <h4 class="h5 text-success">In this section you will be allocating students marks in each subject</h4>
         <div class="form-row mb-1">
             <!-- Class Selection -->
             <div class="col-md-4">

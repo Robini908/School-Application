@@ -2,20 +2,23 @@
 
 namespace App\Livewire;
 
+use Maatwebsite\MPDF;
 use App\Models\MyClass;
 use App\Models\Section;
-use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Livewire\Component;
 use App\Models\ParentDetail;
 use Livewire\WithPagination;
 use App\Models\StudentRecord;
 use Livewire\WithFileUploads;
-use Maatwebsite\MPDF;
+use App\Mail\StudentApprovalMail;
 use Illuminate\Support\Facades\DB;
+use App\Mail\StudentSuspensionMail;
+use App\Services\SuspensionService;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\DisapprovalNotification;
 use App\Notifications\StudentExpelled;
 use App\Notifications\StudentSuspended;
+use Jantinnerezo\LivewireAlert\LivewireAlert;
 use App\Helpers\StudentHelper; // Import the helper
 
 
@@ -147,60 +150,61 @@ class ManageStudents extends Component
 
 
     public function sendStudentMail($studentId)
-{
-    // Find the student based on the ID
-    $student = StudentRecord::findOrFail($studentId);
+    {
+        // Find the student based on the ID
+        $student = StudentRecord::findOrFail($studentId);
 
-    // Validate the form inputs
-    $this->validate([
-        'notificationContent' => 'required|string', // Ensure email content is provided
-        'file' => 'nullable|mimes:pdf,jpg,png|max:10240', // Allow specific file types up to 10MB
-    ]);
+        // Validate the form inputs
+        $this->validate([
+            'notificationContent' => 'required|string', // Ensure email content is provided
+            'file' => 'nullable|mimes:pdf,jpg,png|max:10240', // Allow specific file types up to 10MB
+        ]);
 
-    // Store the file if uploaded
-    $filePath = null;
-    if ($this->file) {
+        // Store the file if uploaded
+        $filePath = null;
+        if ($this->file) {
+            try {
+                $filePath = $this->file->store('email_attachments', 'public');
+            } catch (\Exception $e) {
+                $this->alert('error', 'Failed to upload file: ' . $e->getMessage());
+                return;
+            }
+        }
+
+        // Prepare email data
+        $emailData = [
+            'studentName' => "{$student->first_name} {$student->last_name}",
+            'parentName'  => $student->parent_detail->parent_first_name ?? '',
+            'notificationContent' => $this->notificationContent, // TinyMCE content
+            'filePath' => $filePath,
+        ];
+
+        // Try sending the email
         try {
-            $filePath = $this->file->store('email_attachments', 'public');
+            Mail::send('emails.student-notification', $emailData, function ($message) use ($student, $filePath) {
+                $message->to($student->email)->subject('Important Notification for Student');
+
+                // Check if parent email exists and cc it
+                if (!empty($student->parent_detail->parent_email)) {
+                    $message->cc($student->parent_detail->parent_email, 'Parent Notification');
+                }
+
+                // Attach the file if uploaded
+                if ($filePath) {
+                    $message->attach(storage_path("app/public/{$filePath}"));
+                }
+            });
+
+            // If email sent successfully, notify user and reset form fields
+            $this->alert('success', 'Email sent successfully with attachment.');
+            $this->reset(['notificationContent', 'file']); // Reset form fields
+
         } catch (\Exception $e) {
-            $this->alert('error', 'Failed to upload file: ' . $e->getMessage());
-            return;
+            // Handle any errors that occur during email sending
+            $this->alert('error', 'Failed to send email: ' . $e->getMessage());
         }
     }
-
-    // Prepare email data
-    $emailData = [
-        'studentName' => "{$student->first_name} {$student->last_name}",
-        'parentName'  => $student->parent_detail->parent_first_name ?? '',
-        'notificationContent' => $this->notificationContent, // TinyMCE content
-        'filePath' => $filePath,
-    ];
-
-    // Try sending the email
-    try {
-        Mail::send('emails.student-notification', $emailData, function ($message) use ($student, $filePath) {
-            $message->to($student->email)->subject('Important Notification for Student');
-
-            // Check if parent email exists and cc it
-            if (!empty($student->parent_detail->parent_email)) {
-                $message->cc($student->parent_detail->parent_email, 'Parent Notification');
-            }
-
-            // Attach the file if uploaded
-            if ($filePath) {
-                $message->attach(storage_path("app/public/{$filePath}"));
-            }
-        });
-
-        // If email sent successfully, notify user and reset form fields
-        $this->alert('success', 'Email sent successfully with attachment.');
-        $this->reset(['notificationContent', 'file']); // Reset form fields
-
-    } catch (\Exception $e) {
-        // Handle any errors that occur during email sending
-        $this->alert('error', 'Failed to send email: ' . $e->getMessage());
-    }
-}    public function viewStudent($studentId)
+    public function viewStudent($studentId)
     {
         $this->selectedStudent = StudentRecord::findOrFail($studentId);
         $this->isViewingDetails = true;
@@ -326,7 +330,7 @@ class ManageStudents extends Component
         }
     }
 
-    
+
 
     public function studentExpulsion($studentId)
     {
@@ -375,50 +379,6 @@ class ManageStudents extends Component
         }
     }
 
-    public function confirmStudentSuspension()
-    {
-        // Validate the input fields
-        $this->validate([
-            'suspensionReason' => 'required|string|max:255',
-            'suspensionType' => 'required|in:dismissal,withdrawal,permanent_exclusion',
-            'suspensionEndDate' => 'nullable|date|after:today', // Validate the end date for temporary suspensions
-        ]);
-
-        // Update the student's suspension status
-        $this->selectedStudent->is_suspended = true;
-        $this->selectedStudent->suspension_reason = $this->suspensionReason;
-        $this->selectedStudent->suspended_by = auth()->user()->id;
-        $this->selectedStudent->suspension_date = now();
-        $this->selectedStudent->suspension_type = $this->suspensionType;
-
-        // Calculate the duration in weeks based on the end date if it's dismissal or withdrawal
-        if (in_array($this->suspensionType, ['dismissal', 'withdrawal']) && $this->suspensionEndDate) {
-            $endDate = \Carbon\Carbon::parse($this->suspensionEndDate);
-            $weeksDifference = now()->diffInWeeks($endDate);
-
-            // Set suspension end date and duration in weeks
-            $this->selectedStudent->suspension_end_date = $endDate;
-            $this->suspensionDuration = $weeksDifference;
-        } else {
-            $this->selectedStudent->suspension_end_date = null;
-        }
-
-        // Save the student record
-        $this->selectedStudent->save();
-
-        // Notify the parent of the suspended student
-        $this->sendNotificationToGuardians($this->selectedStudent);
-
-        // Reload the student list
-        $this->loadStudents();
-
-        // Reset flags and data
-        $this->isSuspendingStudent = false;
-        $this->resetSuspension();
-
-        // Set a success message
-        $this->alert('success', 'Student suspended successfully.');
-    }
 
     public function resetSuspension()
     {
@@ -485,6 +445,9 @@ class ManageStudents extends Component
         $this->selectedStudent->status = 'Approved';
         $this->selectedStudent->save();
 
+        // Send approval email to student and parent
+        $this->sendApprovalEmail($this->selectedStudent);
+
         // Notify user of successful approval
         $this->alert('success', 'Student approved successfully.');
 
@@ -495,7 +458,124 @@ class ManageStudents extends Component
         $this->isApproving = false;
     }
 
+    protected function sendApprovalEmail($student)
+    {
+        try {
+            // Load relationships for the student
+            $student->load('my_class', 'section', 'dorm', 'parent_detail');
 
+            // School details (replace with your actual school details or fetch from config)
+            $schoolName = config('app.name', 'Your School Name');
+            $schoolEmail = config('mail.from.address', 'info@yourschool.com');
+
+            // Prepare email data
+            $emailData = [
+                'student' => $student,
+                'schoolName' => $schoolName,
+                'schoolEmail' => $schoolEmail,
+            ];
+
+            // Send email to the student
+            Mail::to($student->email)->send(new StudentApprovalMail($emailData));
+
+            // Send email to the parent
+            Mail::to($student->parent_detail->parent_email)->send(new StudentApprovalMail($emailData));
+        } catch (\Exception $e) {
+            // Log the error and show a warning to the user
+            \Log::error('Failed to send approval email: ' . $e->getMessage());
+            $this->alert('warning', 'Approval email could not be sent. Please contact the student and parent manually.');
+        }
+    }
+
+
+
+
+    public function confirmStudentSuspension()
+    {
+        // Validate the input fields
+        $this->validate([
+            'suspensionReason' => 'required|string|max:255',
+            'suspensionType' => 'required|in:dismissal,withdrawal,permanent_exclusion',
+            'suspensionEndDate' => 'nullable|date|after:today', // Validate the end date for temporary suspensions
+        ]);
+
+        // Update the student's suspension status
+        $this->selectedStudent->is_suspended = true;
+        $this->selectedStudent->suspension_reason = $this->suspensionReason;
+        $this->selectedStudent->suspended_by = auth()->user()->id;
+        $this->selectedStudent->suspension_date = now();
+        $this->selectedStudent->suspension_type = $this->suspensionType;
+
+        // Calculate the duration in weeks based on the end date if it's dismissal or withdrawal
+        if (in_array($this->suspensionType, ['dismissal', 'withdrawal']) && $this->suspensionEndDate) {
+            $endDate = \Carbon\Carbon::parse($this->suspensionEndDate);
+            $weeksDifference = now()->diffInWeeks($endDate);
+
+            // Set suspension end date and duration in weeks
+            $this->selectedStudent->suspension_end_date = $endDate;
+            $this->suspensionDuration = $weeksDifference;
+        } else {
+            $this->selectedStudent->suspension_end_date = null;
+        }
+
+        // Save the student record
+        $this->selectedStudent->save();
+
+        // Generate the suspension PDF
+        $suspensionService = new SuspensionService();
+        $pdfPath = $suspensionService->generateSuspensionPdf(
+            $this->selectedStudent,
+            $this->suspensionReason,
+            $this->suspensionType,
+            $this->suspensionEndDate
+        );
+
+        // Send suspension email to student and parent with the PDF attachment
+        $this->sendSuspensionEmail($this->selectedStudent, $pdfPath);
+
+        // Reload the student list
+        $this->loadStudents();
+
+        // Reset flags and data
+        $this->isSuspendingStudent = false;
+        $this->resetSuspension();
+
+        // Set a success message
+        $this->alert('success', 'Student suspended successfully.');
+    }
+
+
+    protected function sendSuspensionEmail($student, $pdfPath)
+    {
+        try {
+            // Load relationships for the student
+            $student->load('parent_detail');
+
+            // Prepare email data
+            $emailData = [
+                'student' => $student,
+                'schoolName' => 'Mbuku ERP School', // Replace with your school name
+                'schoolAddress' => '123 School Road, Nairobi, Kenya', // Replace with your school address
+                'schoolPhone' => '+254 700 123 456', // Replace with your school phone number
+                'schoolEmail' => 'info@mbukuerp.com', // Replace with your school email
+                'suspensionReason' => $this->suspensionReason,
+                'suspensionType' => $this->suspensionType,
+                'suspensionEndDate' => $this->suspensionEndDate ? \Carbon\Carbon::parse($this->suspensionEndDate) : null,
+                'issuedBy' => auth()->user()->name, // The administrator who issued the suspension
+                'additionalNotes' => 'Please ensure all school policies are adhered to upon resumption.',
+            ];
+
+            // Send email to the student with the PDF attachment
+            Mail::to($student->email)->send(new StudentSuspensionMail($emailData, $pdfPath));
+
+            // Send email to the parent with the PDF attachment
+            Mail::to($student->parent_detail->parent_email)->send(new StudentSuspensionMail($emailData, $pdfPath));
+        } catch (\Exception $e) {
+            // Log the error and show a warning to the user
+            \Log::error('Failed to send suspension email: ' . $e->getMessage());
+            $this->alert('warning', 'Suspension email could not be sent. Please contact the student and parent manually.');
+        }
+    }
 
     // Method to cancel approval and record the reason
     public function cancelApproval()
@@ -597,47 +677,6 @@ class ManageStudents extends Component
         $this->resetOtherFlags('isEditingStudent'); // Reset any other flags if necessary
     }
 
-    public function saveStudent()
-    {
-        $this->validate([
-            'selectedStudent.parent_id_no' => 'nullable|string|max:255',
-            'selectedStudent.my_class_id' => 'required|integer|exists:my_classes,id', // Assuming my_classes table exists
-            'selectedStudent.section_id' => 'required|integer|exists:sections,id', // Assuming sections table exists
-            'selectedStudent.adm_no' => 'nullable|string|max:30|unique:student_records,adm_no,' . $this->selectedStudent->id,
-            'selectedStudent.dorm_id' => 'nullable|integer|exists:dorms,id', // Assuming dorms table exists
-            'selectedStudent.year_admitted' => 'nullable|string|max:4',
-            'selectedStudent.kcpe' => 'required|string',
-            'selectedStudent.first_name' => 'required|string|max:255',
-            'selectedStudent.middle_name' => 'nullable|string|max:255',
-            'selectedStudent.last_name' => 'required|string|max:255',
-            'selectedStudent.email' => 'nullable|email|max:255',
-            'selectedStudent.gender' => 'required|string|in:male,female,other', // Specify allowed genders
-            'selectedStudent.phone' => 'nullable|string|max:15',
-            'selectedStudent.dob' => 'nullable|date',
-            'selectedStudent.nal_id' => 'nullable|integer',
-            'selectedStudent.state_id' => 'nullable|integer',
-            'selectedStudent.lga_id' => 'nullable|integer',
-            'selectedStudent.town' => 'nullable|string|max:255',
-            'selectedStudent.bg_id' => 'nullable|integer',
-            'selectedStudent.photo' => 'nullable|string|max:255',
-            'selectedStudent.status' => 'nullable|string|max:255',
-            'selectedStudent.student_password' => 'nullable|string|max:255',
-        ]);
-
-        // Save the changes
-        $this->selectedStudent->save();
-
-        // Optionally reset the editing flag
-        $this->isEditingStudent = false;
-
-        // Flash a success message
-        $this->alert('success', 'Student record updated successfully!');
-    }
-
-
-
-
-    // Add other action methods like viewStudent, studentExpulsion, suspendStudent, etc.
 
 
 

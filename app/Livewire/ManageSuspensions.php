@@ -6,6 +6,7 @@ use Mpdf\Mpdf;
 use Carbon\Carbon;
 use Livewire\Component;
 use App\Models\StudentRecord;
+use App\Services\SuspensionService;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
 
 class ManageSuspensions extends Component
@@ -46,16 +47,15 @@ class ManageSuspensions extends Component
         $student = $this->suspendedStudents->where('id', $studentId)->first();
 
         if ($student) {
-            $html = view('livewire.suspensions.student-pdf', ['student' => $student])->render();
+            $suspensionService = new SuspensionService();
+            $pdfPath = $suspensionService->generateSuspensionPdf(
+                $student,
+                $student->suspension_reason,
+                $student->suspension_type,
+                $student->suspension_end_date
+            );
 
-            $mpdf = new Mpdf();
-            $mpdf->WriteHTML($html);
-            $fileName = 'suspension_' . $student->adm_no . '_' . now()->format('Y-m-d_His') . '.pdf';
-            $filePath = storage_path("app/public/{$fileName}");
-
-            $mpdf->Output($filePath, \Mpdf\Output\Destination::FILE);
-
-            return response()->download($filePath)->deleteFileAfterSend();
+            return response()->download($pdfPath)->deleteFileAfterSend();
         }
     }
 
