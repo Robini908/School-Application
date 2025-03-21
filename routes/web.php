@@ -1,25 +1,48 @@
 <?php
 
 use App\Models\StudentRecord;
+use App\Models\Tenant;
+
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\DisapprovalNotification;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MpesaController;
-use App\Http\Controllers\NotificationController;
 use App\Notifications\SystemNotification;
+use App\Http\Controllers\MessagingController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\NotificationController;
 
 
 
 
 Auth::routes();
 
+// Tenancy-based routes
+Route::middleware(['tenant'])->group(function () {
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
+});
 
+// Create a tenant (school)
+Route::get('/create-school/{name}', function ($name) {
+    $tenant = Tenant::create([
+        'school_name' => $name,
+        'domain' => "{$name}.localhost"
+    ]);
+
+    return "Tenant created: {$tenant->school_name}";
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 });
+
+Route::middleware('auth')->group(function () {
+    Route::get('/messages', [MessagingController::class, 'index'])->name('messages.index');
+});
+
 
 
 // mpesa
@@ -57,15 +80,47 @@ Route::get('/pages/support_team/exams/assign-exam-marks', function () {
     // Pass the examId to the view
     return view('pages.support_team.exams.assign-exam-marks');
 })->name('exams.assignExamMarks');
+
 Route::get('/pages/support_team/students/promotions_demotions', function () {
     // Pass the examId to the view
     return view('pages.support_team.students.promotions_demotions');
 })->name('students.promotions_demotions');
 
+Route::get('/pages/parent/child-class', function () {
+    // Pass the examId to the view
+    return view('pages.parent.child-class');
+})->name('parent.child-class');
+Route::get('/pages/parent/child-dorm', function () {
+    // Pass the examId to the view
+    return view('pages.parent.child-dorm');
+})->name('parent.child-dorm');
+Route::get('/pages/parent/child-transition-status', function () {
+    // Pass the examId to the view
+    return view('pages.parent.child-transition-status');
+})->name('parent.child-transition-status');
+
+Route::get('/pages/parent/child-graduation', function () {
+    // Pass the examId to the view
+    return view('pages.parent.child-graduation');
+})->name('parent.child-graduation');
+Route::get('/pages/parent/child-exams', function () {
+    // Pass the examId to the view
+    return view('pages.parent.child-exams');
+})->name('parent.child-exams');
+Route::get('/pages/parent/child-marks', function () {
+    // Pass the examId to the view
+    return view('pages.parent.child-marks');
+})->name('parent.child-marks');
+
 Route::get('/pages/support_team/students/graduation', function () {
     // Pass the examId to the view
     return view('pages.support_team.students.graduation');
 })->name('students.graduation');
+
+Route::get('/pages/support_team/students/manage-students', function () {
+    // Pass the examId to the view
+    return view('pages.support_team.students.manage-students');
+})->name('students.manage-students');
 
 
 //Route to view class details

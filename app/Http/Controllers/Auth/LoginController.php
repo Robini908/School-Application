@@ -38,65 +38,21 @@ class LoginController extends Controller
     {
         // Validate the request
         $request->validate([
-            'identity' => 'required|string',
+            'identity' => 'required|string', // Validate the identity field
             'password' => 'required|string',
         ]);
 
-        // Determine the guard and username field based on the identity
-        $guard = $this->determineGuard($request->identity);
-        $usernameField = $this->usernameField($guard);
+        // Determine if the input is an email or username
+        $field = filter_var($request->identity, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
         // Attempt to authenticate the user
-        if (Auth::guard($guard)->attempt([$usernameField => $request->identity, 'password' => $request->password], $request->remember)) {
+        if (Auth::attempt([$field => $request->identity, 'password' => $request->password], $request->remember)) {
             // Authentication passed
             return $this->sendLoginResponse($request);
         }
 
         // Authentication failed
         return $this->sendFailedLoginResponse($request);
-    }
-
-    /**
-     * Determine the guard based on the identity (email or login ID).
-     *
-     * @param  string  $identity
-     * @return string
-     */
-    protected function determineGuard($identity)
-    {
-        // Check if the identity matches a student email pattern
-        if (filter_var($identity, FILTER_VALIDATE_EMAIL)) {
-            // Check if the email exists in the students table
-            if (\App\Models\StudentRecord::where('email', $identity)->exists()) {
-                return 'student';
-            }
-        }
-
-        // Check if the identity matches a parent email pattern
-        if (filter_var($identity, FILTER_VALIDATE_EMAIL)) {
-            // Check if the email exists in the parents table
-            if (\App\Models\ParentDetail::where('parent_email', $identity)->exists()) {
-                return 'parent';
-            }
-        }
-
-        // Default to the web guard (for regular users)
-        return 'web';
-    }
-
-    /**
-     * Get the username field based on the guard.
-     *
-     * @param  string  $guard
-     * @return string
-     */
-    protected function usernameField($guard)
-    {
-        return match ($guard) {
-            'student' => 'email',
-            'parent' => 'parent_email',
-            default => 'email', // Default for web guard
-        };
     }
 
     /**
@@ -107,8 +63,7 @@ class LoginController extends Controller
      */
     public function logout(Request $request)
     {
-        $guard = Auth::getDefaultDriver();
-        Auth::guard($guard)->logout();
+        Auth::logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

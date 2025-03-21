@@ -2,17 +2,20 @@
 
 namespace App\Livewire;
 
+use App\User;
 use App\Models\Dorm;
 use App\Models\MyClass;
 use App\Models\Section;
 use Livewire\Component;
+use App\Models\UserType;
 use App\Models\BloodGroup;
 use App\Models\ParentDetail;
 use App\Models\StudentRecord;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\StudentAdmissionMail;
 use Livewire\WithFileUploads;
+use App\Mail\StudentAdmissionMail;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
 
 class AdmitStudent extends Component
@@ -52,7 +55,7 @@ class AdmitStudent extends Component
         'first_name' => 'required|string|max:255',
         'middle_name' => 'nullable|string|max:255',
         'last_name' => 'required|string|max:255',
-        'email' => 'nullable|email|unique:student_records,email|max:255',
+        'email' => 'nullable|email|unique:student_records,email|unique:users,email|max:255', // Add unique:users,email
         'gender' => 'required|in:Male,Female',
         'phone' => 'nullable|string|max:20|regex:/^\+?\d{10,15}$/',
         'dob' => 'nullable|date|before:today|after:1900-01-01',
@@ -77,7 +80,7 @@ class AdmitStudent extends Component
         'parent_middle_name' => 'nullable|string|max:255|',
         'parent_last_name' => 'required|string|max:255|',
         'parent_phone' => 'required|string|max:20|regex:/^\+?\d{10,15}$/',
-        'parent_email' => 'required|email|unique:parent_details,parent_email|max:255',
+        'parent_email' => 'required|email|unique:parent_details,parent_email|unique:users,email|max:255', // Add unique:users,email
         'parent_password' => 'required|string|min:8|max:255',
 
         // Step 4: Password
@@ -186,6 +189,7 @@ class AdmitStudent extends Component
         'password.min' => 'The password must be at least 8 characters long.',
         'password.max' => 'The password must not exceed 255 characters.',
         'password.confirmed' => 'The password confirmation does not match.',
+
     ];
 
     // Move to the next step
@@ -228,68 +232,127 @@ class AdmitStudent extends Component
 
     public function submit()
     {
+        // Validate all data before proceeding
         $this->validate();
 
-        // Save Parent Details
-        $parent = ParentDetail::create([
-            'parent_id_no' => $this->parent_id_no,
-            'parent_first_name' => $this->parent_first_name,
-            'parent_middle_name' => $this->parent_middle_name,
-            'parent_last_name' => $this->parent_last_name,
-            'parent_phone_number' => $this->parent_phone,
-            'parent_email' => $this->parent_email,
-            'parent_password' => bcrypt($this->parent_password),
-        ]);
-
-        // Save Student Record
-        $student = StudentRecord::create([
-            'parent_id_no' => $parent->parent_id_no,
-            'my_class_id' => $this->my_class_id,
-            'section_id' => $this->section_id,
-            'adm_no' => $this->adm_no,
-            'dorm_id' => $this->dorm_id,
-            'year_admitted' => $this->year_admitted,
-            'kcpe' => $this->kcpe,
-            'first_name' => $this->first_name,
-            'middle_name' => $this->middle_name,
-            'last_name' => $this->last_name,
-            'email' => $this->email,
-            'gender' => $this->gender,
-            'phone' => $this->phone,
-            'dob' => $this->dob,
-            'nationality' => $this->nationality,
-            'state' => $this->state,
-            'town' => $this->town,
-            'bg_id' => $this->bg_id,
-            'photo' => $this->photo ? $this->photo->store('photos', 'public') : null,
-            'student_password' => bcrypt($this->password),
-        ]);
-
-        // Attach the student to the selected dorm in the pivot table
-        if ($this->dorm_id) {
-            DB::table('dorm_student')->insert([
-                'student_id' => $student->id,
-                'dorm_id' => $this->dorm_id,
-                'year' => $this->year_admitted, // Use the year_admitted field
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+        // Check if the parent email already exists in the users table
+        if (User::where('email', $this->parent_email)->exists()) {
+            throw new \Exception("The parent email '{$this->parent_email}' is already in use.");
         }
 
-        // Send admission email to both parent and student
-        $this->sendAdmissionEmail($student, $parent);
+        // Check if the student email already exists in the users table (if provided)
+        if ($this->email && User::where('email', $this->email)->exists()) {
+            throw new \Exception("The student email '{$this->email}' is already in use.");
+        }
 
-        // Reset form
-        $this->reset();
-        $this->alert('success', 'Student admission successful!', [
-            'position' => 'top-end',
-            'timer' => 3000,
-            'toast' => true,
-            'timerProgressBar' => true,
-        ]);
+        // Start a database transaction
+        DB::beginTransaction();
+
+        try {
+            // Fetch the 'parent' user type ID
+            $parentUserType = UserType::where('title', 'Parent')->first();
+            if (!$parentUserType) {
+                throw new \Exception("User type 'Parent' not found in the user_types table.");
+            }
+
+            // Save Parent Authentication Details in User Table
+            $parentUser = User::create([
+                'name' => $this->parent_first_name . ' ' . $this->parent_last_name,
+                'username' => $this->parent_id_no, // Use parent ID as username
+                'email' => $this->parent_email,
+                'password' => Hash::make($this->parent_password), // Hash the password
+                'user_type' => $parentUserType->id, // Save the user_type ID
+                'phone' => $this->parent_phone, // Optional: Save parent phone
+                'remember_token' => null, // Set remember_token to null initially
+            ]);
+
+            // Save Parent Details in ParentDetail Table
+            $parent = ParentDetail::create([
+                'parent_id_no' => $this->parent_id_no,
+                'parent_first_name' => $this->parent_first_name,
+                'parent_middle_name' => $this->parent_middle_name,
+                'parent_last_name' => $this->parent_last_name,
+                'parent_phone_number' => $this->parent_phone,
+                'parent_email' => $this->parent_email,
+                'parent_password' => $parentUser->password, // Store hashed password from User table
+                'user_id' => $parentUser->id, // Link to the User table
+            ]);
+
+            // Fetch the 'student' user type ID
+            $studentUserType = UserType::where('title', 'Student')->first();
+            if (!$studentUserType) {
+                throw new \Exception("User type 'Student' not found in the user_types table.");
+            }
+
+            // Save Student Authentication Details in User Table
+            $studentUser = User::create([
+                'name' => $this->first_name . ' ' . $this->last_name,
+                'username' => $this->adm_no, // Use email as username
+                'email' => $this->email,
+                'password' => Hash::make($this->password), // Hash the password
+                'user_type' => $studentUserType->id, // Save the user_type ID
+                'phone' => $this->phone, // Optional: Save student phone
+                'remember_token' => null, // Set remember_token to null initially
+            ]);
+
+            // Save Student Details in StudentRecord Table
+            $student = StudentRecord::create([
+                'parent_id_no' => $parent->parent_id_no, // Link to parent
+                'my_class_id' => $this->my_class_id,
+                'section_id' => $this->section_id,
+                'adm_no' => $this->adm_no,
+                'dorm_id' => $this->dorm_id,
+                'year_admitted' => $this->year_admitted,
+                'kcpe' => $this->kcpe,
+                'first_name' => $this->first_name,
+                'middle_name' => $this->middle_name,
+                'last_name' => $this->last_name,
+                'email' => $this->email,
+                'gender' => $this->gender,
+                'phone' => $this->phone,
+                'dob' => $this->dob,
+                'nationality' => $this->nationality,
+                'state' => $this->state,
+                'town' => $this->town,
+                'bg_id' => $this->bg_id,
+                'photo' => $this->photo ? $this->photo->store('photos', 'public') : null,
+                'student_password' => $studentUser->password, // Store hashed password from User table
+                'user_id' => $studentUser->id, // Link to the User table
+            ]);
+
+            // Attach the student to the selected dorm in the pivot table
+            if ($this->dorm_id) {
+                DB::table('dorm_student')->insert([
+                    'student_id' => $student->id,
+                    'dorm_id' => $this->dorm_id,
+                    'year' => $this->year_admitted, // Use the year_admitted field
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
+            // Commit the transaction if everything is successful
+            DB::commit();
+
+            // Send admission emails directly
+            $this->sendAdmissionEmail($student, $parent, $this->parent_password, $this->password);
+
+            // Flash a success message
+            $this->reset();
+            $this->alert('success', 'Student and parent details have been saved successfully.');
+        } catch (\Exception $e) {
+            // Rollback the transaction in case of any errors
+            DB::rollBack();
+
+            // Flash an error message
+            $this->alert('error', 'An error occurred while saving the details: ' . $e->getMessage());
+
+            // Re-throw the exception to let Laravel handle it
+            throw $e;
+        }
     }
 
-    protected function sendAdmissionEmail($student, $parent)
+    protected function sendAdmissionEmail($student, $parent, $parentPassword, $studentPassword)
     {
         try {
             // Load relationships for the student
@@ -303,16 +366,25 @@ class AdmitStudent extends Component
             // Prepare email data
             $emailData = [
                 'student' => $student,
+                'parent' => $parent,
+                'parentPassword' => $parentPassword, // Plain text password
+                'studentPassword' => $studentPassword, // Plain text password
                 'schoolName' => $schoolName,
                 'schoolWebsite' => $schoolWebsite,
                 'schoolEmail' => $schoolEmail,
             ];
 
+            // Log email data for debugging
+            \Log::info('Sending admission email with data:', $emailData);
+
             // Send email to the student
-            Mail::to($student->email)->send(new StudentAdmissionMail($emailData));
+            Mail::to($student->email)->queue(new StudentAdmissionMail($emailData));
 
             // Send email to the parent
-            Mail::to($parent->parent_email)->send(new StudentAdmissionMail($emailData));
+            Mail::to($parent->parent_email)->queue(new StudentAdmissionMail($emailData));
+
+            // Log success
+            \Log::info('Admission emails sent successfully.');
         } catch (\Exception $e) {
             // Log the error and show a warning to the user
             \Log::error('Failed to send admission email: ' . $e->getMessage());

@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Section extends Model
 {
     // Include fillable attributes
-    protected $fillable = ['name', 'my_class_id', 'active', 'teacher_id', 'session_year'];
+    protected $fillable = ['name', 'my_class_id', 'active', 'teacher_id', 'session_year', 'settings_section_id'];
 
     /**
      * Define the relationship with MyClass.
@@ -20,6 +20,10 @@ class Section extends Model
     public function my_class(): BelongsTo
     {
         return $this->belongsTo(MyClass::class, 'my_class_id');
+    }
+    public function settingsSection(): BelongsTo
+    {
+        return $this->belongsTo(SettingsSection::class, 'settings_section_id');
     }
     public function transitions(): HasMany
     {

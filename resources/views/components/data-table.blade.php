@@ -1,6 +1,6 @@
 <div class="table-responsive">
     <table id="{{ $id }}" class="table table-bordered table-striped">
-        <thead class="thead-light">
+        <thead class="thead-light sticky-top position-sticky">
             <tr>
                 @foreach($columns as $column)
                     <th>{{ $column }}</th>

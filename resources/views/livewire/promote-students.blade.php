@@ -1,264 +1,397 @@
-<div x-data="{ isSubmitting: false }" x-init="Livewire.on('promotionError', () => { isSubmitting = false; })">
-    <div>
-        <div>
-            <div>
-                <!-- Dynamic heading based on transition type -->
-                <h4 class="mb-0">
+<!-- Main Component Container with Google-inspired Material Design -->
+<div x-data="{ activeStep: 1, totalSteps: 4, isSubmitting: false, showSummary: true, transitionSuccess: false }" class="bg-white rounded-lg shadow-md">
+    <!-- Header with more prominent styling -->
+    <div class="px-6 py-5 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 rounded-t-lg">
+        <h1 class="text-2xl font-medium text-gray-800 flex items-center">
                     @if ($transitionType === 'promotion')
-                        Promote Students
+                <span class="text-emerald-600 flex items-center"><i class="fas fa-arrow-up text-lg bg-emerald-100 p-2 rounded-full mr-3"></i>Promote Students</span>
                     @elseif ($transitionType === 'demotion')
-                        Demote Students
+                <span class="text-red-600 flex items-center"><i class="fas fa-arrow-down text-lg bg-red-100 p-2 rounded-full mr-3"></i>Demote Students</span>
                     @elseif ($transitionType === 'repetition')
-                        Repeat Students
+                <span class="text-amber-600 flex items-center"><i class="fas fa-redo text-lg bg-amber-100 p-2 rounded-full mr-3"></i>Repeat Students</span>
+            @else
+                <span class="text-blue-600 flex items-center"><i class="fas fa-exchange-alt text-lg bg-blue-100 p-2 rounded-full mr-3"></i>Student Transition</span>
                     @endif
-                </h4>
+        </h1>
+        <p class="text-sm text-gray-600 mt-2">
+            Move students between classes with ease. Follow the steps below to complete the process.
+        </p>
             </div>
-            <div>
-                <!-- Display success/error messages -->
-                @if (session()->has('message'))
-                    <div class="alert alert-success">
-                        {{ session('message') }}
-                    </div>
-                @endif
-                @if (session()->has('error'))
-                    <div class="alert alert-danger">
-                        {{ session('error') }}
-                    </div>
-                @endif
 
-                <form wire:submit.prevent="promoteStudents" @submit="isSubmitting = true">
-                    <!-- Transition Type Dropdown -->
-                    <div class="row mb-4 g-3" x-data="{ transitionType: '' }">
-                        <div class="col-md-12">
-                            <label class="form-label">Transition Type</label>
-                            <div class="row">
-                                <!-- Promotion Card -->
-                                <div class="col-md-4">
-                                    <div class="form-check card" 
-                                         :style="transitionType === 'promotion' ? 'background-color: #198754; color: white;' : 'background-color: #f8f9fa; color: inherit;'">
-                                        <input class="form-check-input visually-hidden" 
-                                               type="radio" 
-                                               wire:model.live="transitionType" 
-                                               id="promotion" 
-                                               value="promotion" 
-                                               x-model="transitionType">
-                                        <label class="card-body d-flex align-items-center justify-content-center p-3" 
-                                               for="promotion" 
-                                               style="cursor: pointer;">
-                                            <i class="fas fa-arrow-up fa-2x"></i>
-                                            <span class="ms-2">Promotion</span>
-                                        </label>
+    <!-- Progress Stepper - Google Material Design inspired -->
+    <div class="px-6 py-6 bg-white border-b border-gray-100">
+        <div class="flex items-center justify-between max-w-3xl mx-auto">
+            <template x-for="step in totalSteps" :key="step">
+                <div class="flex-1 relative">
+                    <!-- Step Circle with Enhanced styling -->
+                    <div class="w-10 h-10 mx-auto rounded-full flex items-center justify-center shadow-sm transition-all duration-300" 
+                         :class="{
+                            'bg-blue-600 text-white ring-4 ring-blue-100 scale-110': activeStep === step,
+                            'bg-green-500 text-white': activeStep > step,
+                            'bg-gray-200 text-gray-500': activeStep < step
+                         }">
+                        <template x-if="activeStep > step">
+                            <i class="fas fa-check"></i>
+                        </template>
+                        <template x-if="activeStep <= step">
+                            <span x-text="step" class="font-medium"></span>
+                        </template>
+                    </div>
+                    <!-- Step Label with better visibility -->
+                    <div class="text-xs text-center mt-2 font-medium transition-all duration-300" 
+                         :class="{
+                            'text-blue-700 scale-110': activeStep === step,
+                            'text-green-600': activeStep > step,
+                            'text-gray-500': activeStep < step
+                         }">
+                        <template x-if="step === 1">Transition Type</template>
+                        <template x-if="step === 2">Class & Section</template>
+                        <template x-if="step === 3">Select Students</template>
+                        <template x-if="step === 4">Finalize</template>
+                    </div>
+                    <!-- Connector Line with animation -->
+                    <div x-show="step < totalSteps" class="absolute top-5 left-1/2 w-full h-1 transition-all duration-500" 
+                         :class="{
+                            'bg-green-500': activeStep > step,
+                            'bg-gray-200': activeStep <= step
+                         }">
                                     </div>
                                 </div>
-                                
-                                <!-- Demotion Card -->
-                                <div class="col-md-4">
-                                    <div class="form-check card" 
-                                         :style="transitionType === 'demotion' ? 'background-color: #dc3545; color: white;' : 'background-color: #f8f9fa; color: inherit;'">
-                                        <input class="form-check-input visually-hidden" 
-                                               type="radio" 
-                                               wire:model.live="transitionType" 
-                                               id="demotion" 
-                                               value="demotion" 
-                                               x-model="transitionType">
-                                        <label class="card-body d-flex align-items-center justify-content-center p-3" 
-                                               for="demotion" 
-                                               style="cursor: pointer;">
-                                            <i class="fas fa-arrow-down fa-2x"></i>
-                                            <span class="ms-2">Demotion</span>
-                                        </label>
+            </template>
                                     </div>
                                 </div>
                     
-                                <!-- Repetition Card -->
-                                <div class="col-md-4">
-                                    <div class="form-check card" 
-                                         :style="transitionType === 'repetition' ? 'background-color: #ffc107; color: black;' : 'background-color: #f8f9fa; color: inherit;'">
-                                        <input class="form-check-input visually-hidden" 
-                                               type="radio" 
-                                               wire:model.live="transitionType" 
-                                               id="repetition" 
-                                               value="repetition" 
-                                               x-model="transitionType">
-                                        <label class="card-body d-flex align-items-center justify-content-center p-3" 
-                                               for="repetition" 
-                                               style="cursor: pointer;">
-                                            <i class="fas fa-redo fa-2x"></i>
-                                            <span class="ms-2">Repetition</span>
-                                        </label>
+    <!-- Summary Panel that shows current selections -->
+    <div x-show="showSummary && activeStep > 1" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 transform -translate-y-4"
+         x-transition:enter-end="opacity-100 transform translate-y-0"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 transform translate-y-0"
+         x-transition:leave-end="opacity-0 transform -translate-y-4"
+         class="px-6 py-4 bg-blue-50 border-b border-blue-100">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <h3 class="text-sm font-medium text-blue-800 mb-1">Current Progress</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-2">
+                            <i class="fas fa-exchange-alt text-blue-600"></i>
                                     </div>
-                                </div>
-                            </div>
-                            @error('transitionType')
-                                <span class="text-danger">{{ $message }}</span>
-                            @enderror
+                        <div>
+                            <span class="text-gray-500">Transition:</span>
+                            <span class="font-medium ml-1 text-gray-800">
+                                @if($transitionType === 'promotion')
+                                    <span class="text-emerald-600">Promotion</span>
+                                @elseif($transitionType === 'demotion')
+                                    <span class="text-red-600">Demotion</span>
+                                @elseif($transitionType === 'repetition')
+                                    <span class="text-amber-600">Repetition</span>
+                                @else
+                                    Not Selected
+                                @endif
+                            </span>
                         </div>
                     </div>
-                    <hr class="my-4 border-0" style="height: 2px; background: linear-gradient(90deg, rgba(0,123,255,1) 0%, rgba(220,53,69,1) 50%, rgba(255,193,7,1) 100%);">
-                    <!-- Class, Section, and Search Inputs -->
-                    <div class="row mb-4 g-3">
-                        <div class="col-md-4">
-                            <label for="selectedClass" class="form-label">Select Class</label>
-                            <select wire:model.live="selectedClass" id="selectedClass" class="form-select form-control">
-                                <option value="">Select Class</option>
-                                @foreach ($classes as $class)
-                                    @if ($transitionType === 'promotion' && !$loop->last) <!-- Exclude the last class for promotion -->
-                                        <option value="{{ $class->id }}">{{ $class->name }}</option>
-                                    @elseif ($transitionType === 'demotion' && !$loop->first) <!-- Exclude the first class for demotion -->
-                                        <option value="{{ $class->id }}">{{ $class->name }}</option>
-                                    @elseif ($transitionType === 'repetition') <!-- Allow all classes for repetition -->
-                                        <option value="{{ $class->id }}">{{ $class->name }}</option>
+                    <div class="flex items-center" x-show="activeStep >= 2">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-2">
+                            <i class="fas fa-school text-blue-600"></i>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">Class & Section:</span>
+                            <span class="font-medium ml-1 text-gray-800">
+                                @if($selectedClass && $selectedSection)
+                                    {{ optional($classes->firstWhere('id', $selectedClass))->name }} - 
+                                    {{ optional($sections->firstWhere('id', $selectedSection))->name }}
+                                @else
+                                    Not Selected
                                     @endif
-                                @endforeach
-                            </select>
-                            @error('selectedClass')
-                                <span class="text-danger">{{ $message }}</span>
-                            @enderror
+                            </span>
                         </div>
-                        <div class="col-md-4">
-                            <label for="selectedSection" class="form-label">Select Section</label>
-                            <select wire:model.live="selectedSection" id="selectedSection"
-                                class="form-select form-control" {{ !$selectedClass ? 'disabled' : '' }}>
-                                <option value="">Select Section</option>
-                                @foreach ($sections as $section)
-                                    <option value="{{ $section->id }}">{{ $section->name }}</option>
-                                @endforeach
-                            </select>
-                            @error('selectedSection')
-                                <span class="text-danger">{{ $message }}</span>
-                            @enderror
+                    </div>
+                    <div class="flex items-center" x-show="activeStep >= 3">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-2">
+                            <i class="fas fa-users text-blue-600"></i>
                         </div>
-                        <div class="col-md-4">
-                            <label for="search" class="form-label">Search Students</label>
-                            <input wire:model.live.debounce.300ms="search" type="text" class="form-control"
-                                placeholder="Search by name or admission number"
-                                {{ !$selectedClass || !$selectedSection ? 'disabled' : '' }}>
+                        <div>
+                            <span class="text-gray-500">Students:</span>
+                            <span class="font-medium ml-1 text-gray-800">
+                                {{ count($selectedStudents) }} selected
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button @click="showSummary = false" class="text-gray-400 hover:text-gray-600" aria-label="Hide summary">
+                <i class="fas fa-times-circle"></i>
+            </button>
                         </div>
                     </div>
 
-                    <!-- Student List Table -->
-                    @if ($selectedSection)
-                        <div class="row mb-4">
-                            <div class="col-md-12">
-                                @if ($students->isEmpty())
-                                    <div class="alert alert-info">
-                                        All students in this section have already been transitioned for the selected
-                                        year.
+    <!-- Alert Messages with improved styling -->
+    <div class="px-6 py-2">
+        @if (session()->has('message'))
+            <div class="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded-md shadow-sm animate-fadeIn" role="alert">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-check-circle text-green-500"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium">{{ session('message') }}</p>
+                    </div>
                                     </div>
-                                @else
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered table-hover">
-                                            <thead class="table-light">
-                                                <tr>
-                                                    <th style="width: 50px;" class="text-center">Select</th>
-                                                    <th>Name (Admission No)</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach ($students as $student)
-                                                    <tr>
-                                                        <td class="text-center align-middle">
-                                                            <input type="checkbox" wire:model.live="selectedStudents"
-                                                                value="{{ $student->id }}" class="form-check-input"
-                                                                style="width: 20px; height: 20px;">
-                                                        </td>
-                                                        <td class="align-middle">
-                                                            <span class="fw-bold">{{ $student->first_name }}
-                                                                {{ $student->last_name }}</span>
-                                                            <span class="text-muted">({{ $student->adm_no }})</span>
-                                                        </td>
-                                                    </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
                                     </div>
-                                    {{ $students->links() }}
                                 @endif
+        @if (session()->has('error'))
+            <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded-md shadow-sm animate-fadeIn" role="alert">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-circle text-red-500"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium">{{ session('error') }}</p>
+                    </div>
                             </div>
                         </div>
                     @endif
+    </div>
 
-                    <!-- Transition Details -->
-                    @if (count($selectedStudents) > 0)
-                        <div class="row mb-4 g-3">
-                            <div class="col-md-4">
-                                <label for="targetClass" class="form-label">Target Class</label>
-                                <select wire:model.live="targetClass" id="targetClass" class="form-select form-control" disabled>
-                                    <option value="">Select Target Class</option>
-                                    @if ($targetClass)
-                                        @foreach ($classes as $class)
-                                            @if ($class->id == $targetClass)
-                                                <option value="{{ $class->id }}" selected>{{ $class->name }}</option>
-                                            @endif
-                                        @endforeach
-                                    @endif
-                                </select>
-                                @error('targetClass')
-                                    <span class="text-danger">{{ $message }}</span>
-                                @enderror
+    <!-- Form Content with card styling -->
+    <form wire:submit.prevent="promoteStudents" @submit="isSubmitting = true" class="px-6 py-4">
+        <!-- Improved Loading indicator with backdrop filter -->
+        <div wire:loading.delay wire:target="selectedClass, selectedSection, search, promoteStudents" 
+             class="fixed inset-0 bg-gray-900 bg-opacity-30 backdrop-blur-sm z-50 flex items-center justify-center transition-opacity duration-300">
+            <div class="bg-white p-5 rounded-lg shadow-lg flex items-center space-x-4 animate-bounce-in">
+                <svg class="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span class="text-gray-700 font-medium">Processing...</span>
                             </div>
-                            <div class="col-md-4">
-                                <label for="targetSection" class="form-label">Target Section</label>
-                                <select wire:model.live="targetSection" id="targetSection" class="form-select form-control" {{ !$targetClass ? 'disabled' : '' }}>
-                                    <option value="">Select Target Section</option>
-                                    @foreach ($sections as $section)
-                                        <option value="{{ $section->id }}">{{ $section->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('targetSection')
-                                    <span class="text-danger">{{ $message }}</span>
-                                @enderror
                             </div>
-                            <div class="col-md-4">
-                                <label for="transitionYear" class="form-label">Transition Year</label>
-                                <input wire:model="transitionYear" type="text" class="form-control"
-                                    value="{{ now()->year }}" readonly>
-                                @error('transitionYear')
-                                    <span class="text-danger">{{ $message }}</span>
-                                @enderror
+        
+        <!-- Step 1: Transition Type Selection -->
+        <div x-show.transition.opacity.duration.500ms="activeStep === 1" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform translate-x-4"
+             x-transition:enter-end="opacity-100 transform translate-x-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 transform translate-x-0"
+             x-transition:leave-end="opacity-0 transform -translate-x-4"
+             class="max-w-4xl mx-auto">
+            @include('livewire.partials.promote-students.transition-type-selector')
+            
+            <div class="flex justify-between mt-8">
+                <div></div>
+                <button type="button" 
+                        @click="activeStep = 2; showSummary = true;" 
+                        class="inline-flex items-center px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition ease-in-out duration-150 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                        :disabled="!$wire.transitionType"
+                        :class="{ 'opacity-50 cursor-not-allowed': !$wire.transitionType }">
+                    Continue
+                    <i class="fas fa-arrow-right ml-2"></i>
+                </button>
                             </div>
                         </div>
-                        <div class="row mb-4">
-                            <div class="col-md-12">
-                                <label for="reason" class="form-label">Reason</label>
-                                <textarea wire:model="reason" class="form-control" rows="3" placeholder="Enter reason for transition"></textarea>
+        
+        <!-- Step 2: Class and Section Selection -->
+        <div x-show.transition.opacity.duration.500ms="activeStep === 2"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform translate-x-4"
+             x-transition:enter-end="opacity-100 transform translate-x-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 transform translate-x-0"
+             x-transition:leave-end="opacity-0 transform -translate-x-4"
+             class="max-w-4xl mx-auto">
+            @include('livewire.partials.promote-students.class-section-selector')
+            
+            <div class="flex justify-between mt-8">
+                <button type="button" 
+                        @click="activeStep = 1" 
+                        class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition ease-in-out duration-150 hover:shadow">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Back
+                </button>
+                <button type="button" 
+                        @click="activeStep = 3" 
+                        class="inline-flex items-center px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition ease-in-out duration-150 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                        :disabled="!$wire.selectedClass || !$wire.selectedSection"
+                        :class="{ 'opacity-50 cursor-not-allowed': !$wire.selectedClass || !$wire.selectedSection }">
+                    Continue
+                    <i class="fas fa-arrow-right ml-2"></i>
+                </button>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <!-- Dynamic button text based on transition type -->
-                                <button type="submit" class="btn btn-success" wire:loading.attr="disabled">
-                                    <!-- Default state (when not loading) -->
-                                    <span wire:loading.remove>
-                                        @if ($transitionType === 'promotion')
-                                            Promote Selected Students
-                                        @elseif ($transitionType === 'demotion')
-                                            Demote Selected Students
-                                        @elseif ($transitionType === 'repetition')
-                                            Repeat Selected Students
-                                        @endif
-                                    </span>
-
-                                    <!-- Loading state (when processing) -->
-                                    <span wire:loading>
-                                        <span class="spinner-border spinner-border-sm" role="status"
-                                            aria-hidden="true"></span>
-                                        <span>
-                                            @if ($transitionType === 'promotion')
-                                                Promoting...
-                                            @elseif ($transitionType === 'demotion')
-                                                Demoting...
-                                            @elseif ($transitionType === 'repetition')
-                                                Repeating...
-                                            @endif
-                                        </span>
-                                    </span>
+        
+        <!-- Step 3: Student Selection -->
+        <div x-show.transition.opacity.duration.500ms="activeStep === 3"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform translate-x-4"
+             x-transition:enter-end="opacity-100 transform translate-x-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 transform translate-x-0"
+             x-transition:leave-end="opacity-0 transform -translate-x-4"
+             class="max-w-5xl mx-auto">
+            @include('livewire.partials.promote-students.student-list')
+            
+            <div class="flex justify-between mt-8">
+                <button type="button" 
+                        @click="activeStep = 2" 
+                        class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition ease-in-out duration-150 hover:shadow">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Back
+                </button>
+                <button type="button" 
+                        @click="activeStep = 4" 
+                        class="inline-flex items-center px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition ease-in-out duration-150 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                        :disabled="$wire.selectedStudents.length === 0"
+                        :class="{ 'opacity-50 cursor-not-allowed': $wire.selectedStudents.length === 0 }">
+                    Continue
+                    <i class="fas fa-arrow-right ml-2"></i>
                                 </button>
                             </div>
                         </div>
-                    @endif
-                </form>
+        
+        <!-- Step 4: Transition Details -->
+        <div x-show.transition.opacity.duration.500ms="activeStep === 4"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform translate-x-4"
+             x-transition:enter-end="opacity-100 transform translate-x-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 transform translate-x-0"
+             x-transition:leave-end="opacity-0 transform -translate-x-4"
+             class="max-w-4xl mx-auto">
+            @include('livewire.partials.promote-students.transition-details')
+            
+            <div class="flex justify-between mt-8">
+                <button type="button" 
+                        @click="activeStep = 3" 
+                        class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition ease-in-out duration-150 hover:shadow">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Back
+                </button>
+                <button type="submit" 
+                        @click="$dispatch('play-animation')"
+                        class="inline-flex items-center px-6 py-3 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition ease-in-out duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                        :class="{'bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500': transitionSuccess}"
+                        :disabled="isSubmitting || !$wire.targetSection || !$wire.targetClass">
+                    <!-- Loading spinner -->
+                    <span x-show="isSubmitting && !transitionSuccess" class="inline-block mr-2">
+                        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </span>
+                    
+                    <!-- Success check mark -->
+                    <span x-show="transitionSuccess" class="inline-block mr-2">
+                        <i class="fas fa-check-circle text-white"></i>
+                    </span>
+
+                    <span x-show="!isSubmitting && !transitionSuccess && $wire.transitionType === 'promotion'">Promote Students</span>
+                    <span x-show="!isSubmitting && !transitionSuccess && $wire.transitionType === 'demotion'">Demote Students</span>
+                    <span x-show="!isSubmitting && !transitionSuccess && $wire.transitionType === 'repetition'">Repeat Students</span>
+                    
+                    <span x-show="isSubmitting && !transitionSuccess && $wire.transitionType === 'promotion'">Promoting...</span>
+                    <span x-show="isSubmitting && !transitionSuccess && $wire.transitionType === 'demotion'">Demoting...</span>
+                    <span x-show="isSubmitting && !transitionSuccess && $wire.transitionType === 'repetition'">Repeating...</span>
+                    
+                    <span x-show="transitionSuccess">Completed!</span>
+                </button>
             </div>
         </div>
+    </form>
+
+    <!-- Step indicator for mobile -->
+    <div class="py-4 px-6 bg-gray-50 border-t border-gray-200 md:hidden">
+        <div class="text-xs text-center text-gray-500">
+            Step <span class="font-medium text-blue-600" x-text="activeStep"></span> of <span class="font-medium" x-text="totalSteps"></span>
+        </div>
     </div>
+
+    <!-- Custom event handler for promotion errors to reset the button state -->
+    <script>
+        document.addEventListener('livewire:init', () => {
+            // Listen for promotion errors to reset the button state
+            Livewire.on('promotionError', () => {
+                Alpine.store('isSubmitting', false);
+            });
+            
+            // Listen for refreshComponent event
+            Livewire.on('refreshComponent', () => {
+                console.log('Component refreshed');
+            });
+            
+            // Listen for successful transition
+            Livewire.on('transition-success', (message) => {
+                // Show success state on button
+                Alpine.store('transitionSuccess', true);
+                
+                // Show toast notification
+                toast().success(message, 'Transition Complete');
+                
+                // Reset state after 2 seconds
+                setTimeout(() => {
+                    Alpine.store('transitionSuccess', false);
+                    Alpine.store('isSubmitting', false);
+                }, 2000);
+            });
+            
+            // Listen for transition error
+            Livewire.on('transition-error', (message) => {
+                // Reset state
+                Alpine.store('isSubmitting', false);
+                
+                // Show error toast
+                toast().danger(message, 'Error');
+            });
+        });
+        
+        // Initialize Alpine store for component state
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('promoteStudents', {
+                activeStep: 1,
+                lastSelectedSection: null,
+                isSubmitting: false,
+                transitionSuccess: false,
+                
+                updateSelectedSection(sectionId) {
+                    this.lastSelectedSection = sectionId;
+                    console.log('Section updated to:', sectionId);
+                }
+            });
+        });
+    </script>
 </div>
+
+<!-- Add some keyframe animations for a smoother UI -->
+<style>
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes bounceIn {
+        0% { transform: scale(0.8); opacity: 0; }
+        50% { transform: scale(1.05); opacity: 0.9; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    
+    .animate-fadeIn {
+        animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    .animate-bounce-in {
+        animation: bounceIn 0.4s ease-in-out;
+    }
+    
+    @keyframes studentTransition {
+        0% { transform: translate(0, 0); opacity: 1; }
+        50% { transform: translate(-100px, -20px); opacity: 0.7; }
+        100% { transform: translate(-200px, 0); opacity: 0; }
+    }
+    
+    .student-transition {
+        animation: studentTransition 1.5s ease-in-out forwards;
+    }
+</style>

@@ -1,4 +1,4 @@
-<div class="card  p-3 shadow-lg border rounded" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
+<div class="p-3 border rounded" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
 
     <div class="card-body">
         <div class="form-row mb-3">

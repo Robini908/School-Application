@@ -146,7 +146,7 @@
                         <tr>
                             <th scope="col">Subject</th>
                             <th scope="col">Student</th>
-                            <th scope="col">Admission Number</th>
+                            
                             <th scope="col">Stream</th>
                             <th scope="col">Marks</th>
                         </tr>
@@ -156,8 +156,7 @@
                             @if ($champion && $champion->subject && $champion->student && $champion->student->section)
                                 <tr>
                                     <td>{{ $champion->subject->subject_name }}</td>
-                                    <td>{{ $champion->student->first_name }} {{ $champion->student->last_name }}</td>
-                                    <td>{{ $champion->student->adm_no }}</td>
+                                    <td>{{ $champion->student->first_name }} {{ $champion->student->last_name }} - {{ $champion->student->adm_no }}</td>
                                     <td>{{ $champion->student->section->name }}</td>
                                     <td>{{ $champion->marks }}</td>
                                 </tr>

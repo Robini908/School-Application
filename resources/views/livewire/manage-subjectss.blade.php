@@ -1,277 +1,152 @@
-@if ($showForm)
-    <!-- Show Form for Creating or Editing -->
-    <div style="border: 1px solid #007bff;">
-        <div class="card-header bg-primary text-white">
-            <h3>{{ $isEditing ? 'Edit Subject' : 'Create New Subject' }}</h3>
+<div x-data="{ 
+    showForm: @entangle('showForm').live,
+    showNewCategoryForm: @entangle('showNewCategoryForm').live,
+    showDeleteConfirm: false,
+    subjectToDelete: null,
+    showSuccessMessage: false,
+    successMessage: '',
+    showHelpPanel: false
+}" class="bg-white rounded-lg shadow-sm overflow-hidden">
+
+    <!-- Help Panel -->
+    <div x-show="showHelpPanel" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 transform -translate-y-2"
+         x-transition:enter-end="opacity-100 transform translate-y-0"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 transform translate-y-0"
+         x-transition:leave-end="opacity-0 transform -translate-y-2"
+         class="bg-gradient-to-r from-indigo-50 to-blue-50 px-6 py-4 border-b border-indigo-100 mb-4">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-6 w-6 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
         </div>
-        <div class="card-body" style="background-color: #f8f9fa;">
-            <form wire:submit="{{ $isEditing ? 'update' : 'store' }}">
-                <div class="form-group mb-3">
-                    <label for="subject_name">Subject Name</label>
-                    <input type="text" wire:model.live="subject_name" id="subject_name" class="form-control"
-                        placeholder="Enter subject name" style="border-radius: 0.25rem;">
-                    @error('subject_name')
-                        <div class="text-danger">{{ $message }}</div>
-                    @enderror
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-indigo-800">Subject Management Help</h3>
+                <div class="mt-2 text-sm text-indigo-700">
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li>Create new subjects by clicking the "New Subject" button</li>
+                        <li>Filter subjects by category using the dropdown</li>
+                        <li>Edit or delete subjects using the action buttons</li>
+                        <li>Change subject type between "Compulsory" and "Elective" as needed</li>
+                    </ul>
                 </div>
-
-                <div class="form-group mb-3">
-                    <label for="subject_code">Subject Code</label>
-                    <input type="text" wire:model.live="subject_code" id="subject_code" class="form-control"
-                        placeholder="Enter subject code" style="border-radius: 0.25rem;">
-                    @error('subject_code')
-                        <div class="text-danger">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="form-group mb-3">
-                    <label for="abbreviation">Abbreviation</label>
-                    <input type="text" wire:model.live="abbreviation" id="abbreviation" class="form-control"
-                        placeholder="Enter abbreviation" style="border-radius: 0.25rem;">
-                    @error('abbreviation')
-                        <div class="text-danger">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <!-- Category Selection -->
-                <div class="form-group mb-3">
-                    <label for="category_id">Category</label>
-                    <select wire:model.live="category_id" id="category_id" class="form-control"
-                        style="border-radius: 0.25rem;">
-                        <option value="">Select a Category</option>
-                        @foreach ($categories as $category)
-                            <option value="{{ $category->id }}">{{ $category->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('category_id')
-                        <div class="text-danger">{{ $message }}</div>
-                    @enderror
-                </div>
-
-
-                <!-- Informational Message with Add Button (Displayed Only During Creation) -->
-                @if (!$isEditing)
-                    <div class="alert alert-info mb-3"
-                        style="border-radius: 0.25rem; background-color: #d9edf7; color: #31708f; transition: all 0.3s ease; padding: 10px;">
-                        <strong>No category you're looking for?</strong> You can always add it by clicking this button!
-                        <button type="button" wire:click="$toggle('showNewCategoryForm')"
-                            class="btn btn-primary btn-sm float-end ms-2" data-toggle="tooltip" data-placement="top"
-                            title="Add a new category">
-                            <i class="fas fa-plus"></i> Add
-                        </button>
-                    </div>
-                @endif
-
-                <!-- Card for Managing Categories (Only Display During Creation) -->
-                @if ($showNewCategoryForm && !$isEditing)
-                    <div class="p-4 border rounded shadow mb-3" style="background-color: #e9ecef;">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="mb-4">Manage Categories</h5>
-                            <button type="button" wire:click="$set('showNewCategoryForm', false)"
-                                class="btn btn-danger btn-sm" data-toggle="tooltip" data-placement="top" title="Close">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <div class="row">
-                            <!-- Left Grid for Adding Categories -->
-                            <div class="col-md-6 mb-4">
-                                <!-- New Category Input -->
-                                <div class="form-group mb-3">
-                                    <label for="new_category">New Category Name</label>
-                                    <input type="text" wire:model.live="new_category" id="new_category"
-                                        class="form-control" placeholder="Enter new category"
-                                        style="border-radius: 0.25rem;">
-                                    <button type="button" wire:click="addCategory" class="btn btn-success mt-2"
-                                        wire:loading.attr="disabled" data-toggle="tooltip" data-placement="top"
-                                        title="Save the new category">
-                                        <i class="fas fa-save"></i> Save
-                                        <span wire:loading wire:target="addCategory"
-                                            class="spinner-border spinner-border-sm" role="status"
-                                            aria-hidden="true"></span>
-                                    </button>
-                                    @error('new_category')
-                                        <div class="text-danger">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-
-                            <!-- Right Grid for Displaying Categories -->
-                            <div class="col-md-6 mb-4">
-                                <h6 class="mb-3">Available Categories</h6>
-                                <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
-                                    <table class="table table-bordered table-hover fixedHeader">
-                                        <thead>
-                                            <tr>
-                                                <th scope="col">Category Name</th>
-                                                <th scope="col" class="text-center">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($categories as $category)
-                                                <tr>
-                                                    <td>
-                                                        @if ($editingCategoryId === $category->id)
-                                                            <div class="input-group">
-                                                                <input type="text" wire:model.live="edit_category"
-                                                                    class="form-control"
-                                                                    wire:keydown.enter="updateCategory"
-                                                                    wire:keydown.escape="cancelEdit"
-                                                                    placeholder="Edit category name" />
-
-                                                            </div>
-                                                        @else
-                                                            <span>{{ $category->name }}</span>
-                                                        @endif
-                                                    </td>
-                                                  
-                                                    <td class="text-center">
-                                                        @if ($editingCategoryId !== $category->id)
-                                                            <button type="button"
-                                                                wire:click="editCategory({{ $category->id }})"
-                                                                class="btn btn-light btn-sm" data-toggle="tooltip"
-                                                                data-placement="top" title="Edit category">
-                                                                <i class="fas fa-edit"></i>
-                                                            </button>
-                                                            <button type="button"
-                                                                wire:click="removeCategory({{ $category->id }})"
-                                                                class="btn btn-danger btn-sm" data-toggle="tooltip"
-                                                                data-placement="top" title="Remove category">
-                                                                <i class="fas fa-trash-alt"></i>
-                                                                <!-- Trash icon for removal -->
-                                                            </button>
-                                                        @endif
-                                                        @if ($editingCategoryId === $category->id)
-
-                                                        <button type="button" wire:click="updateCategory"
-                                                            class="btn btn-warning btn-sm" data-toggle="tooltip"
-                                                            data-placement="top" title="Update category">
-                                                            <i class="fas fa-sync-alt"></i> 
-                                                            <span wire:loading wire:target="updateCategory"
-                                                                class="spinner-border spinner-border-sm"
-                                                                role="status" aria-hidden="true"></span>
-                                                        </button>
-                                                        @endif
-                                                    </td>
-
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                @endif
-                <div class="mt-2">
-                    <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">
-                        {{ $isEditing ? 'Update' : 'Save' }}
-                        <div wire:loading wire:target="{{ $isEditing ? 'update' : 'store' }}"
-                            class="spinner-border spinner-border-sm ms-2" role="status"></div>
+                <div class="mt-3">
+                    <button @click="showHelpPanel = false" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                        Dismiss
                     </button>
-                    <button type="button" wire:click="cancel" class="btn btn-secondary">
+                </div>
+            </div>
+        </div>
+                </div>
+
+    <!-- Success Message Toast -->
+    <div x-show="showSuccessMessage" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 transform translate-y-2"
+         x-transition:enter-end="opacity-100 transform translate-y-0"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 transform translate-y-0"
+         x-transition:leave-end="opacity-0 transform translate-y-2"
+         @click.away="showSuccessMessage = false"
+         x-init="$watch('showSuccessMessage', value => { if(value) setTimeout(() => showSuccessMessage = false, 3000) })"
+         class="fixed bottom-4 right-4 bg-green-50 border-l-4 border-green-400 p-4 rounded shadow-lg z-50">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-green-700" x-text="successMessage"></p>
+            </div>
+            <div class="ml-auto pl-3">
+                <div class="-mx-1.5 -my-1.5">
+                    <button @click="showSuccessMessage = false" class="inline-flex rounded-md p-1.5 text-green-500 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        <span class="sr-only">Dismiss</span>
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+                        </div>
+                                </div>
+                            </div>
+
+    @if ($showForm)
+        <!-- Subject Form -->
+        @include('livewire.partials.subject-management.subject-form')
+                                                        @else
+        <!-- Subject List -->
+        @include('livewire.partials.subject-management.subject-list')
+                                                        @endif
+
+    <!-- Delete Confirmation Modal -->
+    <div x-show="showDeleteConfirm" 
+         x-cloak
+         class="fixed z-10 inset-0 overflow-y-auto" 
+         aria-labelledby="modal-title" 
+         role="dialog" 
+         aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background overlay -->
+            <div x-show="showDeleteConfirm" 
+                 x-transition:enter="ease-out duration-300" 
+                 x-transition:enter-start="opacity-0" 
+                 x-transition:enter-end="opacity-100" 
+                 x-transition:leave="ease-in duration-200" 
+                 x-transition:leave-start="opacity-100" 
+                 x-transition:leave-end="opacity-0" 
+                 class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" 
+                 aria-hidden="true"></div>
+
+            <!-- Modal panel -->
+            <div x-show="showDeleteConfirm" 
+                 x-transition:enter="ease-out duration-300" 
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+                 x-transition:leave="ease-in duration-200" 
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+                 class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                                </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                Delete Subject
+                            </h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500">
+                                    Are you sure you want to delete this subject? This action cannot be undone.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" 
+                            @click="$wire.delete(subjectToDelete); showDeleteConfirm = false; subjectToDelete = null"
+                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Delete
+                    </button>
+                    <button type="button" 
+                            @click="showDeleteConfirm = false; subjectToDelete = null" 
+                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                         Cancel
                     </button>
-
-
                 </div>
-                <div wire:dirty class="alert alert-warning"
-                    style="font-size: 14px; font-weight: bold; color: #856404; background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: 5px; padding: 10px; margin: 10px 0;">
-                    <i class="bi bi-exclamation-circle-fill" style="margin-right: 5px; color: #856404;"></i>
-                    Unsaved changes...
-                </div>
-
-            </form>
-        </div>
-    </div>
-@else
-    <!-- Show Table of Subjects -->
-    <div class="mt-0">
-        <div class="card-header justify-content-between d-flex align-items-center">
-            <!-- Filter dropdown for categories -->
-            <div class="float-end">
-                <select wire:model.live="selectedCategory" wire:change="filterByCategory($event.target.value)"
-                    class="form-control">
-                    <option value="">All Subjects</option>
-                    @foreach ($categories as $category)
-                        <option value="{{ $category->id }}">{{ $category->name }}</option>
-                    @endforeach
-                </select>
             </div>
-            <button wire:click="create" class="btn btn-primary mb-2" wire:loading.attr="disabled">
-                New
-                <div wire:loading wire:target="create" class="spinner-border spinner-border-sm ms-2" role="status">
-                </div>
-            </button>
-        </div>
-
-        <div class="table-responsive">
-            <!-- Table for all subjects or filtered subjects -->
-            <table class="table table-bordered table-striped">
-                <thead class="thead-dark">
-                    <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Subject Name</th>
-                        <th scope="col">Code</th>
-                        <th scope="col">Abbreviation</th>
-                        <th scope="col">Category</th>
-                        <th scope="col">Type</th> <!-- Added type column -->
-                        <th scope="col">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @php
-                        $subjectsToDisplay = $selectedCategory ? $filteredSubjects : $allSubjects;
-                    @endphp
-
-                    @foreach ($subjectsToDisplay as $subject)
-                        <tr>
-                            <th scope="row">{{ $loop->iteration }}</th>
-                            <td>{{ $subject->subject_name }}</td>
-                            <td>{{ $subject->subject_code }}</td>
-                            <td>{{ $subject->abbreviation }}</td>
-                            <td>{{ optional($subject->category)->name ?? 'No Category' }}</td>
-
-                            <!-- Type dropdown -->
-                            <td class="relative">
-                                <!-- Type dropdown -->
-                                <select wire:change="updateType({{ $subject->id }}, $event.target.value)"
-                                    class="form-control" wire:model="subject.type">
-                                    <option value="compulsory" @if ($subject->type === 'compulsory') selected @endif>
-                                        Compulsory</option>
-                                    <option value="elective" @if ($subject->type === 'elective') selected @endif>Elective
-                                    </option>
-                                </select>
-
-                                <!-- Success message when the type is saved -->
-                                @if (session()->has('type_saved_{{ $subject->id }}'))
-                                    <div class="absolute right-0 top-0 mt-2 mr-2 text-sm text-green-500">
-                                        Saved
-                                    </div>
-                                @endif
-                            </td>
-
-
-                            <td class="text-center">
-                                <button wire:click="edit({{ $subject->id }})" class="btn btn-link p-0"
-                                    wire:loading.attr="disabled" data-toggle="tooltip" data-placement="top"
-                                    title="Edit">
-                                    <i class="fas fa-edit"></i> <!-- Edit icon -->
-                                    <div wire:loading wire:target="edit({{ $subject->id }})"
-                                        class="spinner-border spinner-border-sm ms-2" role="status"></div>
-                                </button>
-                                <button wire:click="delete({{ $subject->id }})" class="btn btn-link p-0 text-danger"
-                                    wire:loading.attr="disabled" data-toggle="tooltip" data-placement="top"
-                                    title="Delete">
-                                    <i class="fas fa-trash-alt"></i> <!-- Trash icon for delete -->
-                                    <div wire:loading wire:target="delete({{ $subject->id }})"
-                                        class="spinner-border spinner-border-sm ms-2" role="status"></div>
-                                </button>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
         </div>
     </div>
-@endif
+</div>
+
+<style>
+    [x-cloak] { display: none !important; }
+</style>

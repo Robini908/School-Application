@@ -2,18 +2,20 @@
 
 namespace App\Models;
 
+use App\User;
 use Laravel\Scout\Searchable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 
 class StudentRecord extends Model
 {
-    use HasFactory; use Notifiable;
+    use HasFactory;
+    use Notifiable;
 
     protected $primaryKey = 'id';
     public $incrementing = true;
@@ -22,11 +24,12 @@ class StudentRecord extends Model
     protected $fillable = [
         'parent_id_no',
         'my_class_id',
+        'user_id',
         'section_id',
         'adm_no',
         'dorm_id',
         'year_admitted',
-        'kcpe', 
+        'kcpe',
         'first_name',
         'middle_name',
         'last_name',
@@ -55,9 +58,12 @@ class StudentRecord extends Model
         'upi_number', // Added
     ];
 
+    protected $appends = ['is_enrolled'];
+
     protected $casts = [
         'suspension_date' => 'datetime',
         'suspension_end_date' => 'datetime',
+        'is_enrolled' => 'boolean'
     ];
 
     public function getAuthPassword()
@@ -65,10 +71,43 @@ class StudentRecord extends Model
         return $this->student_password;
     }
 
+    public function bloodgroup()
+    {
+        return $this->belongsTo(BloodGroup::class, 'student_id');
+    }
+
     public function transitions(): HasMany
     {
         return $this->hasMany(StudentTransition::class, 'student_id');
     }
+
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Listen for the 'deleting' event
+        static::deleting(function ($student) {
+            // Load the user relationship if not already loaded
+            if (!$student->relationLoaded('user')) {
+                $student->load('user');
+            }
+
+            // Delete the associated user if it exists
+            if ($student->user) {
+                $student->user->delete();
+            }
+        });
+    }
+
+
+    
 
     /**
      * Get the current class and section for the student.
@@ -156,5 +195,32 @@ class StudentRecord extends Model
     public function studentResults(): HasMany
     {
         return $this->hasMany(StudentResult::class, 'student_id', 'id');
+    }
+
+    /**
+     * Get the enrollment status of the student.
+     * This is a dynamic attribute that will be appended to the model.
+     *
+     * @return bool
+     */
+    public function getIsEnrolledAttribute()
+    {
+        // If no subject is selected in the context, return true
+        if (!request()->has('subject_id')) {
+            return true;
+        }
+
+        $subjectId = request()->get('subject_id');
+        $isSelectionEnabled = SubjectSelectionSetting::where('class_id', $this->my_class_id)
+            ->where('is_subject_selection_enabled', true)
+            ->exists();
+
+        // If subject selection is not enabled for this class, student is enrolled in all subjects
+        if (!$isSelectionEnabled) {
+            return true;
+        }
+
+        // If subject selection is enabled, check if student has selected this subject
+        return $this->subjects()->where('subjects.id', $subjectId)->exists();
     }
 }

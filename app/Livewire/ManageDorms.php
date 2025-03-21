@@ -20,7 +20,7 @@ class ManageDorms extends Component
 
     // Properties for form inputs
     public $name, $capacity, $description, $dormId;
-    public $teacherId, $session;
+    public $teacherId, $session, $classId;
 
     // Properties for UI state
     public $isCreating = false;
@@ -32,6 +32,7 @@ class ManageDorms extends Component
     public $occupancyData = [];
     public $students = array();
     public $myStudents;
+    public $availableStudents; // Property to store students available for assignment
 
     public $dorm;
 
@@ -71,7 +72,7 @@ class ManageDorms extends Component
     // Reset form fields and UI state
     public function resetForm()
     {
-        $this->reset(['name', 'capacity', 'description', 'teacherId', 'session', 'dormId', 'dormName']);
+        $this->reset(['name', 'capacity', 'description', 'teacherId', 'session', 'dormId', 'dormName', 'classId']);
         $this->isCreating = false;
         $this->isEditing = false;
         $this->isAssigningDormMaster = false;
@@ -82,7 +83,7 @@ class ManageDorms extends Component
     {
         $this->classes = MyClass::with('sections')->get();
         $this->loadedStudents = collect(); // Initialize as an empty collection
-
+        $this->selectedStudents = []; // Initialize as an empty array
     }
 
 
@@ -90,8 +91,8 @@ class ManageDorms extends Component
     {
         $query = StudentRecord::query();
 
-        if ($this->selectedClass) {
-            $query->where('my_class_id', $this->selectedClass);
+        if ($this->classId) {
+            $query->where('my_class_id', $this->classId);
         }
 
         if ($this->selectedSection) {
@@ -146,12 +147,31 @@ class ManageDorms extends Component
 
     public function removeStudent($studentId)
     {
-        $this->selectedStudents = array_diff($this->selectedStudents, [$studentId]);
+        // Remove student from the selected list when adding students
+        if ($this->isAddingStudents) {
+            $this->selectedStudents = array_diff($this->selectedStudents, [$studentId]);
+            return;
+        }
+        
+        // Remove student from the dormitory in the dorm_student pivot table
+        if ($this->selectedDormId && $this->year) {
+            DB::table('dorm_student')
+                ->where('dorm_id', $this->selectedDormId)
+                ->where('student_id', $studentId)
+                ->where('year', $this->year)
+                ->delete();
+            
+            $this->alert('success', 'Student removed from dormitory successfully.');
+            
+            // Refresh the students list
+            $this->viewStudents($this->year);
+        }
     }
 
 
     public function updatedSelectedClass($value)
     {
+        $this->classId = $value; // Set classId to be consistent
         $this->sections = Section::where('my_class_id', $value)->get();
         $this->selectedSection = null; // Reset selected section
         $this->resetLoadedStudents(); // Reset loaded students and apply filters
@@ -176,12 +196,13 @@ class ManageDorms extends Component
 
     public function assignStudentsToDorm()
     {
-        // Validate year selection
+        // Validate session and class selection
         $this->validate([
-            'year' => 'required|numeric|min:2000|max:' . (date('Y') + 5), // Adjust validation rules as needed
+            'session' => 'required|numeric|min:2000|max:' . (date('Y') + 5), // Adjust validation rules as needed
+            'classId' => 'required|exists:my_classes,id'
         ]);
 
-        if (empty($this->selectedStudents)) {
+        if (empty($this->selectedStudents) || !is_array($this->selectedStudents)) {
             $this->alert('error', 'No students selected.');
             return;
         }
@@ -195,7 +216,7 @@ class ManageDorms extends Component
         }
 
         // Check if the dorm has reached its capacity
-        $currentOccupancy = $dorm->students()->wherePivot('year', $this->year)->count();
+        $currentOccupancy = $dorm->students()->wherePivot('year', $this->session)->count();
         $availableCapacity = $dorm->capacity - $currentOccupancy;
 
         if ($availableCapacity <= 0) {
@@ -212,7 +233,7 @@ class ManageDorms extends Component
             // Check if the student is already assigned to another dorm in the same year
             $isAlreadyAssigned = DB::table('dorm_student')
                 ->where('student_id', $studentId)
-                ->where('year', $this->year)
+                ->where('year', $this->session)
                 ->exists();
 
             if ($isAlreadyAssigned) {
@@ -220,8 +241,8 @@ class ManageDorms extends Component
                 continue;
             }
 
-            // Assign the student to the dorm for the current year
-            $dorm->students()->attach($studentId, ['year' => $this->year]);
+            // Assign the student to the dorm for the selected year
+            $dorm->students()->attach($studentId, ['year' => $this->session]);
 
             $assignedCount++;
 
@@ -238,12 +259,22 @@ class ManageDorms extends Component
         }
 
         // Reset form and UI state
-        $this->reset(['isAddingStudents', 'selectedStudents', 'searchQuery', 'selectedClass', 'selectedSection', 'year']);
+        $this->reset(['isAddingStudents', 'selectedStudents', 'searchQuery', 'selectedClass', 'selectedSection', 'classId', 'session']);
     }
 
     public function addStudents($dormId)
     {
         $this->dormId = $dormId;
+        $this->selectedStudents = []; // Reset to empty array
+        $this->year = date('Y'); // Set default year to current year
+        $this->session = date('Y'); // Set default session to current year
+        $this->classId = null; // Reset classId
+        
+        $dorm = Dorm::find($dormId);
+        if ($dorm) {
+            $this->dormName = $dorm->name;
+        }
+        
         $this->isAddingStudents = true;
         $this->searchStudents(); // Load initial student list
     }
@@ -317,24 +348,18 @@ class ManageDorms extends Component
 
     public function viewStudents($year)
     {
+        $this->year = $year;
         $this->selectedYear = $year;
         $this->showStudentsList = true;
+        $this->resetPage(); // Reset pagination when changing year
 
-        // Fetch students in the dorm for the selected year
-        $this->studentsInDorm = DB::table('dorm_student')
-            ->join('student_records', 'dorm_student.student_id', '=', 'student_records.id')
-            ->join('my_classes', 'student_records.my_class_id', '=', 'my_classes.id')
-            ->join('sections', 'student_records.section_id', '=', 'sections.id')
-            ->where('dorm_student.dorm_id', $this->selectedDormId)
-            ->where('dorm_student.year', $year)
-            ->select(
-                'student_records.id',
-                'student_records.first_name',
-                'student_records.last_name',
-                'my_classes.name as class_name',
-                'sections.name as section_name'
-            )
-            ->get();
+        // Fetch the dorm name
+        $dorm = Dorm::find($this->selectedDormId);
+        if ($dorm) {
+            $this->dormName = $dorm->name;
+        } else {
+            $this->dormName = 'Unknown Dorm';
+        }
     }
 
 
@@ -519,26 +544,108 @@ class ManageDorms extends Component
     {
         $this->selectedStudents = [];
     }
+    
+    // Close the add students form
+    public function closeAddStudents()
+    {
+        $this->reset(['isAddingStudents', 'selectedStudents', 'searchQuery', 'classId', 'session']);
+        $this->resetErrorBag();
+    }
+
+    // Show the add students form from the students list view
+    public function showAddStudents()
+    {
+        // Keep the currently selected dorm ID
+        $dormId = $this->selectedDormId;
+        
+        // Close the students list view
+        $this->closeStudentsList();
+        
+        // Open the add students form for the current dorm
+        $this->addStudents($dormId);
+    }
+
+    // Also add a new method to handle classId updates directly
+    public function updatedClassId($value)
+    {
+        $this->selectedClass = $value; // Keep selectedClass in sync
+        $this->sections = Section::where('my_class_id', $value)->get();
+        $this->selectedSection = null; // Reset selected section
+        $this->resetLoadedStudents(); // Reset loaded students and apply filters
+    }
 
     // Render the component
     public function render()
     {
-        // Fetch filtered students
-        $this->searchStudents();
+        $studentsInDorm = collect(); // Default empty collection
+        
+        // Fetch students in the dorm for the selected year with full details when in students list view
+        if ($this->showStudentsList && $this->selectedDormId && $this->year) {
+            // Get student IDs from the pivot table
+            $studentIds = DB::table('dorm_student')
+                ->where('dorm_id', $this->selectedDormId)
+                ->where('year', $this->year)
+                ->pluck('student_id');
+                
+            // Fetch the complete student records with pagination
+            if ($studentIds->count() > 0) {
+                $studentsInDorm = StudentRecord::with(['my_class', 'section'])
+                    ->whereIn('id', $studentIds)
+                    ->paginate(15);
+            }
+        }
+        
+        // Only search available students when in the appropriate modes
+        $availableStudents = collect(); // Default empty collection
+        if ($this->isAddingStudents) {
+            // Fetch available students who are not already assigned to this dorm
+            $query = StudentRecord::query();
+            
+            if ($this->selectedClass) {
+                $query->where('my_class_id', $this->selectedClass);
+            }
+            
+            if ($this->searchQuery) {
+                $query->where(function ($q) {
+                    $q->where('name', 'like', '%' . $this->searchQuery . '%')
+                        ->orWhere('adm_no', 'like', '%' . $this->searchQuery . '%');
+                });
+            }
+            
+            // Get students who aren't assigned to this dorm in the current year
+            $currentYear = date('Y');
+            if ($this->session) {
+                $currentYear = $this->session;
+            }
+            
+            $assignedStudentIds = DB::table('dorm_student')
+                ->where('dorm_id', $this->dormId)
+                ->where('year', $currentYear)
+                ->pluck('student_id');
+                
+            $query->whereNotIn('id', $assignedStudentIds);
+            
+            $availableStudents = $query->paginate(15);
+        }
 
-        // Fetch other data
-        $dorms = Dorm::with('teachers')->paginate(10);
+        // Get classes for the dropdown
+        $classes = MyClass::all();
+
+        // Fetch dorm data with pagination (10 dorms per page)
+        $dorms = Dorm::paginate(10);
         $teachers = User::where('user_type', 'teacher')->get();
         $dormMasters = $this->isViewingDormMasters ? Dorm::findOrFail($this->dormId)->teachers : collect();
-
-        // Pass data to the view
+        
         return view('livewire.manage-dorms', [
             'dorms' => $dorms,
+            'studentsInDorm' => $studentsInDorm,
+            'availableStudents' => $availableStudents,
             'teachers' => $teachers,
             'dormMasters' => $dormMasters,
-            'loadedStudents' => $this->loadedStudents, // Pass loaded students
-            'totalStudents' => $this->totalStudents, // Pass total students
-            'isLoading' => $this->isLoading, // Pass loading state
+            'loadedStudents' => $this->loadedStudents,
+            'totalStudents' => $this->totalStudents,
+            'isLoading' => $this->isLoading,
+            'classes' => $classes
         ]);
     }
 }

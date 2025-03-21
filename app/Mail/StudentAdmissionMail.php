@@ -3,10 +3,11 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue; // Add this import
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class StudentAdmissionMail extends Mailable
+class StudentAdmissionMail extends Mailable implements ShouldQueue // Implement ShouldQueue
 {
     use Queueable, SerializesModels;
 

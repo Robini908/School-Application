@@ -81,6 +81,7 @@ class NotificationsManagement extends Component
         $this->isShowingNotification = true; // Show the details card
     }
 
+    
     // Close notification details
     public function closeDetails()
     {

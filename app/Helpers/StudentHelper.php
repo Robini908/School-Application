@@ -253,5 +253,32 @@ class StudentHelper
         }
     }
 
-    
+    public static function calculatePosition($student, $exam)
+    {
+        // Get all students in the same class
+        $allStudents = StudentRecord::where('my_class_id', $student->my_class_id)
+            ->with(['examMarks' => function($query) use ($exam) {
+                $query->where('exam_id', $exam->id);
+            }])
+            ->get();
+
+        // Calculate total marks for each student
+        $scores = [];
+        foreach ($allStudents as $s) {
+            $totalMarks = $s->examMarks->sum('marks');
+            $scores[$s->id] = $totalMarks;
+        }
+
+        // Sort scores in descending order
+        arsort($scores);
+
+        // Find position of current student
+        $position = array_search($student->id, array_keys($scores)) + 1;
+
+        // Format position with suffix (1st, 2nd, 3rd, etc.)
+        $suffixes = ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th'];
+        $suffix = ($position % 100 >= 11 && $position % 100 <= 13) ? 'th' : $suffixes[$position % 10];
+
+        return $position . $suffix;
+    }
 }

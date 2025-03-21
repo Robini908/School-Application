@@ -2,14 +2,13 @@
 @section('page_title', 'Manage Subjects')
 @section('content')
 
-    <div class="card">
-        <div class="card-header header-elements-inline">
-            <h6 class="card-title">Manage Subjects</h6>
-            {!! Qs::getPanelOptions() !!}
-        </div>
-
-        <div class="card-body">
+<div class="min-h-screen bg-gray-50 py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Main Content Container -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
             <livewire:all-subject-management-actions lazy />
         </div>
     </div>
+</div>
+
 @endsection

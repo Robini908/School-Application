@@ -2,14 +2,34 @@
 
 namespace App\Helpers;
 
-use App\Models\Setting;
-use App\Models\StudentRecord;
-use App\Models\Subject;
 use Hashids\Hashids;
+use App\Models\Setting;
+use App\Models\Subject;
+use App\Models\UserType;
+use App\Models\StudentRecord;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class Qs
 {
+
+    private $hashids;
+
+    public function __construct()
+    {
+        $this->hashids = new Hashids();
+    }
+
+    public function hashRoute($route, $id)
+    {
+        // Using Laravel's built-in hashing functionality
+        $hashedId = Hash::make($id);
+
+        // Using Hashids\Hashids to generate a unique identifier
+        $hashedRoute = $this->hashids->encode($route, $hashedId);
+
+        return $hashedRoute;
+    }
     public static function displayError($errors)
     {
         $errorMessages = '';
@@ -79,13 +99,10 @@ class Qs
 
     public static function getTeamAcademic()
     {
-        return ['admin', 'super_admin', 'teacher', 'student'];
+        return ['admin', 'super_admin', 'teacher', 'student', 'parent'];
     }
 
-    public static function getTeamAdministrative()
-    {
-        return ['admin', 'super_admin', 'accountant'];
-    }
+
 
     public static function hash($id)
     {
@@ -105,29 +122,24 @@ class Qs
     public static function getUserRecord($remove = [])
     {
         $data = ['first_name', 'middle_name', 'last_name', 'email', 'phone', 'dob', 'gender', 'address', 'bg_id', 'nal_id', 'state_id', 'lga_id'];
-
-        // Remove any fields specified in $remove
         return $remove ? array_values(array_diff($data, $remove)) : $data;
     }
 
-
-
+    // Fetch staff record fields
     public static function getStaffRecord($remove = [])
     {
-        $data = ['emp_date',];
-
+        $data = ['emp_date'];
         return $remove ? array_values(array_diff($data, $remove)) : $data;
     }
 
+    // Fetch student data fields
     public static function getStudentData($remove = [])
     {
         $data = ['my_class_id', 'section_id', 'my_parent_id', 'dorm_id', 'dorm_room_no', 'adm_no', 'year_admitted', 'wd', 'wd_date', 'grad', 'grad_date', 'house', 'age'];
-
-        // Remove any fields specified in $remove
         return $remove ? array_values(array_diff($data, $remove)) : $data;
     }
 
-
+    // Decode a hash string
     public static function decodeHash($str, $toString = true)
     {
         $date = date('dMY') . 'CJ';
@@ -136,121 +148,142 @@ class Qs
         return $toString ? implode(',', $decoded) : $decoded;
     }
 
+    // Check if the user is a team account
     public static function userIsTeamAccount()
     {
-        return in_array(Auth::user()->user_type, self::getTeamAccount());
+        return self::userHasRole('accountant');
     }
 
-    public static function userIsTeamSA()
+    // Check if the user is a super admin
+    public static function userIsTeamSA(): bool
     {
-        return in_array(Auth::user()->user_type, self::getTeamSA());
+        return self::userHasRole('super_admin');
     }
 
+    // Check if the user is a team SAT
     public static function userIsTeamSAT()
     {
-        $user = Auth::user();
-
-        return $user && in_array($user->user_type, self::getTeamSAT());
+        return self::userHasRole(['super_admin', 'admin', 'teacher']);
     }
 
-
+    // Check if the user is academic staff
     public static function userIsAcademic()
     {
-        $user = Auth::user();
-
-        return $user && in_array($user->user_type, self::getTeamAcademic());
+        return self::userHasRole(['teacher', 'librarian']);
     }
 
+    // Check if the user is administrative staff
     public static function userIsAdministrative()
     {
-        if (Auth::check()) {
-            return in_array(Auth::user()->user_type, self::getTeamAdministrative());
-        }
-        return false; // Return false if the user is not authenticated
+        return self::userHasRole(['admin', 'super_admin', 'accountant']);
     }
 
+    // Check if the user is an admin
     public static function userIsAdmin()
     {
-        return Auth::check() && Auth::user()->user_type == 'admin';
+        return self::userHasRole('admin');
     }
 
+    // Get the user's type
     public static function getUserType()
     {
-        if (Auth::check()) {
-            return Auth::user()->user_type;
-        }
-        return null; // Return null if the user is not authenticated
+        $user = Auth::user();
+        return $user ? $user->userType->title ?? null : null;
     }
 
+    // Check if the user is a super admin
     public static function userIsSuperAdmin()
     {
-        return Auth::check() && Auth::user()->user_type == 'super_admin';
+        return self::userHasRole('super_admin');
     }
 
+    // Check if the user is a student
     public static function userIsStudent()
     {
-        return Auth::check() && Auth::user()->user_type == 'student';
+        return self::userHasRole('student');
     }
 
+    // Check if the user is a teacher
     public static function userIsTeacher()
     {
-        return Auth::check() && Auth::user()->user_type == 'teacher';
+        return self::userHasRole('teacher');
     }
 
+    // Check if the user is a parent
     public static function userIsParent()
     {
-        return Auth::check() && Auth::user()->user_type == 'parent';
+        return self::userHasRole('parent');
     }
 
 
+
+    // Check if the user is staff (admin, teacher, accountant, etc.)
     public static function userIsStaff()
     {
-        return in_array(Auth::user()->user_type, self::getStaff());
+        return self::userHasRole(['super_admin', 'admin', 'teacher', 'accountant', 'librarian']);
     }
 
+    // Get staff roles
     public static function getStaff($remove = [])
     {
-        $data =  ['super_admin', 'admin', 'teacher', 'accountant', 'librarian'];
+        $data = ['super_admin', 'admin', 'teacher', 'accountant', 'librarian'];
         return $remove ? array_values(array_diff($data, $remove)) : $data;
     }
 
+    // Get all user types dynamically from the database
     public static function getAllUserTypes($remove = [])
     {
-        $data =  ['super_admin', 'admin', 'teacher', 'accountant', 'librarian', 'student', 'parent'];
-        return $remove ? array_values(array_diff($data, $remove)) : $data;
+        $userTypes = UserType::pluck('title')->toArray();
+        return $remove ? array_values(array_diff($userTypes, $remove)) : $userTypes;
     }
 
-    // Check if User is Head of Super Admins (Untouchable)
+    // Check if the user is the head super admin (untouchable)
     public static function headSA(int $user_id)
     {
         return $user_id === 1;
     }
 
+    // Check if the user is part of the PTA
     public static function userIsPTA()
     {
-        return in_array(Auth::user()->user_type, self::getPTA());
+        return self::userHasRole(['super_admin', 'admin', 'teacher', 'parent']);
     }
 
+    // Check if a student belongs to a parent
     public static function userIsMyChild($student_id, $parent_id)
     {
-        $data = ['user_id' => $student_id, 'my_parent_id' => $parent_id];
-        return StudentRecord::where($data)->exists();
+        return StudentRecord::where('user_id', $student_id)->where('my_parent_id', $parent_id)->exists();
     }
 
-    public static function getSRByUserID($user_id)
+    // Get administrative team roles
+    public static function getTeamAdministrative()
     {
-        return StudentRecord::where('user_id', $user_id)->first();
+        return ['admin', 'super_admin', 'accountant'];
     }
 
+    // Get PTA roles
     public static function getPTA()
     {
         return ['super_admin', 'admin', 'teacher', 'parent'];
     }
 
-    /*public static function filesToUpload($programme)
+    // Get student record by user ID
+    public static function getSRByUserID($user_id)
     {
-        return ['birth_cert', 'passport',  'neco_cert', 'waec_cert', 'ref1', 'ref2'];
-    }*/
+        return StudentRecord::where('user_id', $user_id)->first();
+    }
+
+    // Helper method to check if the user has a specific role
+    protected static function userHasRole($roles)
+    {
+        $user = Auth::user();
+        if (!$user || !$user->userType) {
+            return false;
+        }
+
+        $userRole = $user->userType->title;
+        return in_array($userRole, (array)$roles);
+    }
 
     public static function getPublicUploadPath()
     {
@@ -402,20 +435,4 @@ class Qs
     {
         return ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     }
-
-
-
-
-
-    /* public static function generateAdmissionNumber($classType, $admissionYear)
-    {
-        // Example logic for generating sequential admission number
-        $lastAdmissionNumber = Student::where('class_type', $classType)
-            ->whereYear('created_at', $admissionYear)
-            ->max('admission_number');
-
-        $sequentialNumber = str_pad($lastAdmissionNumber + 1, 5, '0', STR_PAD_LEFT);
-        return $sequentialNumber;
-    }
-*/
 }

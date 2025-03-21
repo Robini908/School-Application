@@ -1,67 +1,96 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full bg-gray-100">
 
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta id="csrf-token" name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="author" content="CJ Inspired">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{{ config('app.name', 'MBUKU ERP') }}</title>
 
-    <title>@yield('page_title') | {{ config('app.name') }}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @include('partials.inc_top')
     @livewireStyles
-    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
-    <script>
-        tinymce.init({
-            selector: '#tinyMCE', // ID of the textarea
-            plugins: 'advlist autolink lists link image charmap preview anchor pagebreak',
-            toolbar: 'undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image',
-            height: 300,
-        });
-    </script>
+    @stack('styles')
+    
 </head>
 
-<body
-    class="{{ in_array(Route::currentRouteName(), ['payments.invoice', 'marks.tabulation', 'marks.show', 'ttr.manage', 'ttr.show']) ? 'sidebar-xs' : '' }}">
+<body class="h-full font-sans antialiased" x-data="{ sidebarOpen: false }">
+    <livewire:toasts />
 
-    <!-- Top Navigation Bar -->
-    @include('partials.top_menu')
+    <div class="min-h-full">
+        <!-- Include sidebar -->
+        @include('partials.sidebar')
 
-    <div class="page-content d-flex">
-        <!-- Sidebar -->
-        <div class="sidebar sidebar-dark sidebar-main sidebar-expand-md position-sticky"
-            style="top: 56px; height: calc(100vh - 56px); overflow-y: auto;">
-            @include('partials.menu')
-        </div>
+        <!-- Main content -->
+        <div class="lg:pl-64 flex flex-col flex-1">
+            <!-- Top nav -->
+            @include('partials.header')
 
-        <!-- Content Area -->
-        <div class="content-wrapper flex-grow-1" style="overflow-y: auto; height: calc(100vh - 56px);">
-            <div class="content">
-                {{-- Error Alert Area --}}
-                @if ($errors->any())
-                    <div class="alert alert-danger border-0 alert-dismissible">
-                        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-                        @foreach ($errors->all() as $error)
-                            <span><i class="icon-arrow-right5"></i> {{ $error }}</span><br>
-                        @endforeach
+            <!-- Page content -->
+            <main class="flex-1">
+                <!-- Page header -->
+                <div class="bg-white shadow">
+                    <div class="px-4 sm:px-6 lg:px-8 py-4">
+                        <div class="md:flex md:items-center md:justify-between">
+                            <div class="flex-1 min-w-0">
+                                <!-- Page title goes here -->
+                                @yield('page_title')
+                            </div>
+                            <div class="mt-4 flex md:mt-0 md:ml-4">
+                                <!-- Action buttons go here -->
+                                @yield('page_action_buttons')
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alert section -->
+                @if($errors->any())
+                    <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+                        <div class="rounded-md bg-red-50 p-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-red-800">
+                                        There were {{ count($errors) }} errors with your submission
+                                    </h3>
+                                    <div class="mt-2 text-sm text-red-700">
+                                        <ul role="list" class="list-disc pl-5 space-y-1">
+                                            @foreach($errors->all() as $error)
+                                                <li>{{ $error }}</li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 @endif
-                <div id="ajax-alert" style="display: none"></div>
-                @yield('content')
-            </div>
+
+                <!-- Flash messages -->
+                @include('partials.flash')
+
+                <!-- Main content area -->
+                <div class="py-6">
+                    <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+                        @yield('content')
+                    </div>
+                </div>
+            </main>
         </div>
     </div>
 
-    @yield('scripts')
-    @stack('scripts')
-    @include('partials.inc_bottom')
+    <!-- Scripts -->
     @livewireScripts
-    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <x-livewire-alert::scripts />
-    @filepondScripts
+    @stack('scripts')
 </body>
-
 </html>

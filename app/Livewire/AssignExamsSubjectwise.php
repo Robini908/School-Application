@@ -14,6 +14,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
+use App\Models\SubjectSelectionSetting;
 
 class AssignExamsSubjectwise extends Component
 {
@@ -30,7 +31,7 @@ class AssignExamsSubjectwise extends Component
     /** @var Collection<int, StudentRecord> */
     public $students;
 
-    public $marks = []; // Holds the marks assigned to each student
+    public $marks = []; // Holds the numeric marks assigned to each student
     public $selectedSubjectName; // Holds the selected subject name
     public $assignedMarks; // Holds the assigned marks for the selected exam and subject
     public $editingMarkId = null; // Tracks the currently editing mark
@@ -46,14 +47,21 @@ class AssignExamsSubjectwise extends Component
 
     public $filterSection;
 
+    protected $rules = [
+        'marks.*' => 'nullable|numeric|min:0|max:100',
+        'specialGrades.*' => 'nullable|in:AB,EX,P,F'
+    ];
+
     public function mount()
     {
         // Initialize collections and variables
-        $this->students = collect(); // Initialize as an empty collection
+        $this->students = collect();
         $this->assignedMarks = collect();
         $this->marks = [];
+        $this->specialGrades = [];
         $this->editingMarkId = null;
         $this->selectedSubjectName = null;
+        $this->selectedClassName = null;
         $this->selectedClass = null;
         $this->selectedSection = null;
         $this->selectedExam = null;
@@ -64,16 +72,21 @@ class AssignExamsSubjectwise extends Component
 
     public function isStudentEnrolledInSubject($studentId, $subjectId)
     {
-        $student = StudentRecord::find($studentId);
-        if (!$student) return false;
+        // First check if subject selection is enabled for the class
+        $isSelectionEnabled = SubjectSelectionSetting::where('class_id', $this->selectedClass)
+            ->where('is_subject_selection_enabled', true)
+            ->exists();
 
-        $isSelectionEnabled = MyClass::find($student->my_class_id)
-            ->subjectSelectionSetting
-            ->is_subject_selection_enabled ?? false;
+        // If subject selection is not enabled for this class, all students are considered enrolled
+        if (!$isSelectionEnabled) {
+            return true;
+        }
 
-        if (!$isSelectionEnabled) return true;
-
-        return $student->subjects->contains('id', $subjectId);
+        // If subject selection is enabled, check if student has selected this subject
+        return DB::table('student_subject')
+            ->where('student_id', $studentId)
+            ->where('subject_id', $subjectId)
+            ->exists();
     }
 
     public function isSubjectSelectionEnabled($classId)
@@ -109,24 +122,54 @@ class AssignExamsSubjectwise extends Component
                 $query->where('grading_systems.id', Exam::find($this->selectedExam)->grading_system_id);
             })->get()
             : collect();
-        $sections = $this->selectedClass
-            ? Section::where('my_class_id', $this->selectedClass)->get()
-            : collect();
 
-        // Fetch students for the selected section
-        $this->students = StudentRecord::with(['section', 'subjects'])
+        // Get sections with student counts
+        $sections = collect();
+        if ($this->selectedClass) {
+            $sections = Section::where('my_class_id', $this->selectedClass)
+                ->withCount(['studentRecords' => function ($query) {
+                    $query->where('my_class_id', $this->selectedClass);
+                }])
+                ->get()
+                ->map(function ($section) {
+                    // Get enrolled student count if subject is selected
+                    if ($this->selectedSubject) {
+                        request()->merge(['subject_id' => $this->selectedSubject]);
+                        $section->enrolled_count = StudentRecord::where('section_id', $section->id)
             ->where('my_class_id', $this->selectedClass)
+                            ->get()
+                            ->filter(function ($student) {
+                                return $student->is_enrolled;
+                            })
+                            ->count();
+                    }
+                    return $section;
+                });
+        }
+
+        // Update class name whenever render is called
+        if ($this->selectedClass) {
+            $class = MyClass::find($this->selectedClass);
+            $this->selectedClassName = $class ? $class->name : null;
+        }
+
+        // Fetch students with their relationships
+        if ($this->selectedSection) {
+            request()->merge(['subject_id' => $this->selectedSubject]);
+            $this->students = StudentRecord::with(['user', 'subjects'])
             ->where('section_id', $this->selectedSection)
-            ->get();
+                ->where('my_class_id', $this->selectedClass)
+                ->get()
+                ->sortBy(function ($student) {
+                    return [!$student->is_enrolled, $student->adm_no];
+                })
+                ->values();
 
-        // Sort students: Enrolled students first, non-enrolled students last
-        $this->students = $this->students->sortBy(function ($student) {
-            return !$this->isStudentEnrolledInSubject($student->id, $this->selectedSubject);
-        });
+            $this->populateMarksArray();
+        } else {
+            $this->students = collect();
+        }
 
-        $this->selectedClassName = $this->selectedClass
-            ? MyClass::find($this->selectedClass)->class_name
-            : null;
         $this->selectedExamName = $this->selectedExam
             ? Exam::find($this->selectedExam)->name
             : null;
@@ -134,7 +177,7 @@ class AssignExamsSubjectwise extends Component
         $this->assignedMarks = ($this->selectedExam && $this->selectedSubject)
             ? ExamMarks::where('exam_id', $this->selectedExam)
             ->where('subject_id', $this->selectedSubject)
-            ->with('student')
+            ->with('student.user')
             ->get()
             : collect();
 
@@ -153,13 +196,29 @@ class AssignExamsSubjectwise extends Component
     {
         foreach ($this->students as $student) {
             $assignedMark = $this->assignedMarks->firstWhere('student_id', $student->id);
-            $this->marks[$student->id] = $assignedMark ? $assignedMark->marks : null;
+            if ($assignedMark) {
+                if ($assignedMark->special_grade) {
+                    $this->specialGrades[$student->id] = $assignedMark->special_grade;
+                    $this->marks[$student->id] = null;
+                } else {
+                    $this->marks[$student->id] = $assignedMark->marks;
+                    $this->specialGrades[$student->id] = null;
+                }
+            } else {
+                $this->marks[$student->id] = null;
+                $this->specialGrades[$student->id] = null;
+            }
         }
     }
 
     public function updatedSelectedClass($classId)
     {
-        $this->reset(['selectedExam', 'selectedSubject', 'selectedSection', 'students', 'assignedMarks']);
+        $this->reset(['selectedExam', 'selectedSubject', 'selectedSection', 'students', 'assignedMarks', 'selectedClassName']);
+        
+        if ($classId) {
+            $class = MyClass::find($classId);
+            $this->selectedClassName = $class ? $class->name : null;
+        }
     }
 
     public function updatedSelectedExam($examId)
@@ -169,189 +228,197 @@ class AssignExamsSubjectwise extends Component
 
     public function updatedSelectedSection($sectionId)
     {
-        $this->reset(['students', 'marks']); // Reset students and marks on section change.
+        if ($sectionId) {
+            $this->students = StudentRecord::with(['user', 'subjects'])
+                ->where('section_id', $sectionId)
+                ->where('my_class_id', $this->selectedClass)
+                ->get()
+                ->map(function ($student) {
+                    $student->is_enrolled = $this->isStudentEnrolledInSubject($student->id, $this->selectedSubject);
+                    return $student;
+                })
+                ->sortBy(function ($student) {
+                    return [!$student->is_enrolled, $student->adm_no];
+                })
+                ->values();
 
-        if ($sectionId && $this->selectedSubject) {
-            // Filter by section and subject
-            $this->students = StudentRecord::where('section_id', $sectionId)
-                ->whereHas('subjects', function ($query) {
-                    $query->where('subjects.id', $this->selectedSubject); // Ensure no ambiguity
-                })->get();
-        } elseif ($sectionId) {
-            // Filter by section only
-            $this->students = StudentRecord::where('section_id', $sectionId)->get();
+            $this->populateMarksArray();
         } else {
-            $this->students = collect(); // Reset if no section is selected
+            $this->students = collect();
         }
-
-        $this->populateMarksArray(); // Update marks array for UI
     }
 
+    protected function getStudents()
+    {
+        if (!$this->selectedSection) {
+            return collect();
+        }
+
+        return StudentRecord::with(['user', 'subjects'])
+            ->where('section_id', $this->selectedSection)
+            ->where('my_class_id', $this->selectedClass)
+            ->get()
+        ->map(function ($student) {
+            $student->is_enrolled = $this->isStudentEnrolledInSubject($student->id, $this->selectedSubject);
+            return $student;
+        })
+        ->sortBy(function ($student) {
+            return [!$student->is_enrolled, $student->adm_no];
+        })
+        ->values();
+    }
 
     public function updatedSelectedSubject($subjectId)
     {
-        $this->reset(['students', 'marks', 'selectedSubjectName']); // Reset students, marks, and subject name on change.
+        $this->reset(['students', 'marks', 'specialGrades', 'selectedSection']);
 
         if ($subjectId) {
-            $this->selectedSubjectName = Subject::find($subjectId)?->subject_name ?? 'Unknown Subject'; // Fetch subject name or fallback
-        }
-
-        if ($subjectId && $this->selectedSection) {
-            $this->students = StudentRecord::where('section_id', $this->selectedSection)
-                ->whereHas('subjects', function ($query) use ($subjectId) {
-                    $query->where('subjects.id', $subjectId);
-                })->get();
-        } elseif ($subjectId) {
-            $this->students = StudentRecord::whereHas('subjects', function ($query) use ($subjectId) {
-                $query->where('subjects.id', $subjectId);
-            })->get();
+            $subject = Subject::find($subjectId);
+            $this->selectedSubjectName = $subject ? $subject->subject_name : 'Unknown Subject';
         } else {
-            $this->students = collect(); // Reset if no subject is selected
+            $this->selectedSubjectName = null;
         }
-
-        $this->populateMarksArray(); // Update marks array for UI
     }
 
-
-
-
-    public function assignMarks()
+    public function saveMark($studentId)
     {
-        try {
-            $this->validate([
-                'selectedExam' => 'required|exists:exams,id',
-                'selectedSubject' => 'required|exists:subjects,id',
-                'selectedSection' => 'required|exists:sections,id',
-                'marks' => 'nullable|array',
-                'marks.*' => 'nullable|numeric|min:0|max:100',
-                'specialGrades' => 'nullable|array',
-                'specialGrades.*' => 'nullable|in:X,Y,Z',
-            ]);
-
-            DB::beginTransaction();
-
-            $updatedCount = 0;
-            $insertedCount = 0;
-            $skippedCount = 0;
-            $errorCount = 0;
-
-            foreach ($this->students as $student) {
-                $studentId = $student->id;
-                $mark = $this->marks[$studentId] ?? null;
-                $specialGrade = $this->specialGrades[$studentId] ?? null;
-
-                // Skip if neither marks nor special grade is provided
-                if (is_null($mark) && is_null($specialGrade)) {
-                    $skippedCount++;
-                    continue;
-                }
-
-                // Skip if the student is not enrolled in the subject
-                if (!$this->isStudentEnrolledInSubject($studentId, $this->selectedSubject)) {
-                    $skippedCount++;
-                    continue;
-                }
-
-                try {
-                    $examMark = ExamMarks::updateOrCreate(
+        $this->validateOnly("marks.{$studentId}");
+        
+        // Clear any special grade when saving a numeric mark
+        if (isset($this->marks[$studentId])) {
+            $this->specialGrades[$studentId] = null;
+            
+            // Save to database
+            ExamMarks::updateOrCreate(
                         [
                             'student_id' => $studentId,
                             'exam_id' => $this->selectedExam,
                             'subject_id' => $this->selectedSubject,
                         ],
                         [
-                            'marks' => $mark,
-                            'special_grade' => $specialGrade,
-                        ]
-                    );
+                    'marks' => $this->marks[$studentId],
+                    'special_grade' => null,
+                ]
+            );
+            
+            // Refresh the marks data
+            $this->refreshMarksData();
+            
+            $this->dispatch('mark-saved', studentId: $studentId);
+        }
+    }
 
-                    if ($examMark->wasRecentlyCreated) {
-                        $insertedCount++;
-                    } else {
-                        $updatedCount++;
-                    }
-                } catch (\Exception $e) {
-                    $errorCount++;
-                    Log::error("Error processing marks for student ID {$studentId}: " . $e->getMessage());
-                }
+    public function assignSpecialGrade($grade, $studentId)
+    {
+        if (!in_array($grade, ['AB', 'EX', 'P', 'F'])) {
+            return;
+        }
+
+        // Clear numeric mark when assigning special grade
+        $this->marks[$studentId] = null;
+        $this->specialGrades[$studentId] = $grade;
+
+        // Save to database
+        ExamMarks::updateOrCreate(
+            [
+                'student_id' => $studentId,
+                'exam_id' => $this->selectedExam,
+                'subject_id' => $this->selectedSubject,
+            ],
+            [
+                'marks' => null,
+                'special_grade' => $grade,
+            ]
+        );
+
+        // Refresh the marks data
+        $this->refreshMarksData();
+
+        $this->dispatch('mark-saved', studentId: $studentId);
+    }
+
+    public function clearMark($studentId)
+    {
+        $this->marks[$studentId] = null;
+        $this->specialGrades[$studentId] = null;
+
+        // Remove from database
+        ExamMarks::where('student_id', $studentId)
+            ->where('exam_id', $this->selectedExam)
+            ->where('subject_id', $this->selectedSubject)
+            ->delete();
+
+        // Refresh the marks data
+        $this->refreshMarksData();
+
+        $this->dispatch('mark-saved', studentId: $studentId);
+    }
+
+    public function refreshMarks()
+    {
+        // Refresh the marks data
+        $this->refreshMarksData();
+    }
+
+    protected function refreshMarksData()
+    {
+        // Fetch latest marks from database
+        $latestMarks = ExamMarks::where('exam_id', $this->selectedExam)
+            ->where('subject_id', $this->selectedSubject)
+            ->get();
+
+        // Reset arrays
+        $this->marks = [];
+        $this->specialGrades = [];
+
+        // Populate arrays with latest data
+        foreach ($latestMarks as $mark) {
+            if ($mark->special_grade) {
+                $this->specialGrades[$mark->student_id] = $mark->special_grade;
+            } else {
+                $this->marks[$mark->student_id] = $mark->marks;
+            }
+        }
+
+        // Dispatch event for UI update
+        $this->dispatch('marks-updated');
+    }
+
+    public function assignMarks()
+    {
+        $this->validate();
+
+        foreach ($this->students as $student) {
+            if (!$student->is_enrolled) {
+                continue;
             }
 
-            DB::commit();
+            $mark = $this->marks[$student->id] ?? null;
+            $specialGrade = $this->specialGrades[$student->id] ?? null;
 
-            if ($insertedCount > 0 || $updatedCount > 0) {
-                $this->alert('success', "Marks/Grades assigned successfully! Inserted: {$insertedCount}, Updated: {$updatedCount}");
+            // Ensure mutual exclusivity
+            if ($mark && $specialGrade) {
+                continue; // Skip if both are set (shouldn't happen due to UI constraints)
             }
 
-            if ($skippedCount > 0) {
-                $this->alert('warning', "{$skippedCount} students were skipped (unenrolled or no data provided).");
-            }
+            // Get existing mark record or create new one
+            $examMark = ExamMarks::firstOrNew([
+                'student_id' => $student->id,
+                'exam_id' => $this->selectedExam,
+                'subject_id' => $this->selectedSubject
+            ]);
 
-            if ($errorCount > 0) {
-                $this->alert('error', "{$errorCount} errors occurred while processing marks/grades. Check logs for details.");
-            }
-
-            $this->refreshAssignedMarks();
-            $this->marks = [];
-            $this->specialGrades = [];
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            $this->alert('error', 'Validation error: ' . implode(', ', $e->errors()));
-        } catch (\Exception $e) {
-            DB::rollBack();
-            $this->alert('error', 'An unexpected error occurred: ' . $e->getMessage());
-            Log::error("Error in assignMarks: " . $e->getMessage());
+            $examMark->marks = $mark;
+            $examMark->special_grade = $specialGrade;
+            $examMark->save();
         }
+
+        // Refresh the marks data after bulk save
+        $this->refreshMarksData();
+
+        $this->dispatch('marks-assigned');
+        session()->flash('success', 'Marks assigned successfully!');
     }
-
-    public function updatedMarks($value, $studentId)
-    {
-        // If marks are entered, clear the special grade for this student
-        if (!empty($value)) {
-            $this->specialGrades[$studentId] = null; // Clear special grade
-        }
-    }
-
-    // When special grades are updated
-    public function updatedSpecialGrades($value, $studentId)
-    {
-        // If a special grade is selected, clear the marks for this student
-        if (!empty($value)) {
-            $this->marks[$studentId] = null; // Clear marks
-        }
-    }
-
-
-
-    // Custom method to handle marks input
-    public function handleMarksInput($value, $studentId)
-    {
-        // If marks are entered, clear and disable the special grade field for this student
-        if (!empty($value)) {
-            $this->specialGrades[$studentId] = null; // Clear special grade
-        }
-    }
-
-    // Custom method to handle special grade selection
-    public function handleSpecialGradeInput($value, $studentId)
-    {
-        // If a special grade is selected, clear the marks field for this student
-        if (!empty($value)) {
-            $this->marks[$studentId] = null; // Clear marks
-        }
-    }
-
-    public function refreshAssignedMarks()
-    {
-        if ($this->selectedExam && $this->selectedSubject) {
-            $this->assignedMarks = ExamMarks::where('exam_id', $this->selectedExam)
-                ->where('subject_id', $this->selectedSubject)
-                ->with('student')
-                ->get();
-        } else {
-            $this->assignedMarks = collect(); // Reset to empty collection if no exam or subject is selected
-        }
-    }
-
-
 
     public function editMark($studentId)
     {

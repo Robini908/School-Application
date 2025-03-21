@@ -18,6 +18,7 @@ class GradeManager extends Component
     public $showForm = false;
     public $gradingSystemName;
     public $gradingSystemDescription;
+    public $isEditing = false;
 
     public function mount()
     {
@@ -120,6 +121,7 @@ class GradeManager extends Component
     public function showAddForm()
     {
         $this->resetForm();
+        $this->isEditing = false;
         $this->showForm = true;
     }
 
@@ -141,6 +143,7 @@ class GradeManager extends Component
     public function editGrade($index)
     {
         $this->gradesList[$index]['isEditing'] = true; // Set the selected grade to editing mode
+        $this->isEditing = true;
     }
 
     public function updateGrade($index)
@@ -205,6 +208,7 @@ class GradeManager extends Component
     public function cancelEdit($index)
     {
         $this->gradesList[$index]['isEditing'] = false; // Exit editing mode without saving
+        $this->isEditing = false;
     }
 
     public function cancelForm()

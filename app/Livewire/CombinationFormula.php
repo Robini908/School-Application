@@ -24,11 +24,18 @@ use Illuminate\Support\Facades\Parallel;
 use App\Notifications\SystemNotification;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Mccarlosen\LaravelMpdf\Facades\LaravelMpdf as PDF;
+use App\Traits\ExamAnalysisCacheKeys;
+use Illuminate\Support\Facades\Cache;
+use App\Models\School;
+use Mpdf\Mpdf;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Response;
 
 class CombinationFormula extends Component
 {
     // Filter properties
-    use LivewireAlert;
+    use LivewireAlert, ExamAnalysisCacheKeys;
     public $selectedClass;
     public $showCombinedExamForm = false;
     public $selectedYearAdmitted;
@@ -79,6 +86,8 @@ class CombinationFormula extends Component
         'examPercentages.*' => 'required|integer|min:0|max:100',
     ];
 
+    protected $cacheTimeout = 3600; // 1 hour cache timeout
+
     public function onSelectedExamsUpdated($selectedExams)
     {
         $this->selectedExams = $selectedExams;
@@ -102,40 +111,288 @@ class CombinationFormula extends Component
         $this->examPercentages = array_intersect_key($this->examPercentages, array_flip($value));
     }
 
-    public function generateReport($studentId)
+    public function generateReport($student_id)
     {
-        // Fetch the student's data from the combined results
-        $studentData = collect($this->combinedResults)->firstWhere('student_id', $studentId);
+        try {
+            \Log::info("Starting report generation for student ID: " . $student_id);
+            
+            $student = StudentRecord::with(['user', 'my_class', 'section', 'parent_detail'])->find($student_id);
+            if (!$student) {
+                throw new \Exception("Student not found");
+            }
+            \Log::info("Student found: " . $student->user->name);
 
-        if ($studentData) {
-            // Ensure `selectedExamNames` and `examPercentages` are defined and not empty
-            $exams = $this->selectedExamNames ?? [];
-            $percentages = $this->examPercentages ?? [];
+            $school = School::first();
+            if (!$school) {
+                throw new \Exception("School information not found");
+            }
 
-            // Prepare the report data
-            $this->reportData = [
-                'student_name' => $studentData['student_name'],
-                'stream' => $studentData['stream'],
-                'marks' => $studentData['marks'],
-                'grades' => $studentData['grades'],
-                'total_marks' => $studentData['total_marks'],
-                'total_points' => $studentData['total_points'],
-                'mean_score' => $studentData['mean_score'],
-                'mean_grade' => $studentData['mean_grade'],
-                'class_position' => $studentData['position'] ?? '-',
-                'stream_position' => $studentData['stream_position'] ?? '-',
-                'exams' => $exams, // Use the exams array
-                'percentages' => $percentages, // Use the percentages array
+            $exams = Exam::where('my_class_id', $student->my_class_id)->get();
+            if ($exams->isEmpty()) {
+                throw new \Exception("No exams found for this class");
+            }
+
+            // Initialize arrays for exam data
+            $examResults = [];
+            $subjects = collect();
+            $remarks = [];
+            $initials = [];
+            $gradingSystem = null;
+
+            // Process each exam
+            foreach ($exams as $exam) {
+                if (!$gradingSystem && $exam->gradingSystem) {
+                    $gradingSystem = $exam->gradingSystem;
+                }
+
+                $examMarks = ExamMarks::where('student_id', $student_id)
+                    ->where('exam_id', $exam->id)
+                    ->with(['subject'])
+                    ->get();
+
+                $totalStudents = StudentRecord::where('my_class_id', $student->my_class_id)->count();
+                $position = StudentHelper::calculatePosition($student, $exam);
+
+                $termResults = [
+                    'marks' => [],
+                    'grades' => [],
+                    'total_marks' => 0,
+                    'total_points' => 0,
+                    'position' => $position,
+                    'total_students' => $totalStudents
+                ];
+
+                foreach ($examMarks as $mark) {
+                    $subjects->push($mark->subject);
+                    $termResults['marks'][$mark->subject_id] = $mark->marks;
+                    
+                    $gradeData = StudentHelper::getGradeData($mark->marks, $exam->grading_system_id, $mark->subject_id);
+                    $termResults['grades'][$mark->subject_id] = $gradeData['grade'];
+                    $termResults['total_marks'] += $mark->marks;
+                    $termResults['total_points'] += $gradeData['points'];
+
+                    $remarks[$mark->subject_id] = $this->generateSubjectRemark($gradeData['grade']);
+                    $initials[$mark->subject_id] = substr($mark->subject->subject_name, 0, 2);
+                }
+
+                $examResults[$exam->term] = $termResults;
+            }
+
+            if (!$gradingSystem) {
+                throw new \Exception("No grading system found for the exams");
+            }
+
+            // Generate progress chart and remarks
+            $progressChart = $this->generateProgressChart($examResults);
+            $classTeacherRemarks = $this->generateTeacherRemarks($examResults);
+            $headTeacherRemarks = $this->generateHeadTeacherRemarks($examResults);
+            $nextTermDate = $this->getNextTermDate();
+            $feesBalance = $this->getFeesBalance($student);
+
+            $data = [
+                'student' => $student,
+                'school' => $school,
+                'exam' => $exams->last(),
+                'examResults' => $examResults,
+                'subjects' => $subjects->unique('id'),
+                'remarks' => $remarks,
+                'initials' => $initials,
+                'progressChart' => $progressChart,
+                'classTeacherRemarks' => $classTeacherRemarks,
+                'headTeacherRemarks' => $headTeacherRemarks,
+                'gradingSystem' => $gradingSystem,
+                'nextTermDate' => $nextTermDate,
+                'feesBalance' => $feesBalance
             ];
 
-            // Show the report view
-            $this->showReport = true;
-        } else {
-            $this->alert('error', 'Student data not found!');
+            \Log::info("Rendering PDF view");
+            $html = view('exports.student-report-form', $data)->render();
+
+            \Log::info("Initializing mPDF");
+            $defaultConfig = (new \Mpdf\Config\ConfigVariables())->getDefaults();
+            $fontDirs = $defaultConfig['fontDir'];
+
+            $defaultFontConfig = (new \Mpdf\Config\FontVariables())->getDefaults();
+            $fontData = $defaultFontConfig['fontdata'];
+
+            $mpdf = new \Mpdf\Mpdf([
+                'mode' => 'utf-8',
+                'format' => 'A4',
+                'margin_left' => 10,
+                'margin_right' => 10,
+                'margin_top' => 10,
+                'margin_bottom' => 10,
+                'fontDir' => array_merge($fontDirs, [
+                    public_path('fonts'),
+                ]),
+                'fontdata' => $fontData + [
+                    'arial' => [
+                        'R' => 'arial.ttf',
+                        'B' => 'arialbd.ttf',
+                    ]
+                ],
+                'default_font' => 'arial'
+            ]);
+
+            \Log::info("Writing HTML to PDF");
+            $mpdf->WriteHTML($html);
+
+            $filename = $student->user->name . '_academic_report.pdf';
+            \Log::info("Generating PDF with filename: " . $filename);
+
+            return response()->streamDownload(
+                function() use ($mpdf) {
+                    echo $mpdf->Output('', \Mpdf\Output\Destination::STRING_RETURN);
+                },
+                $filename,
+                [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'attachment; filename="' . $filename . '"'
+                ]
+            );
+
+        } catch (\Exception $e) {
+            \Log::error("PDF Generation Error: " . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+            $this->alert('error', 'Failed to generate report: ' . $e->getMessage());
+            return null;
         }
     }
-    // Fetch the student's data from the combined results
 
+    private function generateSubjectRemark($grade)
+    {
+        $remarks = [
+            'A' => 'Excellent performance',
+            'A-' => 'Very good performance',
+            'B+' => 'Good performance',
+            'B' => 'Above average',
+            'B-' => 'Average performance',
+            'C+' => 'Fair performance',
+            'C' => 'Needs improvement',
+            'C-' => 'Work harder',
+            'D+' => 'Below average',
+            'D' => 'Poor performance',
+            'D-' => 'Very poor performance',
+            'E' => 'Needs urgent attention'
+        ];
+
+        return $remarks[$grade] ?? 'Needs improvement';
+    }
+
+    private function generateProgressChart($examResults)
+    {
+        // Prepare data for Chart.js
+        $labels = [];
+        $scores = [];
+
+        foreach ($examResults as $term => $result) {
+            $labels[] = "Term $term";
+            $scores[] = $result['mean_score'] ?? 0;
+        }
+
+        // Create a simple line chart using Chart.js
+        $chart = '<canvas id="progressChart"></canvas>';
+        $chart .= "<script src='https://cdn.jsdelivr.net/npm/chart.js'></script>";
+        $chart .= "<script>
+            new Chart(document.getElementById('progressChart'), {
+                type: 'line',
+                data: {
+                    labels: " . json_encode($labels) . ",
+                    datasets: [{
+                        label: 'Mean Score Progress',
+                        data: " . json_encode($scores) . ",
+                        borderColor: '#4CAF50',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        </script>";
+
+        return $chart;
+    }
+
+    private function generateTeacherRemarks($examResults)
+    {
+        if (empty($examResults)) {
+            return "Insufficient data to generate remarks.";
+        }
+
+        $latestResult = end($examResults);
+        $meanScore = $latestResult['mean_score'] ?? 0;
+
+        if ($meanScore >= 80) {
+            return "Excellent performance! Keep up the outstanding work.";
+        } elseif ($meanScore >= 70) {
+            return "Very good performance. Continue working hard.";
+        } elseif ($meanScore >= 60) {
+            return "Good work but aim higher for better grades.";
+        } elseif ($meanScore >= 50) {
+            return "Fair performance. More effort needed to improve.";
+        } else {
+            return "Needs to work harder and seek help in weak subjects.";
+        }
+    }
+
+    private function generateHeadTeacherRemarks($examResults)
+    {
+        if (empty($examResults)) {
+            return "Insufficient data to generate remarks.";
+        }
+
+        $latestResult = end($examResults);
+        $meanScore = $latestResult['mean_score'] ?? 0;
+        $previousResults = array_slice($examResults, 0, -1);
+        
+        if (!empty($previousResults)) {
+            $previousMean = end($previousResults)['mean_score'] ?? 0;
+            $improvement = $meanScore - $previousMean;
+            
+            if ($improvement > 5) {
+                return "Commendable improvement. Keep up the good work!";
+            } elseif ($improvement < -5) {
+                return "Concerning decline in performance. Immediate action required.";
+            }
+        }
+
+        return $this->getStandardHeadTeacherRemark($meanScore);
+    }
+
+    private function getStandardHeadTeacherRemark($meanScore)
+    {
+        if ($meanScore >= 80) {
+            return "Outstanding performance! Consider taking up leadership roles.";
+        } elseif ($meanScore >= 70) {
+            return "Very good performance. Maintain this standard.";
+        } elseif ($meanScore >= 60) {
+            return "Good performance. Work on improving weak areas.";
+        } elseif ($meanScore >= 50) {
+            return "Average performance. More effort needed.";
+        } else {
+            return "Below average. Requires parent-teacher meeting.";
+        }
+    }
+
+    private function getNextTermDate()
+    {
+        // This should be fetched from your school calendar/settings
+        return date('d/m/Y', strtotime('+3 months'));
+    }
+
+    private function getFeesBalance($student)
+    {
+        // This should be fetched from your fees management system
+        // For now, returning a placeholder
+        return "Ksh. 0.00";
+    }
 
     public function closeReport()
     {
@@ -317,21 +574,53 @@ class CombinationFormula extends Component
 
     public function getExamsProperty()
     {
-        return Exam::query()
-            ->when($this->search, function ($query) {
-                $query->where('name', 'like', '%' . $this->search . '%');
-            })
+        if (!$this->selectedClass) {
+            return collect();
+        }
+
+        $cacheKey = $this->getExamListCacheKey(
+            $this->selectedClass,
+            $this->selectedTerm,
+            $this->selectedYear,
+            $this->search
+        );
+
+        return Cache::remember($cacheKey, $this->cacheTimeout, function () {
+            $query = Exam::with([
+                'gradingSystem' => function($query) {
+                    $query->select('id', 'name');
+                },
+                'gradingSystem.subjects' => function($query) {
+                    $query->select([
+                        'subjects.id',
+                        'subjects.subject_name',
+                        'subjects.category_id'
+                    ])
+                    ->join('grading_system_subject', 'subjects.id', '=', 'grading_system_subject.subject_id')
+                    ->with(['category:id,name']);
+                }
+            ])
+            ->where('class_id', $this->selectedClass)
             ->when($this->selectedTerm, function ($query) {
                 $query->where('term', $this->selectedTerm);
             })
             ->when($this->selectedYear, function ($query) {
                 $query->where('year', $this->selectedYear);
             })
-            ->when($this->selectedClass, function ($query) {
-                $query->where('class_id', $this->selectedClass);
+            ->when($this->search, function ($query) {
+                $query->where('name', 'like', '%' . $this->search . '%');
             })
-            ->with('myClass', 'section') // Eager load relationships
-            ->get();
+            ->withCount('studentRecords')
+            ->get()
+            ->map(function ($exam) {
+                $exam->turnout_percentage = $exam->student_records_count > 0 
+                    ? ($exam->examMarks->count() / $exam->student_records_count) * 100 
+                    : 0;
+                return $exam;
+            });
+
+            return $query;
+        });
     }
 
     public function updatedSearch()
@@ -375,7 +664,6 @@ class CombinationFormula extends Component
     // Analyze combined results
     public function analyzeCombinedResults()
     {
-        // Validate inputs
         $this->validate([
             'selectedExams' => 'required|array|min:2',
             'selectedClass' => 'required|exists:my_classes,id',
@@ -393,13 +681,21 @@ class CombinationFormula extends Component
         $this->loading = true;
 
         try {
-            // Fetch data for all selected exams
-            $examsData = [];
-            $examIds = $this->selectedExams;
+            $cacheKey = $this->getCombinedExamAnalysisCacheKey(
+                $this->selectedExams,
+                $this->selectedClass,
+                $this->selectedSection
+            );
 
-            // Ensure exams exist and are valid
-            $exams = Exam::with('gradingSystem.subjects')
-                ->whereIn('id', $examIds)
+            // Get cached analysis or compute if not exists
+            $analysisData = Cache::remember($cacheKey, $this->cacheTimeout, function () {
+                $exams = Exam::with([
+                    'gradingSystem.subjects' => function($query) {
+                        $query->select('id', 'subject_name', 'category_id')
+                            ->with(['category:id,name']);
+                    }
+                ])
+                ->whereIn('id', $this->selectedExams)
                 ->get();
 
             if ($exams->isEmpty()) {
@@ -409,53 +705,54 @@ class CombinationFormula extends Component
             $this->selectedExamNames = $exams->pluck('name')->toArray();
             $this->gradingSystemNames = $exams->pluck('gradingSystem.name')->toArray();
 
+                $examsData = [];
             foreach ($exams as $exam) {
-                $students = StudentRecord::with(['examMarks' => function ($query) use ($exam) {
-                    $query->where('exam_id', $exam->id);
-                }, 'section'])
+                    $students = StudentRecord::with([
+                        'examMarks' => function ($query) use ($exam) {
+                            $query->where('exam_id', $exam->id)
+                                ->select('id', 'student_id', 'subject_id', 'marks', 'special_grade');
+                        },
+                        'section:id,name'
+                    ])
                     ->where('my_class_id', $this->selectedClass)
                     ->when($this->selectedSection, function ($query) {
                         $query->where('section_id', $this->selectedSection);
                     })
+                    ->select('id', 'first_name', 'last_name', 'section_id')
                     ->get();
 
-                if ($students->isEmpty()) {
-                    Log::warning("No students found for exam ID: {$exam->id}");
-                    continue;
-                }
-
+                    if ($students->isNotEmpty()) {
                 $examsData[] = [
                     'exam' => $exam,
                     'students' => $students,
-                    'percentage' => $this->examPercentages[$exam->id] / 100, // Convert percentage to decimal
+                            'percentage' => $this->examPercentages[$exam->id] / 100,
                 ];
+                    }
             }
 
             if (empty($examsData)) {
                 throw new \Exception("No valid exam data found for analysis.");
             }
 
-            // Prepare combined results
-            $this->combinedResults = $this->prepareCombinedResults($examsData);
+                $combinedResults = $this->prepareCombinedResults($examsData);
+                return [
+                    'results' => $this->calculatePositionsWithHelper($combinedResults, $exams->first()),
+                    'subjects' => $examsData[0]['exam']->gradingSystem->subjects
+                ];
+            });
 
-            // Calculate positions for combined results
-            $this->combinedResults = $this->calculatePositionsWithHelper($this->combinedResults, $exam);
+            $this->combinedResults = $analysisData['results'];
+            $this->subjects = $analysisData['subjects'];
 
-
-            // Ensure subjects are passed to the view
-            $this->subjects = $examsData[0]['exam']->gradingSystem->subjects;
-
-            // Check if the selected exams have already been combined
+            // Check if already combined
             $combinedExamExists = Exam::where('name', $this->customExamName)
                 ->where('term', $this->customExamTerm)
                 ->where('year', $this->customExamYear)
                 ->exists();
 
-            // Show the form only if the exams have not been combined yet
             $this->showCombinedExamForm = !$combinedExamExists;
             $this->showTable = $combinedExamExists;
 
-            // Display success alert
             $this->alert('success', 'Combined exam and results saved successfully.', [
                 'position' => 'top-end',
                 'timer' => 3000,
@@ -463,19 +760,14 @@ class CombinationFormula extends Component
                 'timerProgressBar' => true,
             ]);
 
-            Log::info("Combined analysis completed for exams: " . implode(', ', $this->selectedExams));
         } catch (\Throwable $e) {
             Log::error("Error in analyzeCombinedResults: " . $e->getMessage());
-
-            // Display error alert
             $this->alert('error', "Failed to process combined exam data: {$e->getMessage()}", [
                 'position' => 'top-end',
                 'timer' => 5000,
                 'toast' => true,
                 'timerProgressBar' => true,
             ]);
-
-            // Add error to Livewire error bag
             $this->addError('combined_analysis', "Failed to process combined exam data: {$e->getMessage()}");
         } finally {
             $this->loading = false;
@@ -777,24 +1069,37 @@ class CombinationFormula extends Component
     {
         $this->loading = true;
 
-        // Reset and reload data
-        $this->sychAfresh();
+        try {
+            $cacheKey = $this->getClassDataCacheKey($classId);
+            
+            $classData = Cache::remember($cacheKey, $this->cacheTimeout, function () use ($classId) {
+                return [
+                    'sections' => Section::where('my_class_id', $classId)
+                        ->select('id', 'name', 'my_class_id')
+                        ->get(),
+                    'class' => MyClass::select('id', 'name')->find($classId),
+                    'exams' => Exam::where('class_id', $classId)
+                        ->select('id', 'name', 'term', 'year')
+                        ->get()
+                ];
+            });
 
-        // Load sections based on the selected class
-        $this->sections = Section::where('my_class_id', $classId)->get();
+            $this->sections = $classData['sections'];
+            $this->selectedClassData = $classData['class'];
+            $this->exams = $classData['exams'];
 
-        // Fetch the class to display its name later
-        $this->selectedClassData = MyClass::find($classId);
+            $this->sychAfresh();
 
-        // Load exams based on the selected class
-        $this->exams = Exam::where('class_id', $classId)->get();
-
-        // Automatically analyze combined results if conditions are met
         if ($this->selectedClass && count($this->selectedExams) > 1) {
             $this->analyzeCombinedResults();
         }
 
+        } catch (\Throwable $e) {
+            Log::error("Error in updatedSelectedClass: " . $e->getMessage());
+            $this->alert('error', "Failed to load class data: {$e->getMessage()}");
+        } finally {
         $this->loading = false;
+        }
     }
 
     public function sychAfresh()
@@ -865,53 +1170,97 @@ class CombinationFormula extends Component
     }
 
 
-    public function updatedSelectedExam($examId)
+    public function selectExamForAnalysis($examId)
     {
         $this->loading = true;
+        $this->selectedExam = $examId;
+        $this->showTable = true;
 
         Log::info("Fetching exam data for exam ID: $examId");
 
         try {
-            // Fetch the exam with its grading system and subjects
-            $exam = Exam::with('gradingSystem.subjects')->find($examId);
-            if (!$exam) {
-                Log::warning("No exam found for ID: $examId");
-                $this->resetExamData();
-                return;
-            }
+            $cacheKey = $this->getSingleExamAnalysisCacheKey(
+                $examId,
+                $this->selectedClass,
+                $this->selectedSection
+            );
 
-            // Fetch students based on the selected class and section
-            $this->students = StudentRecord::with(['examMarks' => function ($query) use ($examId) {
-                $query->where('exam_id', $examId);
-            }, 'section', 'parent_detail'])
+            // Get cached analysis or compute if not exists
+            $analysisData = Cache::remember($cacheKey, $this->cacheTimeout, function () use ($examId) {
+                $exam = Exam::with([
+                    'gradingSystem',
+                    'gradingSystem.subjects' => function($query) {
+                        $query->select([
+                            'subjects.id',
+                            'subjects.subject_name',
+                            'subjects.category_id'
+                        ])
+                        ->with(['category:id,name']);
+                    }
+                ])->findOrFail($examId);
+
+            if (!$exam) {
+                    throw new \Exception("No exam found for ID: $examId");
+                }
+
+                $students = StudentRecord::with([
+                    'examMarks' => function ($query) use ($examId) {
+                        $query->where('exam_id', $examId)
+                            ->select('id', 'student_id', 'subject_id', 'marks', 'special_grade');
+                    },
+                    'section:id,name',
+                    'parent_detail:id'
+                ])
                 ->where('my_class_id', $this->selectedClass)
                 ->when($this->selectedSection, function ($query) {
                     $query->where('section_id', $this->selectedSection);
                 })
+                ->select('id', 'first_name', 'last_name', 'section_id')
                 ->get();
 
-            Log::info("Fetched Students Count: " . $this->students->count());
+                $studentData = $this->prepareStudentData($exam, $students);
+                return [
+                    'marks' => $this->calculatePositionsWithHelper($studentData, $exam),
+                    'subjects' => $exam->gradingSystem->subjects,
+                    'exam' => $exam
+                ];
+            });
 
-            // Set the subjects for the exam
-            $this->subjects = $exam->gradingSystem->subjects;
+            $this->marks = $analysisData['marks'];
+            $this->subjects = $analysisData['subjects'];
+            $this->showTable = true;
 
-            // Prepare student data (marks, grades, etc.)
-            $studentData = $this->prepareStudentData($exam);
+            // Send notifications asynchronously if possible
+            dispatch(function () use ($analysisData) {
+                $this->sendNotificationToUser($analysisData['exam']);
+                $this->sendNotificationsToParents($analysisData['exam'], $analysisData['marks']);
+            })->afterResponse();
 
-            // Calculate positions using the StudentHelper class
-            $this->marks = $this->calculatePositionsWithHelper($studentData, exam: $exam);
+            $this->alert('success', 'Exam analysis completed successfully', [
+                'position' => 'top-end',
+                'timer' => 3000,
+                'toast' => true,
+            ]);
 
-            // Send a notification to the authenticated user
-            $this->sendNotificationToUser($exam);
-
-            // Send notifications to parents
-            $this->sendNotificationsToParents($exam, $studentData);
         } catch (\Throwable $e) {
-            Log::error("Error in updatedSelectedExam: " . $e->getMessage());
+            Log::error("Error in selectExamForAnalysis: " . $e->getMessage());
             $this->addError('exam_processing', "Failed to process exam data: {$e->getMessage()}");
+            $this->alert('error', 'Failed to process exam data', [
+                'position' => 'top-end',
+                'timer' => 3000,
+                'toast' => true,
+            ]);
         } finally {
             $this->loading = false;
         }
+    }
+
+    public function backToExams()
+    {
+        $this->showTable = false;
+        $this->selectedExam = null;
+        $this->marks = [];
+        $this->resetExamData();
     }
 
     private function sendNotificationToUser($exam)
@@ -944,7 +1293,7 @@ class CombinationFormula extends Component
         }
     }
 
-    private function prepareStudentData($exam)
+    private function prepareStudentData($exam, $students)
     {
         Log::info("Preparing student data for exam ID: {$exam->id}");
 
@@ -961,14 +1310,16 @@ class CombinationFormula extends Component
             // Fetch all subjects and group them by category
             $subjects = $exam->gradingSystem->subjects;
             $scienceSubjects = $subjects->filter(function ($subject) {
-                return $subject->category->name === 'Sciences'; // Adjust category name as needed
+                // Add null check for category
+                return $subject->category && $subject->category->name === 'Sciences';
             });
 
             $otherSubjects = $subjects->filter(function ($subject) {
-                return $subject->category->name !== 'Sciences'; // Adjust category name as needed
+                // Add null check for category
+                return !$subject->category || $subject->category->name !== 'Sciences';
             });
 
-            foreach ($this->students as $student) {
+            foreach ($students as $student) {
                 $studentMarks = [];
                 $studentGrades = [];
                 $totalMarks = 0;
@@ -1066,6 +1417,12 @@ class CombinationFormula extends Component
                     ]
                 );
 
+                // Get section name safely
+                $sectionName = '-';
+                if ($student->section) {
+                    $sectionName = $student->section->name ?? '-';
+                }
+
                 $studentEntry = [
                     'student_id' => $student->id,
                     'exam_id' => $exam->id,
@@ -1076,7 +1433,7 @@ class CombinationFormula extends Component
                     'total_points' => $totalPoints,
                     'mean_score' => $meanScore,
                     'mean_grade' => $meanGrade,
-                    'stream' => $student->section->name ?? '-', // Handle null section
+                    'stream' => $sectionName,
                     'has_special_grade' => $hasSpecialGrade,
                 ];
 
@@ -1215,4 +1572,31 @@ class CombinationFormula extends Component
             'customExamName' => $this->customExamName,
         ]);
     }
+
+    protected function clearAnalysisCache($examId = null)
+    {
+        if ($examId) {
+            Cache::forget($this->getSingleExamAnalysisCacheKey(
+                $examId,
+                $this->selectedClass,
+                $this->selectedSection
+            ));
+        }
+
+        if (!empty($this->selectedExams)) {
+            Cache::forget($this->getCombinedExamAnalysisCacheKey(
+                $this->selectedExams,
+                $this->selectedClass,
+                $this->selectedSection
+            ));
+        }
+
+        Cache::forget($this->getExamListCacheKey(
+            $this->selectedClass,
+            $this->selectedTerm,
+            $this->selectedYear,
+            $this->search
+        ));
+    }
 }
+

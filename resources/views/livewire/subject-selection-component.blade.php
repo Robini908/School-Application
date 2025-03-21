@@ -1,228 +1,144 @@
-<div>
-    <!-- Flash Messages -->
-    @if (session()->has('success'))
-        <div class="alert alert-success" style="border-radius: 5px;">
-            {{ session('success') }}
-        </div>
-    @elseif (session()->has('error'))
-        <div class="alert alert-danger" style="border-radius: 5px;">
-            {{ session('error') }}
-        </div>
-    @endif
+<div x-data="{ 
+    showHelp: localStorage.getItem('subject-selection-help') === null ? true : JSON.parse(localStorage.getItem('subject-selection-help')),
+    init() {
+        // Listen for Livewire events that might affect Alpine state
+        // Updated for Livewire 3: using Livewire.on() is deprecated, we need to use addEventListener
+        document.addEventListener('livewire:initialized', () => {
+            // Set up event listeners after Livewire is initialized
+            Livewire.on('subjectFormToggled', (event) => {
+                const showSubjectForm = event[0]; // In Livewire 3, the data is passed as an array
+                // This ensures Alpine state is synchronized with Livewire state
+                this.$wire.set('showSubjectForm', showSubjectForm);
+                this.$wire.set('showStudentCard', !showSubjectForm);
+            });
+            
+            // Listen for sections update event
+            Livewire.on('sectionsUpdated', (event) => {
+                console.log('Sections updated event received', event);
+                // Force a re-render of the component
+                this.$nextTick(() => {
+                    // Additional logic if needed
+                });
+            });
+            
+            // Debug event for sections data
+            Livewire.on('debug-sections', (data) => {
+                console.log('Debug sections data:', data);
+                // Manually refresh UI if needed
+                if (data && data[0] && data[0].selectedClass) {
+                    console.log(`Class ${data[0].selectedClass} has ${data[0].sectionCount} sections`);
+                    this.$nextTick(() => {
+                        // Force UI update if needed
+                    });
+                }
+            });
+        });
 
-    <!-- Class and Section Selection -->
-    @if ($showStudentCard)
-        <h2 class="text-secondary font-semibold mb-2 p-2">
-            Subject selection for students for the session 
-        </h2>
-            <div class="mb-4 d-flex justify-content-between align-items-center" style="gap: 10px;">
-                <div class="form-group" style="flex: 1;">
-                    <label for="class" class="form-label font-weight-bold">Select Class</label>
-                    <select id="class" wire:model.live="selectedClass" class="form-control form-select">
-                        <option value="">-- Select Class --</option>
-                        @foreach ($classes as $class)
-                            <option value="{{ $class->id }}">{{ $class->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
+        // Watch for direct Livewire property changes
+        $watch('$wire.showSubjectForm', value => {
+            if (value === true) {
+                this.$wire.set('showStudentCard', false);
+            }
+        });
 
-                @if (!empty($sections))
-                    <div class="form-group" style="flex: 1;">
-                        <label for="section" class="form-label font-weight-bold">Select Section</label>
-                        <select id="section" wire:model.live="selectedSection" class="form-select form-control">
-                            <option value="">-- Select Section --</option>
-                            @foreach ($sections as $section)
-                                <option value="{{ $section->id }}">{{ $section->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                @endif
+        $watch('$wire.showStudentCard', value => {
+            if (value === true) {
+                this.$wire.set('showSubjectForm', false);
+            }
+        });
+        
+        // Watch for selectedClass changes
+        $watch('$wire.selectedClass', value => {
+            if (value) {
+                console.log('Class selected:', value);
+                // Manual trigger to refresh sections
+                this.$wire.refreshComponent();
+            }
+        });
+    }
+}" x-init="init()" class="bg-white rounded-lg shadow-sm overflow-hidden">
+
+    <!-- Help Panel (Collapsible) -->
+    <div x-show="showHelp" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 transform -translate-y-2"
+         x-transition:enter-end="opacity-100 transform translate-y-0"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 transform translate-y-0"
+         x-transition:leave-end="opacity-0 transform -translate-y-2"
+         class="bg-blue-50 p-4 border-b border-blue-100">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                </svg>
             </div>
-
-
-            @if ($selectedSection && !$unassignedStudents->isEmpty())
-
-                <div class="mb-3">
-                    @if ($selectedSection && !$unassignedStudents->isEmpty())
-                        <div class="alert alert-info shadow-sm p-3 rounded" role="alert"
-                            style="background-color: #f0f8ff; border-left: 5px solid #17a2b8;">
-                            There are <strong style="color: #28a745;">{{ $studentCount }}</strong> students in <span
-                                style="color: #28a745;">
-                                {{ $classes->where('id', $selectedClass)->first()->name ?? 'Selected Class' }}
-                            </span> -
-                            <span style="color: #007bff;">
-                                {{ $sections->where('id', $selectedSection)->first()->name ?? 'Selected Section' }}
-                            </span>,
-                        </div>
-                    @endif
-                    <div>
-                        <label for="select-all" class="form-label font-weight-bold">Select Students</label>
-                        <div class="d-flex align-items-center mb-3" style="gap: 10px;">
-                            <!-- Select All Button -->
-                            <button class="btn btn-primary btn-sm" wire:click="selectAllStudents">
-                                <i class="fas fa-users"></i> Select All
-                            </button>
-
-                            <!-- Input for Number of Students -->
-                            <input type="number" wire:model.live="numToSelect" class="form-control"
-                                placeholder="Number of students" style="width: 150px;">
-
-                            <!-- Select Specific Number -->
-                            <button class="btn btn-secondary btn-sm" wire:click="selectSpecificStudents">
-                                <i class="fas fa-user-check"></i> Select Specific
-                            </button>
-
-                            <!-- Clear Selection -->
-                            @if (count($selectedStudents) > 0)
-                                <button class="btn btn-danger btn-sm" wire:click="clearSelection">
-                                    <i class="fas fa-times"></i> Clear
-                                </button>
-                            @endif
-                        </div>
-
-                        <!-- Display Selected Students Count -->
-                        <div>
-                            <p>Selected Students: {{ count($selectedStudents) }} / {{ $studentCount }}</p>
-                        </div>
-                    </div>
-
+            <div class="ml-3 flex-1">
+                <h3 class="text-sm font-medium text-blue-800">Subject Selection Guide</h3>
+                <div class="mt-2 text-sm text-blue-700">
+                    <ol class="list-decimal list-inside space-y-1 ml-1">
+                        <li>Select a class and section to view students</li>
+                        <li>Select students who need to choose subjects</li>
+                        <li>Assign subjects to the selected students</li>
+                        <li>Review and save your selections</li>
+                    </ol>
                 </div>
-            @endif
-
-            <!-- Select All Students and Clear Selection -->
-            @if ($selectedSection)
-                <div class="mb-3">
-
-                    @if ($unassignedStudents->isEmpty())
-                        <div class="alert alert-success shadow-sm p-3 rounded" role="alert"
-                            style="background-color: #f2fff0; border-left: 5px solid #17a2b8;">
-                            All students in this section have been assigned subjects.
-                        </div>
-                    @else
-                        <div class="alert alert-warning">
-                            Some students are yet to be assigned subjects. Please select and assign subjects.
-                        </div>
-                    @endif
+                <div class="mt-4">
+                    <button type="button" 
+                            @click="showHelp = false; localStorage.setItem('subject-selection-help', 'false');" 
+                            class="inline-flex items-center px-2.5 py-1.5 border border-blue-300 shadow-sm text-xs leading-4 font-medium rounded text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Don't show again
+                    </button>
                 </div>
-
-                @if (!$unassignedStudents->isEmpty())
-                    <div class="card bg-light mb-4" style="padding: 20px;">
-                        <h3 class="card-title font-weight-bold mb-3">
-                            Students who haven't selected subjects in
-                            <span style="color: #28a745;">
-                                {{ $classes->where('id', $selectedClass)->first()->name ?? 'Selected Class' }}
-                            </span> -
-                            <span style="color: #007bff;">
-                                {{ $sections->where('id', $selectedSection)->first()->name ?? 'Selected Section' }}
-                            </span>,
-
-                        </h3>
-                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
-                            @foreach ($unassignedStudents as $student)
-                                <div class="col">
-                                    <div class="card p-3 border rounded d-flex align-items-center">
-                                        <!-- Checkbox with wire:model to bind to selectedStudents -->
-                                        <input type="checkbox" wire:model="selectedStudents"
-                                            value="{{ $student->id }}" style="margin-right: 10px;">
-                                        <div>
-                                            <p class="mb-1 font-weight-bold" style="font-size: 14px;">
-                                                {{ $student->first_name }} {{ $student->last_name }}
-                                            </p>
-                                            <p class="mb-0" style="font-size: 12px; color: #6c757d;">Adm No:
-                                                {{ $student->adm_no }}</p>
+                                        </div>
+            <div class="ml-auto pl-3">
+                <div class="-mx-1.5 -my-1.5">
+                    <button type="button" 
+                            @click="showHelp = false" 
+                            class="inline-flex rounded-md p-1.5 text-blue-500 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <span class="sr-only">Dismiss</span>
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                            </button>
+                </div>
+            </div>
                                         </div>
                                     </div>
-                                </div>
-                            @endforeach
-                        </div>
 
-
-                        <div class="text-center mt-3">
-                            <button wire:click="showSubjectFormForStudents" class="btn btn-info btn-sm">
-                                Select Checked Students
-                            </button>
-                        </div>
-                    </div>
-                @endif
-            @endif
-    @endif
-
-
-
-
-
-
-    <!-- Subject Selection Form for Selected Students -->
-    @if ($showSubjectForm)
-        @if (!empty($selectedStudents))
-            <div class="mb-4">
-                <h4 class="font-weight-bold">Selected Students:</h4>
-                <div class="d-flex flex-wrap" style="gap: 10px;">
-                    @foreach ($unassignedStudents as $student)
-                        @if (in_array($student->id, $selectedStudents))
-                            <span class="badge bg-primary text-white d-flex align-items-center" style="padding: 10px;">
-                                {{ $student->first_name }} {{ $student->last_name }}
-                                <i class="fas fa-times ms-2"
-                                    wire:click="removeStudentFromSelection({{ $student->id }})"
-                                    style="cursor: pointer;"></i>
-                            </span>
-                        @endif
-                    @endforeach
-                </div>
-            </div>
-        @endif
-
-
-        <div class="mt-4">
-            @php
-                $groupedSubjects = \App\Models\Subject::getSubjectsGroupedByCategoryAndType();
-            @endphp
-
-            @foreach ($groupedSubjects as $type => $categories)
-                <fieldset class="border p-4 mb-4">
-                    <legend class="font-weight-bold">{{ ucfirst($type) }} Subjects</legend>
-
-                    @foreach ($categories as $category => $subjects)
-                        <h5 class="mt-3 text-decoration-underline">{{ $category }}</h5>
-                        <div class="row g-3">
-                            @foreach ($subjects as $subject)
-                                <div class="col-md-4">
-                                    <div class="card shadow-sm" style="border: 1px solid #ddd;">
-                                        <div class="card-body text-center">
-                                            <h6 class="card-title text-primary">{{ $subject->subject_name }}</h6>
-                                            <p class="card-text text-muted">Code: {{ $subject->subject_code }}</p>
-                                            @if ($subject->is_compulsory)
-                                                <input type="checkbox" value="{{ $subject->id }}"
-                                                    class="form-check-input" disabled>
-                                                <i class="fas fa-check text-success ms-2"
-                                                    style="font-size: 1.5rem;"></i>
-                                            @else
-                                                <input type="checkbox" wire:model.live="selectedSubjects"
-                                                    value="{{ $subject->id }}" class="form-check-input">
-                                                <label class="form-check-label ms-2">
-                                                    Select
-                                                </label>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    @endforeach
-                </fieldset>
-            @endforeach
-
-            <div class="mt-4 text-center">
-                <button wire:click="submitSubjectSelection" class="btn btn-success">
-                    Save Subject Selection
-                </button>
-                <button wire:click="toggleShowStudentCard" class="btn btn-danger">
-                    Cancel
-                </button>
-
-            </div>
+    <div class="p-6">
+        <div x-show="$wire.showStudentCard" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform scale-95"
+             x-transition:enter-end="opacity-100 transform scale-100">
+            <!-- Header with Flash Messages -->
+            @include('livewire.partials.subject-selection.header')
+            
+            <!-- Class and Section Selection -->
+            @include('livewire.partials.subject-selection.class-section-selector')
+            
+            <!-- Student Selection -->
+            @include('livewire.partials.subject-selection.student-selector')
         </div>
-    @endif
-
-
+        
+        <!-- Subject Selection Form -->
+        <div x-show="$wire.showSubjectForm" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform scale-95"
+             x-transition:enter-end="opacity-100 transform scale-100">
+            @include('livewire.partials.subject-selection.subject-form')
+        </div>
+    </div>
+    
+    <!-- Show Help Button (Only visible when help is hidden) -->
+    <div x-show="!showHelp" class="px-6 pb-4 -mt-2">
+        <button type="button" 
+                @click="showHelp = true" 
+                class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs leading-4 font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <svg class="mr-1.5 h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Show Help
+        </button>
+    </div>
 </div>

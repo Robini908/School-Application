@@ -105,7 +105,7 @@
                     <div class="col-md-3"><strong>Nationality:</strong> {{ $nationality }}</div>
                     <div class="col-md-3"><strong>State:</strong> {{ $state }}</div>
                     <div class="col-md-3"><strong>Town:</strong> {{ $town }}</div>
-                    <div class="col-md-3"><strong>Blood Group:</strong> {{ $bg_id }}</div>
+                    <div class="col-md-3"><strong>Blood Group:</strong> {{ $student->bloodgroup->name ?? 'N/A' }}</div>
                     
                 </div>
             @endif

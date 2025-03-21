@@ -2,43 +2,83 @@
 
 namespace App\Exports;
 
-use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Events\AfterSheet;
 
-class StudentDetailsExport implements FromCollection, WithHeadings, WithMapping
+class StudentDetailsExport implements FromArray, WithHeadings, WithStyles, ShouldAutoSize, WithEvents
 {
-    protected $studentDetails;
+    protected $data;
 
-    public function __construct($studentDetails)
+    public function __construct(array $data)
     {
-        $this->studentDetails = $studentDetails;
+        $this->data = $data;
     }
 
-    public function collection()
+    public function array(): array
     {
-        return collect($this->studentDetails);
+        // Remove headers from data (they will be added via WithHeadings)
+        return array_values($this->data);
     }
 
     public function headings(): array
     {
+        // Get headers from the first row of data
+        return $this->data ? array_keys(reset($this->data)) : [];
+    }
+
+    public function styles(Worksheet $sheet)
+    {
         return [
-            'Subject',
-            'Marks',
-            'Grade',
-            'Remark',
-            'GPA'
+            1 => [
+                'font' => [
+                    'bold' => true,
+                    'color' => ['rgb' => 'FFFFFF'],
+                ],
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => '2F75B5'], // Professional blue color
+                ],
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                ],
+            ],
         ];
     }
 
-    public function map($detail): array
+    public function registerEvents(): array
     {
         return [
-            $detail['subject_name'] ?? 'N/A',
-            $detail['marks'] ?? 'N/A',
-            $detail['grade'] ?? 'N/A',
-            $detail['remark'] ?? 'N/A',
-            $detail['gpa'] ?? 'N/A'
+            AfterSheet::class => function(AfterSheet $event) {
+                $sheet = $event->sheet;
+                $lastColumn = $sheet->getHighestColumn();
+                $lastRow = $sheet->getHighestRow();
+
+                // Add borders to all cells
+                $sheet->getStyle('A1:' . $lastColumn . $lastRow)->applyFromArray([
+                    'borders' => [
+                        'allBorders' => [
+                            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                            'color' => ['rgb' => '000000'],
+                        ],
+                    ],
+                ]);
+
+                // Freeze the first row
+                $sheet->freezePane('A2');
+
+                // Add filters to headers
+                $sheet->setAutoFilter('A1:' . $lastColumn . '1');
+
+                // Set column widths to auto
+                foreach (range('A', $lastColumn) as $column) {
+                    $sheet->getColumnDimension($column)->setAutoSize(true);
+                }
+            },
         ];
     }
 }

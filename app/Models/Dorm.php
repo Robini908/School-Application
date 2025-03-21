@@ -4,9 +4,12 @@ namespace App\Models;
 
 use App\User;
 use Illuminate\Database\Eloquent\Model;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class Dorm extends Model
 {
+
+    use BelongsToTenant;
     protected $fillable = ['name', 'capacity', 'description'];
 
     // Relationship to the User model (teacher) via the pivot table
@@ -38,5 +41,15 @@ class Dorm extends Model
     public function isFull()
     {
         return $this->studentRecords()->count() >= $this->capacity;
+    }
+
+    /**
+     * Get the dorm master associated with this dorm.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function dorm_master()
+    {
+        return $this->belongsTo(User::class, 'dorm_master_id');
     }
 }

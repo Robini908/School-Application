@@ -40,12 +40,17 @@ class HomeController extends Controller
     public function dashboard()
     {
         $d = [];
+
         if (Qs::userIsTeamSAT()) {
             $d['users'] = $this->user->getAll();
-            // Count total students using the StudentRecord model
             $d['totalStudents'] = StudentRecord::count();
             $d['totalParents'] = ParentDetail::count();
-
+        } elseif (Qs::userIsTeacher()) {
+            // Fetch data specific to teachers
+            $d['totalStudents'] = StudentRecord::where('teacher_id', auth()->id())->count();
+        } elseif (Qs::userIsParent()) {
+            // Fetch data specific to parents
+            $d['totalStudents'] = StudentRecord::where('parent_id_no', auth()->id())->count();
         }
 
         return view('pages.support_team.dashboard', $d);
@@ -53,21 +58,21 @@ class HomeController extends Controller
 
     public function landingpage()
     {
-         return view('outerpages.landing');
+        return view('outerpages.landing');
     }
 
     public function contactpage()
     {
-         return view('outerpages.contact');
+        return view('outerpages.contact');
     }
 
     public function pricingpage()
     {
-         return view('outerpages.pricing');
+        return view('outerpages.pricing');
     }
 
     public function signuppage()
     {
-         return view('auth.register');
+        return view('auth.register');
     }
 }

@@ -7,7 +7,7 @@
     <div class="p-2 d-flex justify-content-between align-items-center">
         <h4 class="card-title">Graduate Students</h4>
         <div class="col-md-3">
-            <button wire:click="toggleView" class="btn btn-secondary w-100">
+            <button wire:click="toggleView" class="btn btn-link">
                 {{ $showGraduatedStudents ? 'Manually graduate students' : 'View Graduated Students' }}
             </button>
         </div>
@@ -55,71 +55,6 @@
 
         <!-- Graduated Students Table -->
         @if ($showGraduatedStudents)
-
-            {{-- <div class="mt-3 mb-3">
-                <button wire:click="exportGraduatedStudents" class="btn btn-primary">
-                    <i class="fas fa-file-export"></i> Export Graduated Students ({{ $filterGraduationYear }})
-                </button>
-            </div>
-            <div >
-                <table class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>Name(Admission No)</th>
-                            
-                            
-                            <th>Graduation Year</th>
-                            <th class="text-center">Actions</th> <!-- New column for actions -->
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($students as $student)
-                            <tr>
-                                <td>{{ $student->student->first_name }} {{ $student->student->last_name }} ({{ $student->student->adm_no }})</td>
-                                
-                                <td>{{ $student->transition_year }}</td>
-                                <td class="text-center">
-                                    <div class="list-icons">
-                                        <div class="dropdown">
-                                            <a href="#" class="list-icons-item" data-toggle="dropdown">
-                                                <i class="icon-menu9"></i>
-                                            </a>
-                                            <div class="dropdown-menu dropdown-menu-left">
-                                                <!-- Reinstate Student -->
-                                                <button wire:click="reinstateStudent({{ $student->id }})" class="dropdown-item">
-                                                    <i class="fas fa-undo"></i> Reinstate
-                                                </button>
-
-                                                <!-- View Graduation Details -->
-                                                <button wire:click="viewGraduationDetails({{ $student->id }})"
-                                                    class="dropdown-item">
-                                                    <i class="fas fa-eye"></i> View Details
-                                                </button>
-
-                                                <!-- Delete Graduation Record -->
-                                                <button wire:click="confirmDeleteGraduation({{ $student->id }})"
-                                                    class="dropdown-item">
-                                                    <i class="fas fa-trash"></i> Delete Record
-                                                </button>
-
-                                                <!-- Print Graduation Certificate -->
-                                                <button wire:click="printCertificate({{ $student->student->id }})"
-                                                    class="dropdown-item">
-                                                    <i class="fas fa-print"></i> Print Certificate
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="text-center">No graduated students found.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div> --}}
             <div class="mt-3 mb-3">
                 <button wire:click="exportGraduatedStudents" class="btn btn-primary">
                     <i class="fas fa-file-export"></i> PDF({{ $filterGraduationYear }})

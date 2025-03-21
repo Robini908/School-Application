@@ -1,12 +1,12 @@
-<div wire:loading class="card mt-2  p-3 shadow-lg border rounded"
-     style="display: flex; flex-direction: column; justify-content: center; align-items: center;
-            height: 100vh; background-color: linear-gradient(135deg, #f8f9fa, #e9ecef);">
-    <!-- FontAwesome Spinner -->
-    <div>
-        <i class="fas fa-spinner fa-4x fa-spin text-secondary"></i>
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50">
+    <div class="bg-white p-8 rounded-xl shadow-lg transform transition-all duration-300 hover:shadow-2xl">
+        <!-- Spinner Container -->
+        <div class="flex flex-col items-center space-y-4">
+            <!-- Custom Spinner -->
+            <div class="w-16 h-16 relative">
+                <div class="w-16 h-16 rounded-full border-4 border-indigo-200 animate-spin border-t-indigo-600"></div>
+            </div>
+            
+        </div>
     </div>
-    <!-- Branding Text (Optional) -->
-    {{-- <div style="font-size: 1.2rem; font-weight: bold; color: #007bff; margin-top: 1rem;">
-        MbukuERP...
-    </div> --}}
 </div>

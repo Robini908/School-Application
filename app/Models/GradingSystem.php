@@ -20,7 +20,8 @@ class GradingSystem extends Model
 
     public function subjects(): BelongsToMany
     {
-        return $this->belongsToMany(Subject::class, 'grading_system_subject', 'grading_system_id', 'subject_id');
+        return $this->belongsToMany(Subject::class, 'grading_system_subject', 'grading_system_id', 'subject_id')
+            ->select(['subjects.id', 'subjects.subject_name', 'subjects.category_id']);
     }
 
     public function gradingRanges(): HasMany

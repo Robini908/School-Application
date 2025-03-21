@@ -38,7 +38,7 @@ return [
     |
     */
 
-    'layout' => 'components.components.layouts.app',
+    'layout' => 'layouts.master',
 
     /*
     |---------------------------------------------------------------------------
@@ -89,7 +89,7 @@ return [
     |
     */
 
-    'render_on_redirect' => false,
+    'render_on_redirect' => true,
 
     /*
     |---------------------------------------------------------------------------
@@ -157,5 +157,5 @@ return [
     |
     */
 
-    'pagination_theme' => 'bootstrap',
+    'pagination_theme' => 'tailwind',
 ];

@@ -98,12 +98,11 @@ class EditStudent extends Component
             $this->section_id = $this->student->section_id;
             $this->year_admitted = $this->student->year_admitted;
             $this->dorm_id = $this->student->dorm_id;
-            $this->upi_number = $this->student->upi_number; // Ensure this is being fetched
+            $this->upi_number = $this->student->upi_number;
             $this->adm_no = $this->student->adm_no;
             $this->kcpe = $this->student->kcpe;
             $this->password = ''; // Reset password field
 
-            // Debugging: Check if UPI number is fetched
             logger()->info('UPI Number:', ['upi_number' => $this->upi_number]);
 
             // Parent Details

@@ -12,7 +12,7 @@ class GradingManagement extends Component
 {
     use WithPagination;
     use LivewireAlert;
-    protected $paginationTheme = 'bootstrap';
+    
 
     public $name, $description, $effective_date, $rules, $selectedSubjects = [];
     public $subjects;

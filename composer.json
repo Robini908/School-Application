@@ -45,8 +45,10 @@
     "safaricom/mpesa": "^1.0",
     "spatie/laravel-collection-macros": "^7.14",
     "spatie/livewire-filepond": "^1.4",
+    "stancl/tenancy": "^3.8",
     "stripe/stripe-php": "^16.3",
     "symfony/security-core": "^7.1",
+    "usernotnull/tall-toasts": "^2.1",
     "voku/portable-ascii": "^2.0",
     "wire-elements/modal": "^2.0"
   },

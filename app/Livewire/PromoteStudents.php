@@ -9,12 +9,12 @@ use Livewire\WithPagination;
 use App\Models\StudentRecord;
 use App\Models\StudentTransition;
 use Illuminate\Support\Facades\Log;
-use Jantinnerezo\LivewireAlert\LivewireAlert;
+use Usernotnull\Toast\Concerns\WireToast;
 
 class PromoteStudents extends Component
 {
     use WithPagination;
-    use LivewireAlert;
+    use WireToast;
 
     public $selectedClass;
     public $selectedSection;
@@ -26,6 +26,15 @@ class PromoteStudents extends Component
     public $transitionType = 'promotion';
     public $transitionYear;
     public $reason;
+
+    // Add debug property to track student count
+    public $debug = [];
+
+    // Protected properties for listeners and rules
+    protected $listeners = ['refreshComponent' => '$refresh'];
+    
+    // Define queryString to persist the search parameter in URL
+    protected $queryString = ['search' => ['except' => '']];
 
     protected $rules = [
         'selectedClass' => 'required|exists:my_classes,id',
@@ -50,6 +59,19 @@ class PromoteStudents extends Component
         // Set the default transition year to the current year
         $this->transitionYear = now()->year;
     }
+    
+    public function hydrate()
+    {
+        // For any debugging or state maintenance after hydration
+        Log::info('PromoteStudents component hydrated');
+    }
+
+    // Reset pagination when search is updated
+    public function updatedSearch()
+    {
+        $this->resetPage();
+        Log::info('Search updated', ['search' => $this->search]);
+    }
 
     public function render()
     {
@@ -57,28 +79,122 @@ class PromoteStudents extends Component
         $sections = $this->selectedClass ? Section::where('my_class_id', $this->selectedClass)->get() : [];
 
         // Filter students who have not been transitioned in the same year for the selected transition type
-        $students = $this->selectedSection ? StudentRecord::where('section_id', $this->selectedSection)
+        $students = collect([]);
+        
+        if ($this->selectedSection) {
+            $students = StudentRecord::where('section_id', $this->selectedSection)
             ->whereDoesntHave('transitions', function ($query) {
                 $query->where('transition_year', $this->transitionYear)
-                    ->whereIn('transition_type', ['promotion', 'demotion', 'repetition']); // Filter based on transition type
+                        ->whereIn('transition_type', ['promotion', 'demotion', 'repetition']);
             })
             ->where(function ($query) {
                 $query->where('first_name', 'like', '%' . $this->search . '%')
                     ->orWhere('last_name', 'like', '%' . $this->search . '%')
                     ->orWhere('adm_no', 'like', '%' . $this->search . '%');
             })
-            ->paginate(10) : [];
+                ->paginate(10);
+            
+            // Debug information
+            $this->debug = [
+                'section_id' => $this->selectedSection,
+                'student_count' => $students->count(),
+                'total_students' => $students->total(),
+                'search_term' => $this->search,
+            ];
+            
+            Log::info('Students query executed', [
+                'section_id' => $this->selectedSection,
+                'student_count' => $students->count(),
+                'total' => $students->total(),
+                'search' => $this->search
+            ]);
+        }
 
         return view('livewire.promote-students', compact('classes', 'sections', 'students'));
     }
 
-
-
     public function updatedSelectedSection($value)
     {
         $this->selectedStudents = [];
+        $this->search = ''; // Reset search when changing section
+        $this->resetPage();
+        Log::info('Section updated', ['section_id' => $value]);
+        $this->dispatch('refreshComponent');
+    }
+    
+    public function updatedSelectedClass($value)
+    {
+        $this->selectedSection = null; // Reset the selected section
+        $this->selectedStudents = []; // Reset the selected students
+        $this->search = ''; // Reset search when changing class
+        $this->resetPage();
+
+        // Automatically set the target class based on the transition type
+        $currentClass = MyClass::find($value);
+        
+        if (!$currentClass) {
+            $this->targetClass = null;
+            $this->targetSection = null;
+            $this->dispatch('refreshComponent');
+            return;
+        }
+        
+        // Find next and previous classes for transitions
+        if ($this->transitionType === 'promotion') {
+            // For promotion: target class should be the next class in sequence
+            $nextClass = MyClass::where('id', '>', $currentClass->id)
+                ->orderBy('id')
+                ->first();
+                
+            if ($nextClass) {
+                $this->targetClass = $nextClass->id;
+                Log::info('Target class set for promotion', [
+                    'current_class' => $currentClass->name,
+                    'target_class' => $nextClass->name
+                ]);
+            } else {
+                $this->targetClass = null;
+                Log::warning('No next class available for promotion from ' . $currentClass->name);
+            }
+        } elseif ($this->transitionType === 'demotion') {
+            // For demotion: target class should be the previous class in sequence
+            $previousClass = MyClass::where('id', '<', $currentClass->id)
+                ->orderBy('id', 'desc')
+                ->first();
+                
+            if ($previousClass) {
+                $this->targetClass = $previousClass->id;
+                Log::info('Target class set for demotion', [
+                    'current_class' => $currentClass->name,
+                    'target_class' => $previousClass->name
+                ]);
+            } else {
+                $this->targetClass = null;
+                Log::warning('No previous class available for demotion from ' . $currentClass->name);
+            }
+        } elseif ($this->transitionType === 'repetition') {
+            // For repetition: target class should be the same as the current class
+            $this->targetClass = $currentClass->id;
+            Log::info('Target class set for repetition', [
+                'current_class' => $currentClass->name,
+                'target_class' => $currentClass->name
+            ]);
+        }
+
+        // Reset the target section when the target class changes
+        $this->targetSection = null;
+        $this->dispatch('refreshComponent');
     }
 
+    public function updatedTargetClass($value)
+    {
+        // Reset the target section when the target class changes
+        $this->targetSection = null;
+        
+        if ($value) {
+            Log::info('Target class updated', ['target_class_id' => $value]);
+        }
+    }
 
     public function promoteStudents()
     {
@@ -97,13 +213,47 @@ class PromoteStudents extends Component
 
             // Validation 1: Ensure at least one student is selected
             if (empty($this->selectedStudents)) {
-                $this->alert('error', 'No students selected for transition.');
+                toast()
+                    ->danger('No students selected for transition.')
+                    ->push();
+                
+                $this->dispatch('transition-error', 'No students selected for transition.');
                 return;
             }
 
-            // Validation 2: Ensure the target class is not the same as the current class (except for repetition)
+            // Validation 2: Ensure a target class is set (except for repetition where the current class might be used)
+            if (!$this->targetClass) {
+                if ($this->transitionType === 'promotion') {
+                    toast()
+                        ->danger('No higher class available for promotion.')
+                        ->push();
+                    
+                    $this->dispatch('transition-error', 'No higher class available for promotion.');
+                    return;
+                } elseif ($this->transitionType === 'demotion') {
+                    toast()
+                        ->danger('No lower class available for demotion.')
+                        ->push();
+                    
+                    $this->dispatch('transition-error', 'No lower class available for demotion.');
+                    return;
+                } else {
+                    toast()
+                        ->danger('Invalid target class.')
+                        ->push();
+                    
+                    $this->dispatch('transition-error', 'Invalid target class.');
+                    return;
+                }
+            }
+
+            // Validation 3: Ensure the target class is not the same as the current class (except for repetition)
             if ($this->transitionType !== 'repetition' && $this->selectedClass == $this->targetClass) {
-                $this->alert('error', 'Students cannot be transitioned to the same class.');
+                toast()
+                    ->danger('Students cannot be transitioned to the same class (use repetition for this).')
+                    ->push();
+                
+                $this->dispatch('transition-error', 'Students cannot be transitioned to the same class.');
                 return;
             }
 
@@ -112,7 +262,9 @@ class PromoteStudents extends Component
             $targetClass = MyClass::find($this->targetClass);
 
             if (!$currentClass || !$targetClass) {
-                $this->alert('error', 'Invalid class selected.');
+                toast()
+                    ->danger('Invalid class selected.')
+                    ->push();
                 return;
             }
 
@@ -123,7 +275,9 @@ class PromoteStudents extends Component
                     ->first();
 
                 if (!$nextClass || $nextClass->id != $targetClass->id) {
-                    $this->alert('error', 'Students can only be promoted to the next class in the sequence.');
+                    toast()
+                        ->danger('Students can only be promoted to the next class in the sequence.')
+                        ->push();
                     return;
                 }
             } elseif ($this->transitionType === 'demotion') {
@@ -133,18 +287,23 @@ class PromoteStudents extends Component
                     ->first();
 
                 if (!$previousClass || $previousClass->id != $targetClass->id) {
-                    $this->alert('error', 'Students can only be demoted to the previous class in the sequence.');
+                    toast()
+                        ->danger('Students can only be demoted to the previous class in the sequence.')
+                        ->push();
                     return;
                 }
             } elseif ($this->transitionType === 'repetition') {
                 // Logic for repetition: target class and section should be the same as the current class and section
+                if ($this->targetClass != $this->selectedClass) {
                 $this->targetClass = $this->selectedClass;
-                $this->targetSection = $this->selectedSection;
+                }
             }
 
             // Validation 5: Ensure the transition year is not in the past
             if ($this->transitionYear < now()->year) {
-                $this->alert('error', 'Transition year cannot be in the past.');
+                toast()
+                    ->danger('Transition year cannot be in the past.')
+                    ->push();
                 return;
             }
 
@@ -155,19 +314,25 @@ class PromoteStudents extends Component
                 ->exists();
 
             if ($existingTransitions) {
-                $this->alert('error', 'One or more students already have a transition record for the selected year.');
+                toast()
+                    ->danger('One or more students already have a transition record for the selected year.')
+                    ->push();
                 return;
             }
 
             // Validation 9: Ensure the user is an admin or teacher
             if (!in_array(auth()->user()->user_type, ['admin', 'teacher', 'super_admin'])) {
-                $this->alert('error', 'You do not have permission to transition students.');
+                toast()
+                    ->danger('You do not have permission to transition students.')
+                    ->push();
                 return;
             }
 
-            // Validation 10: Ensure the reason is provided if the transition type is not standard
-            if (empty($this->reason) && $this->transitionType !== 'promotion' && $this->transitionType !== 'demotion') {
-                $this->alert('error', 'A reason is required for non-standard transitions.');
+            // Validation 10: Ensure the reason is provided if the transition type is not standard promotion
+            if (empty($this->reason) && $this->transitionType !== 'promotion') {
+                toast()
+                    ->danger('A reason is required for ' . $this->transitionType . '.')
+                    ->push();
                 return;
             }
 
@@ -185,54 +350,51 @@ class PromoteStudents extends Component
                 ]);
             }
 
-            // Display a success message using LivewireAlert
-            $this->alert('success', 'Students transitioned successfully.');
+            // Display a success message using Toast
+            $currentClass = MyClass::find($this->selectedClass);
+            $targetClass = MyClass::find($this->targetClass);
+            
+            $message = '';
+            $icon = '';
+            
+            if ($this->transitionType === 'promotion') {
+                $message = count($this->selectedStudents) . ' student(s) promoted from ' . $currentClass->name . ' to ' . $targetClass->name . ' successfully.';
+                $icon = '<i class="fas fa-arrow-up mr-2"></i>';
+            } elseif ($this->transitionType === 'demotion') {
+                $message = count($this->selectedStudents) . ' student(s) demoted from ' . $currentClass->name . ' to ' . $targetClass->name . ' successfully.';
+                $icon = '<i class="fas fa-arrow-down mr-2"></i>';
+            } elseif ($this->transitionType === 'repetition') {
+                $message = count($this->selectedStudents) . ' student(s) set to repeat ' . $currentClass->name . ' successfully.';
+                $icon = '<i class="fas fa-redo mr-2"></i>';
+            }
+            
+            // Send success message to toast and trigger animation
+            toast()
+                ->success($icon . $message)
+                ->doNotSanitize()
+                ->pushOnNextPage();
+            
+            // Dispatch event for frontend animation and success state
+            $this->dispatch('transition-success', $message);
 
             // Reset the form fields
-            $this->reset(['selectedClass', 'selectedSection', 'selectedStudents', 'targetClass', 'targetSection', 'transitionYear', 'reason', 'transitionType']);
+            $this->reset(['selectedClass', 'selectedSection', 'selectedStudents', 'targetClass', 'targetSection', 'reason', 'search']);
+            $this->transitionYear = now()->year; // Reset to current year
+            
             // Re-fetch data to ensure fresh changes are seen
-            $this->render(); // This will re-render the component and fetch fresh data
+            $this->dispatch('refreshComponent');
         } catch (\Exception $e) {
             // Log any errors that occur
             Log::error('Error transitioning students: ' . $e->getMessage());
 
-            // Display an error message using LivewireAlert
-            $this->alert('error', $e->getMessage());
+            // Display an error message using Toast
+            toast()
+                ->danger('Error: ' . $e->getMessage())
+                ->push();
 
-            // Emit an event to reset the button state
+            // Emit an event to reset the button state and show error
             $this->dispatch('promotionError');
+            $this->dispatch('transition-error', 'Error: ' . $e->getMessage());
         }
-    }
-
-    public function updatedSelectedClass($value)
-    {
-        $this->selectedSection = null; // Reset the selected section
-        $this->selectedStudents = []; // Reset the selected students
-
-        // Automatically set the target class based on the transition type
-        $currentClass = MyClass::find($value);
-        if ($currentClass) {
-            if ($this->transitionType === 'promotion') {
-                // For promotion: target class should be the next class
-                $nextClass = MyClass::where('id', '>', $currentClass->id)
-                    ->orderBy('id')
-                    ->first();
-                $this->targetClass = $nextClass ? $nextClass->id : null;
-            } elseif ($this->transitionType === 'demotion') {
-                // For demotion: target class should be the previous class
-                $previousClass = MyClass::where('id', '<', $currentClass->id)
-                    ->orderBy('id', 'desc')
-                    ->first();
-                $this->targetClass = $previousClass ? $previousClass->id : null;
-            } elseif ($this->transitionType === 'repetition') {
-                // For repetition: target class should be the same as the current class
-                $this->targetClass = $currentClass->id;
-            }
-        } else {
-            $this->targetClass = null;
-        }
-
-        // Reset the target section when the target class changes
-        $this->targetSection = null;
     }
 }

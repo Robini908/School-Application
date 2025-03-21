@@ -29,19 +29,6 @@
     <script src="{{ asset('global_assets/js/main/popper.min.js') }}"></script>
     <script src="{{ asset('global_assets/js/main/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('global_assets/js/main/bootstrap.min.js') }}"></script>
-
     <script src="{{ asset('global_assets/js/plugins/loaders/blockui.min.js') }}"></script>
-    <script src="{{ asset('global_assets/js/main/trix.js') }}"></script>
-    <script src="{{ asset('global_assets/js/main/swiper-bundle.min.js') }}"></script>
-
-
-
     @include('partials.js.custom_js')
-
-    <script>
-        // Initialize Bootstrap popovers
-        $(document).ready(function(){
-            $('[data-toggle="popover"]').popover();
-        });
-    </script>
 </div>

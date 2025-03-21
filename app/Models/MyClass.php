@@ -17,6 +17,10 @@ class MyClass extends Model
     {
         return $this->hasMany(Section::class, 'my_class_id');
     }
+    public function sections(): HasMany
+    {
+        return $this->hasMany(Section::class, 'my_class_id');
+    }
 
     public function transitions(): HasMany
     {
@@ -42,10 +46,7 @@ class MyClass extends Model
     {
         return $this->hasMany(StudentRecord::class);
     }
-    public function sections(): HasMany
-    {
-        return $this->hasMany(Section::class, 'my_class_id');
-    }
+   
 
     public function exams(): BelongsToMany
     {
@@ -65,14 +66,16 @@ class MyClass extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
+
     public function teachers(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'class_teacher', 'my_class_id', 'user_id')
-            ->where('user_type', 'teacher') // Filter users by user_type = 'teacher'
+            ->whereHas('userType', function ($query) {
+                $query->where('title', 'teacher'); // Filter users by user_type = 'teacher'
+            })
             ->withPivot('session')          // Include the session column from the pivot table
             ->withTimestamps();             // Include timestamps if needed
     }
-
     /**
      * Get the class teacher for a specific session.
      */
@@ -85,13 +88,20 @@ class MyClass extends Model
         return $this->teachers()->wherePivot('session', $session)->first();
     }
 
+
+
+
     /**
      * Assign a teacher to the class for a specific session.
      */
     public function assignTeacherForSession(int $teacherId, string $session)
     {
         // Ensure the user is a teacher before assigning
-        $teacher = User::where('id', $teacherId)->where('user_type', 'teacher')->firstOrFail();
+        $teacher = User::where('id', $teacherId)->whereHas('userType', function ($query) {
+            $query->where('title', 'teacher');
+        })->firstOrFail();
+
+        // Attach the teacher with the session information
         $this->teachers()->attach($teacherId, ['session' => $session]);
     }
 
@@ -102,9 +112,4 @@ class MyClass extends Model
     {
         $this->teachers()->wherePivot('session', $session)->detach($teacherId);
     }
-
-
-   
-
-    
 }

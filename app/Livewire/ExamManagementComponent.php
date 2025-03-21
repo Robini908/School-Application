@@ -45,7 +45,7 @@ class ExamManagementComponent extends Component
     public $showGradingSystemDetails = false;
     public $showExamCard = true;
     public $marks;
-    public $showGradingSystemForm = false; // Toggle grading system form
+    public $showGradingSystemForm = false;
     public $newGradingSystemName;
     public $selectedGradingSystem = null; // Store the selected grading system
     public $gradingRanges = [];
@@ -63,6 +63,11 @@ class ExamManagementComponent extends Component
     public $perPage = 10;
     protected $paginationTheme = 'bootstrap';
     use WithPagination;
+    public $gradingSystemName;
+    public $gradingSystemDescription;
+    public $gradingSystemEffectiveDate;
+    public $gradingSystemRules;
+    public $gradingSystemErrors = [];
 
 
 
@@ -89,8 +94,22 @@ class ExamManagementComponent extends Component
 
     public function updatedSelectedSubjectId($subjectId)
     {
+        // Handle both use cases in a single method
+        
+        // Case 1: When viewing grading system details
+        if ($this->showGradingSystemDetails && $this->gradingSystemDetails) {
+            $this->gradingRangesBySubject = GradingRange::where('grading_system_id', $this->gradingSystemDetails->id)
+                ->where('subject_id', $this->selectedSubjectId)
+                ->get();
+        } 
+        // Case 2: When fetching grading ranges for a selected subject
+        else if ($subjectId) {
         // Fetch grading ranges for the selected subject as a collection
         $this->gradingRangesBySubject = GradingRange::where('subject_id', $subjectId)->get();
+        }
+        else {
+            $this->gradingRangesBySubject = collect();
+        }
     }
 
 
@@ -279,18 +298,20 @@ class ExamManagementComponent extends Component
 
     public function store()
     {
-        // Define validation rules
-        $rules = [
-            'name' => 'required|string|max:255|unique:exams,name,' . $this->examId . ',id,year,' . $this->year . ',term,' . $this->term,
-            'term' => 'required|integer',
-            'year' => 'required|string|max:40',
+        try {
+            $this->validate([
+                'name' => 'required|string|max:255',
+                'term' => 'required|string',
+                'year' => 'required|numeric',
             'grading_system_id' => 'required|exists:grading_systems,id',
-            'selectedClass' => 'required|exists:my_classes,id',
-            'selectedSections.*' => 'exists:sections,id', // Validate selected sections
-        ];
-
-        // Validate the form input
-        $this->validate($rules);
+                // Add other validation rules as needed
+            ], [
+                'name.required' => 'Please enter an exam name.',
+                'term.required' => 'Please select a term.',
+                'year.required' => 'Please enter a year.',
+                'grading_system_id.required' => 'Please select a grading system.',
+                'grading_system_id.exists' => 'The selected grading system does not exist.',
+            ]);
 
         // Create or update the exam
         $exam = Exam::updateOrCreate(
@@ -309,15 +330,22 @@ class ExamManagementComponent extends Component
         if (!empty($this->selectedSections)) {
             foreach ($this->selectedSections as $sectionId) {
                 $syncData[$this->selectedClass] = ['section_id' => $sectionId];
+                }
                 $exam->classes()->syncWithoutDetaching($syncData);
-            }
         }
 
-        // Flash a success success
+            // Flash a success message
         $this->alert('success', $this->examId ? 'Exam updated successfully.' : 'Exam added successfully.');
 
         // Reset the form
         $this->resetForm();
+            
+            // Reset errors after successful save
+            $this->resetErrorBag();
+        } catch (\Exception $e) {
+            // Handle any unexpected errors
+            $this->alert('error', 'Failed to create exam: ' . $e->getMessage());
+        }
     }
 
 
@@ -342,17 +370,11 @@ class ExamManagementComponent extends Component
 
         // Load the selected class and its sections
         $this->selectedClass = $exam->classes->first()->id ?? null;
-        $this->sections = $exam->classes->first()->sections ?? collect(); // Initialize sections based on the selected class
-
-        // Collect selected sections
-        $this->selectedSections = $exam->classes->flatMap(function ($class) {
-            return $class->sections->pluck('id'); // Collect section IDs for all classes
-        })->toArray();
+        $this->sections = $exam->classes->first()->sections ?? collect();
 
         $this->isCreating = false;
         $this->isEditing = true;
         $this->showExamCard = false; // Hide the card when editing
-
     }
 
 
@@ -365,30 +387,27 @@ class ExamManagementComponent extends Component
 
     public function viewGradingSystemDetails()
     {
-        // Ensure a grading system is selected
-        if ($this->grading_system_id) {
-            // Fetch grading system details
-            $this->gradingSystemDetails = GradingSystem::find($this->grading_system_id);
-
-            // Ensure the grading system exists
-            if ($this->gradingSystemDetails) {
-                // Fetch grading ranges for the selected grading system and subject
-                $this->gradingRangesBySubject = GradingRange::where('grading_system_id', $this->grading_system_id)
-                    ->where('subject_id', $this->selectedSubjectId)
-                    ->get();
-            } else {
-                // Clear details if grading system not found
-                $this->gradingRangesBySubject = collect();
-            }
-
-            // Show the grading system details
-            $this->showGradingSystemDetails = true;
-        } else {
-            // Reset if no grading system is selected
-            $this->showGradingSystemDetails = false;
-            $this->gradingSystemDetails = null;
-            $this->gradingRangesBySubject = collect(); // Clear grading ranges
+        if (!$this->grading_system_id) {
+            $this->alert('error', 'Please select a grading system first.');
+            return;
         }
+
+        // Load the grading system with its subjects and ranges
+        $gradingSystem = GradingSystem::with(['subjects', 'gradingRanges.subject'])->find($this->grading_system_id);
+        
+        if (!$gradingSystem) {
+            $this->alert('error', 'Grading system not found.');
+            return;
+        }
+
+        // Store the grading system details for the view
+        $this->gradingSystemDetails = $gradingSystem;
+        
+        // Get all subjects for the dropdown
+        $this->mySubjects = Subject::all();
+        
+        // Set the flag to show the grading system details view
+        $this->showGradingSystemDetails = true;
     }
 
 
@@ -398,7 +417,9 @@ class ExamManagementComponent extends Component
     public function closeGradingSystemDetails()
     {
         $this->showGradingSystemDetails = false;
+        $this->gradingSystemDetails = null;
         $this->selectedSubjectId = null;
+        $this->gradingRangesBySubject = collect();
     }
 
     public function resetForm()
@@ -423,6 +444,10 @@ class ExamManagementComponent extends Component
 
         // Show the card again when the form is reset
         $this->showExamCard = true;
+
+        // Also reset the grading system form
+        $this->showGradingSystemForm = false;
+        $this->resetGradingSystemForm();
     }
 
     public function updatedSelectedClass()
@@ -444,6 +469,86 @@ class ExamManagementComponent extends Component
         } else {
             // Deselect all sections
             $this->selectedSections = [];
+        }
+    }
+
+    public function updatedGradingSystemId($value)
+    {
+        if ($value === 'create_new') {
+            $this->showGradingSystemForm = true;
+            $this->resetGradingSystemForm();
+        } else {
+            $this->showGradingSystemForm = false;
+        }
+    }
+
+    public function resetGradingSystemForm()
+    {
+        $this->gradingSystemName = '';
+        $this->gradingSystemDescription = '';
+        $this->gradingSystemEffectiveDate = now()->format('Y-m-d');
+        $this->gradingSystemRules = '';
+        $this->gradingSystemErrors = [];
+        $this->resetErrorBag(['gradingSystemName', 'gradingSystemDescription', 'gradingSystemEffectiveDate', 'gradingSystemRules']);
+    }
+
+    public function cancelGradingSystemForm()
+    {
+        $this->showGradingSystemForm = false;
+        $this->grading_system_id = null; // Reset the dropdown
+        $this->resetGradingSystemForm();
+    }
+
+    public function saveGradingSystem()
+    {
+        // Validate the form
+        $this->validate([
+            'gradingSystemName' => 'required|string|max:255',
+            'gradingSystemEffectiveDate' => 'required|date|after_or_equal:today',
+            'gradingSystemDescription' => 'nullable|string|max:1000',
+            'gradingSystemRules' => 'nullable|string',
+        ], [
+            'gradingSystemName.required' => 'Please enter a name for the grading system.',
+            'gradingSystemEffectiveDate.required' => 'Please select an effective date.',
+            'gradingSystemEffectiveDate.date' => 'The effective date must be a valid date.',
+            'gradingSystemEffectiveDate.after_or_equal' => 'The effective date must be today or later.',
+        ]);
+
+        try {
+            // Format the description and rules
+            $formattedDescription = nl2br(htmlentities($this->gradingSystemDescription));
+            $formattedRules = implode("\n", array_map('trim', array_filter(explode("\n", $this->gradingSystemRules))));
+
+            // Create the new grading system
+            $gradingSystem = GradingSystem::create([
+                'name' => $this->gradingSystemName,
+                'description' => $formattedDescription,
+                'effective_date' => $this->gradingSystemEffectiveDate,
+                'rules' => $formattedRules,
+            ]);
+
+            // Get all subjects and attach them to the grading system
+            $subjects = Subject::all();
+            $gradingSystem->subjects()->sync($subjects->pluck('id')->toArray());
+
+            // Update the grading systems list
+            $this->gradingSystems = GradingSystem::all();
+            
+            // Select the newly created grading system
+            $this->grading_system_id = $gradingSystem->id;
+            
+            // Hide the form
+            $this->showGradingSystemForm = false;
+            
+            // Show success message
+            $this->alert('success', 'Grading system created successfully.');
+            
+            // Reset the form
+            $this->resetGradingSystemForm();
+            
+        } catch (\Exception $e) {
+            // Handle any errors
+            $this->alert('error', 'Failed to create grading system: ' . $e->getMessage());
         }
     }
 }
